@@ -19,6 +19,8 @@
   </div>
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     function go(page) { window.open(page, "_self"); }
     function row(label, value) {
       return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(value || "No indicado")}</span></div>`;

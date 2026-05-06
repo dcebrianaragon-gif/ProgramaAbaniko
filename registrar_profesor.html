@@ -10,22 +10,19 @@
   <div class="container">
     <main class="page-stack">
       <section class="hero">
-        <h1>Registrar profesores</h1>
-        <p>Da de alta profesores, edita sus datos y mantén la lista preparada para asociarlos a jornadas y resúmenes.</p>
+        <h1>Profesores y acceso</h1>
+        <p>Registra profesores, configura su PIN de entrada y consulta el histórico de accesos por profesor.</p>
       </section>
 
-      <section class="panel section-shell">
-        <div class="section-head">
-          <div>
-            <h2>Navegación</h2>
-            <p>Accesos directos a las otras áreas conectadas con esta pantalla.</p>
-          </div>
+      <section class="session-banner">
+        <div>
+          <strong id="currentTeacherName">Profesor conectado</strong>
+          <span id="currentTeacherMeta">Sin sesión activa</span>
         </div>
-        <div class="action-grid">
+        <div class="button-row">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Jornadas</button>
-          <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Resúmenes</button>
-          <button type="button" class="btn-secondary" onclick="openPage('ver_resumen_actual.html')">Resumen actual</button>
+          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
         </div>
       </section>
 
@@ -34,7 +31,7 @@
           <div class="section-head">
             <div>
               <h2 id="formTitle">Nuevo profesor</h2>
-              <p>Completa la ficha y guarda. Si editas un profesor, el formulario se rellenará automáticamente.</p>
+              <p>Cada profesor necesita un PIN para poder entrar en la aplicación.</p>
             </div>
           </div>
 
@@ -56,6 +53,10 @@
                 <label for="teacherPhone">Teléfono</label>
                 <input id="teacherPhone" name="teacherPhone" type="text" placeholder="600123123">
               </div>
+              <div class="field">
+                <label for="teacherPin">PIN de acceso</label>
+                <input id="teacherPin" name="teacherPin" type="password" inputmode="numeric" required>
+              </div>
             </div>
             <div class="button-row">
               <button type="submit" class="btn-primary">Guardar profesor</button>
@@ -75,6 +76,16 @@
         </section>
       </section>
 
+      <section class="panel section-shell">
+        <div class="section-head">
+          <div>
+            <h2>Últimos accesos</h2>
+            <p>Entradas y salidas guardadas con su hora exacta.</p>
+          </div>
+        </div>
+        <div id="accessList" class="compact-list"></div>
+      </section>
+
       <p id="message" class="message" aria-live="polite"></p>
     </main>
   </div>
@@ -84,12 +95,28 @@
     const form = document.getElementById("teacherForm");
     const teacherList = document.getElementById("teacherList");
     const teacherCount = document.getElementById("teacherCount");
+    const accessList = document.getElementById("accessList");
     const formTitle = document.getElementById("formTitle");
     const message = document.getElementById("message");
+    const currentTeacherName = document.getElementById("currentTeacherName");
+    const currentTeacherMeta = document.getElementById("currentTeacherMeta");
     let editingId = null;
+    const hasSession = Boolean(AbanikoStore.getCurrentTeacher());
 
     function openPage(page) {
       window.open(page, "_self");
+    }
+
+    function renderCurrentTeacher() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (!teacher) {
+        currentTeacherName.textContent = "Registro previo al acceso";
+        currentTeacherMeta.textContent = "Crea primero tu profesor y luego vuelve al inicio para entrar";
+        return;
+      }
+      currentTeacherName.textContent = teacher.name;
+      const latestLog = AbanikoStore.getTeacherAccessLogs(teacher.id)[0];
+      currentTeacherMeta.textContent = `Entrada actual: ${AbanikoStore.formatDateTime(latestLog?.loginAt || "")}`;
     }
 
     function showMessage(text) {
@@ -109,7 +136,6 @@
     function renderTeachers() {
       const data = AbanikoStore.load();
       teacherCount.textContent = `${data.teachers.length} registrados`;
-
       if (data.teachers.length === 0) {
         teacherList.innerHTML = '<p class="empty-state">Todavía no hay profesores registrados.</p>';
         return;
@@ -123,6 +149,7 @@
               <span>Asignatura: ${AbanikoStore.escapeHtml(teacher.subject || "Sin asignatura")}</span>
               <span>Email: ${AbanikoStore.escapeHtml(teacher.email || "No indicado")}</span>
               <span>Teléfono: ${AbanikoStore.escapeHtml(teacher.phone || "No indicado")}</span>
+              <span>PIN configurado: ${teacher.pin ? "Sí" : "No"}</span>
             </div>
           </div>
           <div class="actions">
@@ -133,24 +160,44 @@
       `).join("");
     }
 
+    function renderAccessLogs() {
+      const logs = AbanikoStore.getAccessLogs().slice(0, 10);
+      if (logs.length === 0) {
+        accessList.innerHTML = '<p class="empty-state">Todavía no hay accesos registrados.</p>';
+        return;
+      }
+      accessList.innerHTML = logs.map((log) => `
+        <div class="compact-item">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+            <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
+            <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       const payload = {
         name: form.teacherName.value.trim(),
         subject: form.teacherSubject.value.trim(),
         email: form.teacherEmail.value.trim(),
-        phone: form.teacherPhone.value.trim()
+        phone: form.teacherPhone.value.trim(),
+        pin: form.teacherPin.value.trim()
       };
-
-      if (!payload.name || !payload.subject) {
-        showMessage("Completa al menos el nombre y la asignatura.");
+      if (!payload.name || !payload.subject || !payload.pin) {
+        showMessage("Completa nombre, asignatura y PIN.");
         return;
       }
-
       AbanikoStore.upsertTeacher(payload, editingId);
       renderTeachers();
       resetFormMode();
-      showMessage("Profesor guardado correctamente.");
+      if (hasSession) {
+        showMessage("Profesor guardado correctamente.");
+      } else {
+        showMessage("Profesor guardado correctamente. Ahora vuelve al inicio para iniciar sesión.");
+      }
     });
 
     form.addEventListener("reset", () => {
@@ -158,33 +205,45 @@
     });
 
     function editTeacher(id) {
-      const teacher = AbanikoStore.load().teachers.find((item) => String(item.id) === String(id));
-      if (!teacher) {
-        return;
-      }
-
+      const teacher = AbanikoStore.getTeacherById(id);
+      if (!teacher) return;
       editingId = id;
       formTitle.textContent = "Editar profesor";
       form.teacherName.value = teacher.name || "";
       form.teacherSubject.value = teacher.subject || "";
       form.teacherEmail.value = teacher.email || "";
       form.teacherPhone.value = teacher.phone || "";
+      form.teacherPin.value = teacher.pin || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function deleteTeacher(id) {
       AbanikoStore.removeTeacher(id);
       renderTeachers();
-      if (editingId === id) {
-        resetFormMode();
-      }
+      renderAccessLogs();
+      if (editingId === id) resetFormMode();
       showMessage("Profesor eliminado correctamente.");
+    }
+
+    function logoutTeacher() {
+      AbanikoStore.logoutCurrentTeacher();
+      openPage("Index.html");
     }
 
     window.editTeacher = editTeacher;
     window.deleteTeacher = deleteTeacher;
+    window.logoutTeacher = logoutTeacher;
 
+    renderCurrentTeacher();
     renderTeachers();
+    renderAccessLogs();
+
+    if (!hasSession) {
+      const navButtons = document.querySelector(".session-banner .button-row");
+      navButtons.innerHTML = `
+        <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Volver al inicio</button>
+      `;
+    }
   </script>
 </body>
 </html>

@@ -44,6 +44,10 @@ body {
   gap: 22px;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .hero,
 .panel,
 .stat-card,
@@ -100,6 +104,12 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 430px) 1fr;
+  gap: 18px;
 }
 
 .page-grid {
@@ -178,6 +188,14 @@ body {
   padding: 22px;
 }
 
+.auth-card {
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
 .section-shell {
   display: grid;
   gap: 16px;
@@ -223,6 +241,27 @@ body {
   color: var(--muted);
   font-size: 0.93rem;
   line-height: 1.45;
+}
+
+.session-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(74, 125, 191, 0.12);
+}
+
+.session-banner strong,
+.session-banner span {
+  display: block;
+}
+
+.session-banner span {
+  color: var(--muted);
+  font-size: 0.93rem;
 }
 
 .form-grid {
@@ -452,6 +491,10 @@ button:hover,
 
   .section-head {
     flex-direction: column;
+  }
+
+  .auth-grid {
+    grid-template-columns: 1fr;
   }
 
   .card {

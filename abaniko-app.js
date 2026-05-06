@@ -4,12 +4,15 @@ const AbanikoStore = (() => {
   const EDIT_SESSION_KEY = "programaAbanikoEditSessionId";
   const SELECTED_STUDENT_KEY = "programaAbanikoSelectedStudentDni";
   const EDIT_STUDENT_KEY = "programaAbanikoEditStudentDni";
+  const CURRENT_TEACHER_KEY = "programaAbanikoCurrentTeacherId";
+  const CURRENT_ACCESS_LOG_KEY = "programaAbanikoCurrentAccessLogId";
 
   function normalize(data) {
     return {
       students: Array.isArray(data?.students) ? data.students : [],
       teachers: Array.isArray(data?.teachers) ? data.teachers : [],
       sessions: Array.isArray(data?.sessions) ? data.sessions : [],
+      accessLogs: Array.isArray(data?.accessLogs) ? data.accessLogs : [],
       updatedAt: data?.updatedAt || new Date().toISOString()
     };
   }
@@ -115,7 +118,13 @@ const AbanikoStore = (() => {
     const data = load();
     if (id) {
       data.teachers = data.teachers.map((teacher) =>
-        String(teacher.id) === String(id) ? { ...teacher, ...payload } : teacher
+        String(teacher.id) === String(id)
+          ? {
+              ...teacher,
+              ...payload,
+              pin: payload.pin || teacher.pin || ""
+            }
+          : teacher
       );
     } else {
       data.teachers.push({
@@ -135,6 +144,15 @@ const AbanikoStore = (() => {
         ? { ...session, teacherId: "", teacherNameSnapshot: "Profesor eliminado" }
         : session
     );
+    data.accessLogs = data.accessLogs.map((log) =>
+      String(log.teacherId) === String(id)
+        ? { ...log, teacherDeleted: true }
+        : log
+    );
+    if (String(sessionStorage.getItem(CURRENT_TEACHER_KEY)) === String(id)) {
+      sessionStorage.removeItem(CURRENT_TEACHER_KEY);
+      sessionStorage.removeItem(CURRENT_ACCESS_LOG_KEY);
+    }
     return save(data);
   }
 
@@ -230,6 +248,127 @@ const AbanikoStore = (() => {
     localStorage.removeItem(EDIT_STUDENT_KEY);
   }
 
+  function getTeacherById(id) {
+    return load().teachers.find((teacher) => String(teacher.id) === String(id)) || null;
+  }
+
+  function getCurrentTeacherId() {
+    return sessionStorage.getItem(CURRENT_TEACHER_KEY);
+  }
+
+  function getCurrentTeacher() {
+    const teacherId = getCurrentTeacherId();
+    if (!teacherId) {
+      return null;
+    }
+    const teacher = getTeacherById(teacherId);
+    if (!teacher) {
+      sessionStorage.removeItem(CURRENT_TEACHER_KEY);
+      sessionStorage.removeItem(CURRENT_ACCESS_LOG_KEY);
+      return null;
+    }
+    return teacher;
+  }
+
+  function getCurrentAccessLogId() {
+    return sessionStorage.getItem(CURRENT_ACCESS_LOG_KEY);
+  }
+
+  function loginTeacher(teacherId, pin) {
+    const data = load();
+    const teacher = data.teachers.find((item) => String(item.id) === String(teacherId));
+    if (!teacher) {
+      return { ok: false, message: "Profesor no encontrado." };
+    }
+    if (!teacher.pin) {
+      return { ok: false, message: "Ese profesor no tiene PIN configurado." };
+    }
+    if (String(teacher.pin) !== String(pin)) {
+      return { ok: false, message: "PIN incorrecto." };
+    }
+
+    const openLog = data.accessLogs.find(
+      (log) => String(log.teacherId) === String(teacherId) && !log.logoutAt
+    );
+
+    if (openLog) {
+      openLog.logoutAt = new Date().toISOString();
+    }
+
+    const log = {
+      id: createId(),
+      teacherId: teacher.id,
+      teacherName: teacher.name,
+      loginAt: new Date().toISOString(),
+      logoutAt: "",
+      createdAt: new Date().toISOString()
+    };
+    data.accessLogs.push(log);
+    save(data);
+    sessionStorage.setItem(CURRENT_TEACHER_KEY, String(teacher.id));
+    sessionStorage.setItem(CURRENT_ACCESS_LOG_KEY, String(log.id));
+    return { ok: true, teacher, log, resumed: false, previousClosed: Boolean(openLog) };
+  }
+
+  function logoutCurrentTeacher() {
+    const teacher = getCurrentTeacher();
+    const logId = getCurrentAccessLogId();
+    if (!teacher || !logId) {
+      sessionStorage.removeItem(CURRENT_TEACHER_KEY);
+      sessionStorage.removeItem(CURRENT_ACCESS_LOG_KEY);
+      return null;
+    }
+
+    const data = load();
+    data.accessLogs = data.accessLogs.map((log) =>
+      String(log.id) === String(logId) && !log.logoutAt
+        ? { ...log, logoutAt: new Date().toISOString() }
+        : log
+    );
+    save(data);
+    sessionStorage.removeItem(CURRENT_TEACHER_KEY);
+    sessionStorage.removeItem(CURRENT_ACCESS_LOG_KEY);
+    return teacher;
+  }
+
+  function getAccessLogs() {
+    return load().accessLogs
+      .slice()
+      .sort((a, b) => String(b.loginAt).localeCompare(String(a.loginAt)));
+  }
+
+  function getTeacherAccessLogs(teacherId) {
+    return getAccessLogs().filter((log) => String(log.teacherId) === String(teacherId));
+  }
+
+  function requireTeacherSession(redirectPage = "Index.html") {
+    if (getCurrentTeacher()) {
+      return true;
+    }
+    const currentFile = window.location.pathname.split("/").pop();
+    if (currentFile !== redirectPage) {
+      window.open(redirectPage, "_self");
+    }
+    return false;
+  }
+
+  function formatDateTime(value) {
+    if (!value) {
+      return "Sin registro";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  }
+
   function formatDate(dateValue) {
     if (!dateValue) {
       return "Sin fecha";
@@ -278,8 +417,17 @@ const AbanikoStore = (() => {
     setStudentToEdit,
     getStudentToEdit,
     clearStudentToEdit,
+    getTeacherById,
+    getCurrentTeacher,
+    getCurrentTeacherId,
+    loginTeacher,
+    logoutCurrentTeacher,
+    getAccessLogs,
+    getTeacherAccessLogs,
+    requireTeacherSession,
     getTeacherName,
     formatDate,
+    formatDateTime,
     escapeHtml
   };
 })();

@@ -21,6 +21,8 @@
   </div>
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     function go(page) { window.open(page, "_self"); }
     const searchInput = document.getElementById("searchInput");
     const resultInfo = document.getElementById("resultInfo");

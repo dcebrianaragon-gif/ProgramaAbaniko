@@ -14,18 +14,15 @@
         <p>Crea jornadas, asígnales un profesor responsable y deja listo el resumen para poder consultarlo desde las otras pantallas.</p>
       </section>
 
-      <section class="panel section-shell">
-        <div class="section-head">
-          <div>
-            <h2>Navegación</h2>
-            <p>Muévete entre profesores, selector de resúmenes y vista actual sin perder el contexto.</p>
-          </div>
+      <section class="session-banner">
+        <div>
+          <strong id="currentTeacherName">Profesor conectado</strong>
+          <span id="currentTeacherMeta">Sin sesión activa</span>
         </div>
-        <div class="action-grid">
+        <div class="button-row">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
-          <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Seleccionar resumen</button>
-          <button type="button" class="btn-secondary" onclick="openPage('ver_resumen_actual.html')">Resumen actual</button>
+          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
         </div>
       </section>
 
@@ -85,16 +82,28 @@
 
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     const form = document.getElementById("sessionForm");
     const teacherSelect = document.getElementById("sessionTeacher");
     const sessionList = document.getElementById("sessionList");
     const sessionCount = document.getElementById("sessionCount");
     const formTitle = document.getElementById("formTitle");
     const message = document.getElementById("message");
+    const currentTeacherName = document.getElementById("currentTeacherName");
+    const currentTeacherMeta = document.getElementById("currentTeacherMeta");
     let editingId = null;
 
     function openPage(page) {
       window.open(page, "_self");
+    }
+
+    function renderCurrentTeacher() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (!teacher) return;
+      currentTeacherName.textContent = teacher.name;
+      const latestLog = AbanikoStore.getTeacherAccessLogs(teacher.id)[0];
+      currentTeacherMeta.textContent = `Entrada actual: ${AbanikoStore.formatDateTime(latestLog?.loginAt || "")}`;
     }
 
     function showMessage(text) {
@@ -123,12 +132,10 @@
     function renderSessions() {
       const data = AbanikoStore.load();
       sessionCount.textContent = `${data.sessions.length} registradas`;
-
       if (data.sessions.length === 0) {
         sessionList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
         return;
       }
-
       const ordered = [...data.sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));
       sessionList.innerHTML = ordered.map((session) => `
         <article class="card">
@@ -159,12 +166,10 @@
         teacherId: form.sessionTeacher.value,
         summary: form.sessionSummary.value.trim()
       };
-
       if (!payload.title || !payload.date || !payload.summary) {
         showMessage("Completa al menos el nombre, la fecha y el resumen.");
         return;
       }
-
       AbanikoStore.upsertSession(payload, editingId);
       renderSessions();
       resetFormMode();
@@ -177,10 +182,7 @@
 
     function editSession(id) {
       const session = AbanikoStore.load().sessions.find((item) => String(item.id) === String(id));
-      if (!session) {
-        return;
-      }
-
+      if (!session) return;
       editingId = id;
       formTitle.textContent = "Editar jornada";
       populateTeachers();
@@ -195,9 +197,7 @@
     function deleteSession(id) {
       AbanikoStore.removeSession(id);
       renderSessions();
-      if (editingId === id) {
-        resetFormMode();
-      }
+      if (editingId === id) resetFormMode();
       showMessage("Jornada eliminada correctamente.");
     }
 
@@ -208,18 +208,22 @@
 
     function loadSelectedForEditingIfNeeded() {
       const editId = AbanikoStore.getSessionToEdit();
-      if (!editId) {
-        return;
-      }
-
+      if (!editId) return;
       editSession(editId);
       AbanikoStore.clearSessionToEdit();
+    }
+
+    function logoutTeacher() {
+      AbanikoStore.logoutCurrentTeacher();
+      openPage("Index.html");
     }
 
     window.editSession = editSession;
     window.deleteSession = deleteSession;
     window.openSummary = openSummary;
+    window.logoutTeacher = logoutTeacher;
 
+    renderCurrentTeacher();
     populateTeachers();
     renderSessions();
     loadSelectedForEditingIfNeeded();

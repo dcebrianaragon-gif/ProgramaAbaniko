@@ -23,6 +23,8 @@
   </div>
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     function go(page) { window.open(page, "_self"); }
     const form = document.getElementById("leisureForm");
     const message = document.getElementById("message");

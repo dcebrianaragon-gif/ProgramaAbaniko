@@ -43,6 +43,15 @@
                 <div class="field"><label for="apellidos">Apellidos</label><input id="apellidos" name="apellidos" required></div>
                 <div class="field"><label for="fecha_nacimiento">Fecha de nacimiento</label><input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required></div>
                 <div class="field"><label for="edad">Edad</label><input id="edad" name="edad" type="number" min="0" required></div>
+                <div class="field">
+                  <label for="sexo">Sexo</label>
+                  <select id="sexo" name="sexo" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
                 <div class="field"><label for="dni">DNI</label><input id="dni" name="dni" required></div>
               </div>
             </div>
@@ -110,6 +119,8 @@
 
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     const form = document.getElementById("studentForm");
     const message = document.getElementById("message");
 
@@ -130,6 +141,7 @@
         apellidos: form.apellidos.value.trim(),
         fecha_nacimiento: form.fecha_nacimiento.value,
         edad: form.edad.value.trim(),
+        sexo: form.sexo.value,
         dni: form.dni.value.trim().toUpperCase(),
         domicilio: form.domicilio.value.trim(),
         localidad: form.localidad.value.trim(),
@@ -163,7 +175,7 @@
     (function loadEditingData() {
       const student = AbanikoStore.getStudent(AbanikoStore.getStudentToEdit());
       if (!student) return;
-      for (const key of ["nombre", "apellidos", "fecha_nacimiento", "edad", "dni", "domicilio", "localidad", "provincia", "telefono_casa", "movil_alumno", "movil_padre", "movil_madre", "discapacidad", "estudios", "cursos", "trabajo", "actividad_actual", "actividad_deseada", "notas_tecnico"]) {
+      for (const key of ["nombre", "apellidos", "fecha_nacimiento", "edad", "sexo", "dni", "domicilio", "localidad", "provincia", "telefono_casa", "movil_alumno", "movil_padre", "movil_madre", "discapacidad", "estudios", "cursos", "trabajo", "actividad_actual", "actividad_deseada", "notas_tecnico"]) {
         if (form[key]) form[key].value = student[key] || "";
       }
       form.mueve_solo_ciudad.checked = Boolean(student.mueve_solo_ciudad);

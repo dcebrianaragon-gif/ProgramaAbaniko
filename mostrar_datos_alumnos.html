@@ -19,6 +19,8 @@
   </div>
   <script src="abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
     function go(page) { window.open(page, "_self"); }
     function editCurrent() {
       const student = AbanikoStore.getSelectedStudent();
@@ -39,6 +41,7 @@
         row("DNI", student.dni),
         row("Fecha de nacimiento", student.fecha_nacimiento),
         row("Edad", student.edad),
+        row("Sexo", student.sexo),
         row("Domicilio", student.domicilio),
         row("Localidad", student.localidad),
         row("Provincia", student.provincia),

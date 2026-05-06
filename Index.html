@@ -11,111 +11,163 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Programa Abaniko</h1>
-        <p>Panel principal para gestionar alumnos, profesores, jornadas y resúmenes desde tu equipo, sin depender de servidor.</p>
+        <p>Gestión local de alumnos, profesores, jornadas y resúmenes con acceso por profesor y registro horario de entrada y salida.</p>
         <div class="button-row hero-actions">
-          <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Empezar con alumnos</button>
-          <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Abrir jornadas</button>
+          <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Ir al programa</button>
+          <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
         </div>
       </section>
 
-      <section class="section-shell">
-        <div class="section-head">
-          <div>
-            <h2>Resumen general</h2>
-            <p>Una vista rápida del estado actual del programa para no perderte entre pantallas.</p>
-          </div>
-        </div>
-        <div class="stats-grid">
-          <article class="stat-card">
-            <span>Alumnos</span>
-            <strong id="studentCount">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Profesores</span>
-            <strong id="teacherCount">0</strong>
-          </article>
-          <article class="stat-card">
-            <span>Jornadas</span>
-            <strong id="sessionCount">0</strong>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-shell">
-        <div class="section-head">
-          <div>
-            <h2>Áreas principales</h2>
-            <p>El programa ahora está separado por bloques funcionales para que cada tarea tenga su espacio.</p>
-          </div>
-        </div>
-        <div class="quick-grid">
-          <article class="quick-card">
-            <span class="quick-kicker">Alumnos</span>
-            <h2>Ficha completa del alumno</h2>
-            <p>Alta, consulta, edición y borrado desde un flujo mucho más directo.</p>
-            <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Gestionar alumnos</button>
-          </article>
-
-          <article class="quick-card">
-            <span class="quick-kicker">Profesores</span>
-            <h2>Control del equipo</h2>
-            <p>Registra profesores y relaciónalos con las jornadas guardadas.</p>
-            <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
-          </article>
-
-          <article class="quick-card">
-            <span class="quick-kicker">Jornadas</span>
-            <h2>Resumen y seguimiento</h2>
-            <p>Crea jornadas, asígnales responsable y abre sus resúmenes al instante.</p>
-            <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Registrar jornada</button>
-          </article>
-
-          <article class="quick-card">
-            <span class="quick-kicker">Resúmenes</span>
-            <h2>Consulta rápida</h2>
-            <p>Busca una jornada concreta y deja un resumen activo para revisarlo.</p>
-            <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Ver resúmenes</button>
-          </article>
-        </div>
-      </section>
-
-      <section class="page-grid">
-        <section class="panel section-shell">
+      <section id="authGate" class="auth-grid">
+        <section class="auth-card section-shell">
           <div class="section-head">
             <div>
-              <h2>Acciones rápidas</h2>
-              <p>Tareas habituales agrupadas para que no tengas que ir saltando por demasiadas páginas.</p>
+              <h2>Inicio de sesión</h2>
+              <p>Cada vez que abras la aplicación tendrás que entrar con un profesor y su PIN.</p>
             </div>
           </div>
-          <div class="action-grid">
-            <button type="button" class="btn-primary" onclick="openPage('form.alumno.html')">Nuevo alumno</button>
-            <button type="button" class="btn-secondary" onclick="openPage('Consultar_Alumno.html')">Consultar</button>
-            <button type="button" class="btn-secondary" onclick="openPage('Borrar_Alumno.html')">Eliminar</button>
-            <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
+
+          <div class="panel-soft section-shell">
+            <div class="section-head">
+              <div>
+                <h3>Primer acceso</h3>
+                <p>Si todavía no existe tu usuario, regístrate primero como profesor antes de intentar entrar.</p>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="button" class="btn-success" onclick="openPage('registrar_profesor.html')">Registrar profesor</button>
+            </div>
           </div>
+
+          <form id="loginForm" class="panel-soft section-shell">
+            <div class="form-grid">
+              <div class="field">
+                <label for="loginTeacher">Profesor</label>
+                <select id="loginTeacher" required></select>
+              </div>
+              <div class="field">
+                <label for="loginPin">PIN</label>
+                <input id="loginPin" type="password" inputmode="numeric" required>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Entrar</button>
+              <button type="button" class="btn-secondary" onclick="loginPin.value = ''">Limpiar PIN</button>
+            </div>
+          </form>
+          <p id="authMessage" class="message"></p>
         </section>
 
         <section class="preview-card section-shell">
           <div class="section-head">
             <div>
-              <h2>Estado del sistema</h2>
-              <p>Todo se guarda en local automáticamente y puedes exportar una copia de seguridad cuando quieras.</p>
+              <h2>Control de acceso</h2>
+              <p>El programa guarda automáticamente quién entra, a qué hora empieza y cuándo cierra sesión.</p>
             </div>
           </div>
           <div class="summary-box">
             <div class="summary-row">
-              <strong>Guardado</strong>
-              <span>Automático en el navegador</span>
+              <strong>Acceso requerido</strong>
+              <span>Profesor registrado con PIN</span>
             </div>
             <div class="summary-row">
-              <strong>Formato de copia</strong>
-              <span>Documento PDF descargable</span>
+              <strong>Hora de entrada</strong>
+              <span>Se registra al iniciar sesión</span>
             </div>
             <div class="summary-row">
-              <strong>Modo de uso</strong>
-              <span>Local y sin servidor</span>
+              <strong>Hora de salida</strong>
+              <span>Se registra al cerrar sesión</span>
             </div>
           </div>
+        </section>
+      </section>
+
+      <section id="appShell" class="page-stack hidden">
+        <section class="session-banner">
+          <div>
+            <strong id="currentTeacherName">Profesor conectado</strong>
+            <span id="currentTeacherMeta">Sin datos de sesión</span>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
+            <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
+          </div>
+        </section>
+
+        <section class="section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Resumen general</h2>
+              <p>Vista rápida del estado actual del programa después de iniciar sesión.</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><span>Alumnos</span><strong id="studentCount">0</strong></article>
+            <article class="stat-card"><span>Profesores</span><strong id="teacherCount">0</strong></article>
+            <article class="stat-card"><span>Jornadas</span><strong id="sessionCount">0</strong></article>
+          </div>
+        </section>
+
+        <section class="section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Áreas principales</h2>
+              <p>Todo queda separado por bloques para que el trabajo diario sea más ordenado.</p>
+            </div>
+          </div>
+          <div class="quick-grid">
+            <article class="quick-card">
+              <span class="quick-kicker">Alumnos</span>
+              <h2>Ficha completa del alumno</h2>
+              <p>Alta, consulta, edición y borrado desde un flujo más directo.</p>
+              <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Gestionar alumnos</button>
+            </article>
+            <article class="quick-card">
+              <span class="quick-kicker">Profesores</span>
+              <h2>Control del equipo</h2>
+              <p>Registro de profesores, edición de datos y control de accesos.</p>
+              <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
+            </article>
+            <article class="quick-card">
+              <span class="quick-kicker">Jornadas</span>
+              <h2>Resumen y seguimiento</h2>
+              <p>Crea jornadas, asígnales responsable y abre sus resúmenes al instante.</p>
+              <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Registrar jornada</button>
+            </article>
+            <article class="quick-card">
+              <span class="quick-kicker">Resúmenes</span>
+              <h2>Consulta rápida</h2>
+              <p>Busca una jornada concreta y deja un resumen activo para revisarlo.</p>
+              <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Ver resúmenes</button>
+            </article>
+          </div>
+        </section>
+
+        <section class="page-grid">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Acciones rápidas</h2>
+                <p>Tareas habituales agrupadas para trabajar sin desorden.</p>
+              </div>
+            </div>
+            <div class="action-grid">
+              <button type="button" class="btn-primary" onclick="openPage('form.alumno.html')">Nuevo alumno</button>
+              <button type="button" class="btn-secondary" onclick="openPage('Consultar_Alumno.html')">Consultar</button>
+              <button type="button" class="btn-secondary" onclick="openPage('Borrar_Alumno.html')">Eliminar</button>
+              <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
+            </div>
+          </section>
+
+          <section class="preview-card section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Últimos accesos</h2>
+                <p>Histórico reciente de entradas y salidas registradas en el programa.</p>
+              </div>
+            </div>
+            <div id="recentAccessList" class="compact-list"></div>
+          </section>
         </section>
       </section>
     </main>
@@ -123,8 +175,34 @@
 
   <script src="abaniko-app.js"></script>
   <script>
+    const authGate = document.getElementById("authGate");
+    const appShell = document.getElementById("appShell");
+    const loginForm = document.getElementById("loginForm");
+    const loginTeacher = document.getElementById("loginTeacher");
+    const loginPin = document.getElementById("loginPin");
+    const authMessage = document.getElementById("authMessage");
+    const currentTeacherName = document.getElementById("currentTeacherName");
+    const currentTeacherMeta = document.getElementById("currentTeacherMeta");
+    const recentAccessList = document.getElementById("recentAccessList");
+
     function openPage(page) {
       window.open(page, "_self");
+    }
+
+    function renderTeacherOptions() {
+      const teachers = AbanikoStore.load().teachers;
+      if (teachers.length === 0) {
+        loginTeacher.innerHTML = '<option value="">No hay profesores registrados</option>';
+        loginTeacher.disabled = true;
+        loginPin.disabled = true;
+        return;
+      }
+
+      loginTeacher.disabled = false;
+      loginPin.disabled = false;
+      loginTeacher.innerHTML = teachers.map((teacher) => `
+        <option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)}${teacher.subject ? ` - ${AbanikoStore.escapeHtml(teacher.subject)}` : ""}</option>
+      `).join("");
     }
 
     function renderDashboard() {
@@ -134,48 +212,90 @@
       document.getElementById("sessionCount").textContent = data.sessions.length;
     }
 
+    function renderCurrentTeacher() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (!teacher) {
+        currentTeacherName.textContent = "Profesor desconectado";
+        currentTeacherMeta.textContent = "Sin sesión activa";
+        return;
+      }
+
+      const log = AbanikoStore.getAccessLogs().find((item) => String(item.id) === String(sessionStorage.getItem("programaAbanikoCurrentAccessLogId")));
+      currentTeacherName.textContent = teacher.name;
+      currentTeacherMeta.textContent = `Entrada: ${AbanikoStore.formatDateTime(log?.loginAt || "")}`;
+    }
+
+    function renderAccessLogs() {
+      const logs = AbanikoStore.getAccessLogs().slice(0, 6);
+      if (logs.length === 0) {
+        recentAccessList.innerHTML = '<p class="empty-state">Todavía no hay accesos registrados.</p>';
+        return;
+      }
+
+      recentAccessList.innerHTML = logs.map((log) => `
+        <div class="compact-item">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+            <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
+            <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderMode() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (teacher) {
+        authGate.classList.add("hidden");
+        appShell.classList.remove("hidden");
+        renderDashboard();
+        renderCurrentTeacher();
+        renderAccessLogs();
+      } else {
+        appShell.classList.add("hidden");
+        authGate.classList.remove("hidden");
+        renderTeacherOptions();
+      }
+    }
+
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const result = AbanikoStore.loginTeacher(loginTeacher.value, loginPin.value.trim());
+      if (!result.ok) {
+        authMessage.textContent = result.message;
+        return;
+      }
+      authMessage.textContent = result.resumed ? "Sesión recuperada correctamente." : "Sesión iniciada correctamente.";
+      loginPin.value = "";
+      renderMode();
+    });
+
+    function logoutTeacher() {
+      const teacher = AbanikoStore.logoutCurrentTeacher();
+      authMessage.textContent = teacher ? `Sesión cerrada de ${teacher.name}.` : "Sesión cerrada.";
+      renderMode();
+    }
+
     function toPdfSafeText(value) {
       return String(value ?? "")
         .normalize("NFKD")
-        .replace(/[^\x20-\x7E]/g, (char) => {
-          const map = {
-            "á": "a", "à": "a", "ä": "a", "â": "a",
-            "é": "e", "è": "e", "ë": "e", "ê": "e",
-            "í": "i", "ì": "i", "ï": "i", "î": "i",
-            "ó": "o", "ò": "o", "ö": "o", "ô": "o",
-            "ú": "u", "ù": "u", "ü": "u", "û": "u",
-            "Á": "A", "À": "A", "Ä": "A", "Â": "A",
-            "É": "E", "È": "E", "Ë": "E", "Ê": "E",
-            "Í": "I", "Ì": "I", "Ï": "I", "Î": "I",
-            "Ó": "O", "Ò": "O", "Ö": "O", "Ô": "O",
-            "Ú": "U", "Ù": "U", "Ü": "U", "Û": "U",
-            "ñ": "n", "Ñ": "N", "ç": "c", "Ç": "C"
-          };
-          return map[char] || "";
-        });
+        .replace(/[^\x20-\x7E]/g, "");
     }
 
     function splitLine(text, maxLength) {
       const words = toPdfSafeText(text).split(/\s+/).filter(Boolean);
       const lines = [];
       let current = "";
-
       for (const word of words) {
         const next = current ? `${current} ${word}` : word;
         if (next.length > maxLength) {
-          if (current) {
-            lines.push(current);
-          }
+          if (current) lines.push(current);
           current = word;
         } else {
           current = next;
         }
       }
-
-      if (current) {
-        lines.push(current);
-      }
-
+      if (current) lines.push(current);
       return lines.length ? lines : [""];
     }
 
@@ -194,58 +314,34 @@
     function buildPdf(lines) {
       const pageSize = 44;
       const pages = [];
-      for (let index = 0; index < lines.length; index += pageSize) {
-        pages.push(lines.slice(index, index + pageSize));
-      }
-
+      for (let index = 0; index < lines.length; index += pageSize) pages.push(lines.slice(index, index + pageSize));
       const objects = [];
       objects.push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
-
       const pageObjectNumbers = [];
       const contentObjectNumbers = [];
       let nextObjectNumber = 3;
-
-      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
-        pageObjectNumbers.push(nextObjectNumber);
-        nextObjectNumber += 1;
-      }
-
-      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
-        contentObjectNumbers.push(nextObjectNumber);
-        nextObjectNumber += 1;
-      }
-
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) pageObjectNumbers.push(nextObjectNumber++);
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) contentObjectNumbers.push(nextObjectNumber++);
       const fontObjectNumber = nextObjectNumber;
       const kids = pageObjectNumbers.map((number) => `${number} 0 R`).join(" ");
       objects.push(`2 0 obj\n<< /Type /Pages /Count ${pages.length} /Kids [ ${kids} ] >>\nendobj\n`);
-
       for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
-        const pageNumber = pageObjectNumbers[pageIndex];
-        const contentNumber = contentObjectNumbers[pageIndex];
-        objects.push(`${pageNumber} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontObjectNumber} 0 R >> >> /Contents ${contentNumber} 0 R >>\nendobj\n`);
+        objects.push(`${pageObjectNumbers[pageIndex]} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontObjectNumber} 0 R >> >> /Contents ${contentObjectNumbers[pageIndex]} 0 R >>\nendobj\n`);
       }
-
       for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
-        const contentNumber = contentObjectNumbers[pageIndex];
-        const contentLines = pages[pageIndex]
-          .map((line) => `(${escapePdfText(line)}) Tj`)
-          .join("\nT*\n");
+        const contentLines = pages[pageIndex].map((line) => `(${escapePdfText(line)}) Tj`).join("\nT*\n");
         const stream = `BT\n/F1 11 Tf\n40 800 Td\n14 TL\n${contentLines}\nET`;
-        objects.push(`${contentNumber} 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj\n`);
+        objects.push(`${contentObjectNumbers[pageIndex]} 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj\n`);
       }
-
       objects.push(`${fontObjectNumber} 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`);
-
       let pdf = "%PDF-1.4\n";
       const offsets = [0];
       for (const object of objects) {
         offsets.push(pdf.length);
         pdf += object;
       }
-
       const xrefOffset = pdf.length;
-      pdf += `xref\n0 ${objects.length + 1}\n`;
-      pdf += "0000000000 65535 f \n";
+      pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
       for (let index = 1; index < offsets.length; index += 1) {
         pdf += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
       }
@@ -265,85 +361,17 @@
       lines.push(`Alumnos registrados: ${data.students.length}`);
       lines.push(`Profesores registrados: ${data.teachers.length}`);
       lines.push(`Jornadas registradas: ${data.sessions.length}`);
+      lines.push(`Accesos registrados: ${data.accessLogs.length}`);
       lines.push("");
-      lines.push("ALUMNOS");
+      lines.push("ACCESOS");
       lines.push("----------------------------------------");
-      if (data.students.length === 0) {
-        lines.push("Sin alumnos registrados.");
+      if (data.accessLogs.length === 0) {
+        lines.push("Sin accesos registrados.");
       } else {
-        data.students.forEach((student, index) => {
-          lines.push(...splitLine(`${index + 1}. ${student.nombre || ""} ${student.apellidos || ""} - DNI: ${student.dni || "Sin DNI"}`, 90));
-          pushField(lines, "Fecha de nacimiento", student.fecha_nacimiento);
-          pushField(lines, "Edad", student.edad);
-          pushField(lines, "Domicilio", student.domicilio);
-          pushField(lines, "Localidad", student.localidad);
-          pushField(lines, "Provincia", student.provincia);
-          pushField(lines, "Telefono casa", student.telefono_casa);
-          pushField(lines, "Movil alumno", student.movil_alumno);
-          pushField(lines, "Movil padre", student.movil_padre);
-          pushField(lines, "Movil madre", student.movil_madre);
-          pushField(lines, "Discapacidad", student.discapacidad);
-          pushField(lines, "Estudios", student.estudios);
-          pushField(lines, "Cursos", student.cursos);
-          pushField(lines, "Trabajo", student.trabajo);
-          pushField(lines, "Actividad actual", student.actividad_actual);
-          pushField(lines, "Actividad deseada", student.actividad_deseada);
-          pushField(lines, "Se mueve solo por ciudad", student.mueve_solo_ciudad ? "Si" : "No");
-          pushField(lines, "Notas tecnico", student.notas_tecnico);
-
-          const interest = student.interest || {};
-          lines.push("  Datos de interes");
-          pushField(lines, "  Objetivos", interest.objetivos);
-          pushField(lines, "  Observaciones", interest.observaciones);
-          pushField(lines, "  Persona referente", interest.referente);
-
-          const sports = student.sports || {};
-          lines.push("  Programa deportes");
-          pushField(lines, "  Practica deporte", sports.practica_deporte ? "Si" : "No");
-          pushField(lines, "  Gusto actividad fisica", sports.gusto_actividad_fisica ? "Si" : "No");
-          pushField(lines, "  Gusto jugar en grupo", sports.gusto_jugar_grupo ? "Si" : "No");
-          pushField(lines, "  Entender y seguir normas", sports.entender_seguir_normas ? "Si" : "No");
-
-          const insertion = student.insertion || {};
-          lines.push("  Programa insercion");
-          pushField(lines, "  Situacion actual", insertion.situacion);
-          pushField(lines, "  Objetivo de insercion", insertion.objetivo);
-          pushField(lines, "  Seguimiento", insertion.seguimiento);
-
-          const leisure = student.leisure || {};
-          lines.push("  Programa ocio");
-          pushField(lines, "  Aficiones", leisure.aficiones);
-          pushField(lines, "  Preferencias", leisure.preferencias);
-          pushField(lines, "  Propuesta", leisure.propuesta);
-          lines.push("");
-        });
-      }
-      lines.push("");
-      lines.push("PROFESORES");
-      lines.push("----------------------------------------");
-      if (data.teachers.length === 0) {
-        lines.push("Sin profesores registrados.");
-      } else {
-        data.teachers.forEach((teacher, index) => {
-          lines.push(...splitLine(`${index + 1}. ${teacher.name || "Sin nombre"}`, 90));
-          pushField(lines, "Asignatura", teacher.subject);
-          pushField(lines, "Email", teacher.email);
-          pushField(lines, "Telefono", teacher.phone);
-          lines.push("");
-        });
-      }
-      lines.push("");
-      lines.push("JORNADAS");
-      lines.push("----------------------------------------");
-      if (data.sessions.length === 0) {
-        lines.push("Sin jornadas registradas.");
-      } else {
-        data.sessions.forEach((session, index) => {
-          lines.push(...splitLine(`${index + 1}. ${session.title || "Sin titulo"}`, 90));
-          pushField(lines, "Fecha", session.date);
-          pushField(lines, "Profesor", session.teacherNameSnapshot);
-          pushField(lines, "Lugar", session.place);
-          pushField(lines, "Resumen", session.summary);
+        data.accessLogs.forEach((log, index) => {
+          lines.push(...splitLine(`${index + 1}. ${log.teacherName || "Profesor"}`, 90));
+          pushField(lines, "Entrada", AbanikoStore.formatDateTime(log.loginAt));
+          pushField(lines, "Salida", AbanikoStore.formatDateTime(log.logoutAt));
           lines.push("");
         });
       }
@@ -362,7 +390,8 @@
       URL.revokeObjectURL(blobUrl);
     }
 
-    renderDashboard();
+    renderMode();
+    window.logoutTeacher = logoutTeacher;
   </script>
 </body>
 </html>
