@@ -1,0 +1,375 @@
+{
+  "students": [
+    {
+      "dni": "77176710A",
+      "createdAt": "2026-05-06T22:33:00.523Z",
+      "updatedAt": "2026-05-06T22:47:06.847Z",
+      "nombre": "Mario",
+      "apellidos": "Sanchez Obrera",
+      "fecha_nacimiento": "1999-07-16",
+      "edad": "27",
+      "sexo": "Masculino",
+      "domicilio": "Cadi",
+      "localidad": "Cadiz",
+      "provincia": "Cadiz",
+      "telefono_casa": "956874214",
+      "movil_alumno": "633082500",
+      "movil_padre": "666660616",
+      "movil_madre": "451784357",
+      "discapacidad": "Down",
+      "estudios": "Ninguno",
+      "cursos": "Todos",
+      "trabajo": "No",
+      "actividad_actual": "Insercion",
+      "actividad_deseada": "Deporete",
+      "mueve_solo_ciudad": true,
+      "notas_tecnico": "",
+      "interest": {},
+      "sports": {
+        "practica_deporte": true,
+        "gusto_actividad_fisica": false,
+        "gusto_jugar_grupo": false,
+        "entender_seguir_normas": true
+      },
+      "insertion": {},
+      "leisure": {}
+    }
+  ],
+  "teachers": [
+    {
+      "id": 1778067149021,
+      "name": "emilio",
+      "subject": "informatica",
+      "email": "abaniko9@gmail.com",
+      "phone": "5001475289",
+      "pin": "7222",
+      "role": "admin",
+      "createdAt": "2026-05-06T11:31:40.051Z",
+      "updatedAt": "2026-05-06T22:46:31.616Z"
+    },
+    {
+      "id": 1778106998765,
+      "name": "Maria Angeles",
+      "subject": "admin",
+      "email": "abaniko@gmail.com",
+      "phone": "5001475289",
+      "pin": "1234",
+      "role": "admin",
+      "createdAt": "2026-05-06T22:36:16.504Z",
+      "updatedAt": "2026-05-06T22:45:50.679Z"
+    },
+    {
+      "id": 1778107616372,
+      "name": "David",
+      "subject": "Practica",
+      "email": "abaniko91@gmail.com",
+      "phone": "633082500",
+      "pin": "9876",
+      "role": "admin",
+      "createdAt": "2026-05-06T22:45:26.662Z",
+      "updatedAt": "2026-05-06T22:45:26.662Z"
+    },
+    {
+      "id": 1778107958532,
+      "name": "Chari",
+      "subject": "Insercion",
+      "email": "abaniko71@gmail.com",
+      "phone": "5001475289",
+      "pin": "0000",
+      "role": "profesor",
+      "createdAt": "2026-05-06T22:51:22.790Z",
+      "updatedAt": "2026-05-06T22:51:22.790Z"
+    }
+  ],
+  "sessions": [
+    {
+      "id": 1778106970718,
+      "createdAt": "2026-05-06T22:34:38.081Z",
+      "title": "Concierto Falla",
+      "date": "2026-05-28",
+      "place": "Falla",
+      "teacherId": "1778067149021",
+      "summary": "Concierto para programa de insercion",
+      "teacherNameSnapshot": "emilio",
+      "updatedAt": "2026-05-06T22:34:38.081Z"
+    }
+  ],
+  "accessLogs": [
+    {
+      "id": 1778063375851,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T10:29:01.214Z",
+      "logoutAt": "2026-05-06T10:49:50.133Z",
+      "createdAt": "2026-05-06T10:29:01.214Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778064670005,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T10:49:57.404Z",
+      "logoutAt": "2026-05-06T10:50:22.955Z",
+      "createdAt": "2026-05-06T10:49:57.404Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778066900557,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T11:27:19.518Z",
+      "logoutAt": "2026-05-06T11:28:58.703Z",
+      "createdAt": "2026-05-06T11:27:19.518Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778066956630,
+      "teacherId": 1778066917401,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T11:29:03.536Z",
+      "logoutAt": "2026-05-06T11:29:47.141Z",
+      "createdAt": "2026-05-06T11:29:03.536Z",
+      "updatedAt": "2026-05-06T11:30:32.173Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778067110735,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T11:30:12.154Z",
+      "logoutAt": "2026-05-06T11:30:52.710Z",
+      "createdAt": "2026-05-06T11:30:12.154Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778067173461,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T11:32:27.632Z",
+      "logoutAt": "2026-05-06T11:32:51.822Z",
+      "createdAt": "2026-05-06T11:32:27.632Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778067231827,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T11:32:57.062Z",
+      "logoutAt": "2026-05-06T11:33:30.267Z",
+      "createdAt": "2026-05-06T11:32:57.062Z",
+      "updatedAt": "2026-05-06T11:33:30.267Z"
+    },
+    {
+      "id": 1778067270057,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T11:33:39.542Z",
+      "logoutAt": "2026-05-06T11:36:15.131Z",
+      "createdAt": "2026-05-06T11:33:39.542Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778067422327,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T11:36:15.131Z",
+      "logoutAt": "2026-05-06T22:09:33.907Z",
+      "createdAt": "2026-05-06T11:36:15.131Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778105232351,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:07:09.714Z",
+      "logoutAt": "2026-05-06T22:10:27.578Z",
+      "createdAt": "2026-05-06T22:07:09.714Z",
+      "updatedAt": "2026-05-06T22:10:27.578Z"
+    },
+    {
+      "id": 1778105469621,
+      "teacherId": 1778063402941,
+      "teacherName": "maria angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:09:33.907Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-06T22:09:33.907Z",
+      "updatedAt": "2026-05-06T22:10:01.325Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1778105492937,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:10:27.578Z",
+      "logoutAt": "2026-05-06T22:30:55.768Z",
+      "createdAt": "2026-05-06T22:10:27.578Z",
+      "updatedAt": "2026-05-06T22:30:55.768Z"
+    },
+    {
+      "id": 1778106721728,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:30:55.768Z",
+      "logoutAt": "2026-05-06T22:35:46.549Z",
+      "createdAt": "2026-05-06T22:30:55.768Z",
+      "updatedAt": "2026-05-06T22:35:46.549Z"
+    },
+    {
+      "id": 1778107042198,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:35:46.549Z",
+      "logoutAt": "2026-05-06T22:35:50.344Z",
+      "createdAt": "2026-05-06T22:35:46.549Z",
+      "updatedAt": "2026-05-06T22:35:50.344Z"
+    },
+    {
+      "id": 1778106997284,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:36:36.139Z",
+      "logoutAt": "2026-05-06T22:36:48.575Z",
+      "createdAt": "2026-05-06T22:36:36.139Z",
+      "updatedAt": "2026-05-06T22:36:48.575Z"
+    },
+    {
+      "id": 1778107241039,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:40:31.292Z",
+      "logoutAt": "2026-05-06T22:44:55.626Z",
+      "createdAt": "2026-05-06T22:40:31.292Z",
+      "updatedAt": "2026-05-06T22:44:55.626Z"
+    },
+    {
+      "id": 1778107331487,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:40:54.021Z",
+      "logoutAt": "2026-05-06T22:41:35.136Z",
+      "createdAt": "2026-05-06T22:40:54.021Z",
+      "updatedAt": "2026-05-06T22:41:35.136Z"
+    },
+    {
+      "id": 1778107359902,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:41:44.426Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-06T22:41:44.426Z",
+      "updatedAt": "2026-05-06T22:41:44.426Z"
+    },
+    {
+      "id": 1778107594042,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:44:55.626Z",
+      "logoutAt": "2026-05-06T22:45:35.113Z",
+      "createdAt": "2026-05-06T22:44:55.626Z",
+      "updatedAt": "2026-05-06T22:45:35.113Z"
+    },
+    {
+      "id": 1778107624618,
+      "teacherId": 1778107616372,
+      "teacherName": "David",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:45:41.369Z",
+      "logoutAt": "2026-05-06T22:47:50.985Z",
+      "createdAt": "2026-05-06T22:45:41.369Z",
+      "updatedAt": "2026-05-06T22:47:50.985Z"
+    },
+    {
+      "id": 1778107724112,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:47:55.447Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-06T22:47:55.447Z",
+      "updatedAt": "2026-05-06T22:47:55.447Z"
+    },
+    {
+      "id": 1778107918530,
+      "teacherId": 1778107616372,
+      "teacherName": "David",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:50:29.102Z",
+      "logoutAt": "2026-05-06T22:51:51.481Z",
+      "createdAt": "2026-05-06T22:50:29.102Z",
+      "updatedAt": "2026-05-06T22:51:51.481Z"
+    },
+    {
+      "id": 1778108002501,
+      "teacherId": 1778107958532,
+      "teacherName": "Chari",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:51:58.143Z",
+      "logoutAt": "2026-05-06T22:52:22.491Z",
+      "createdAt": "2026-05-06T22:51:58.143Z",
+      "updatedAt": "2026-05-06T22:52:22.491Z"
+    },
+    {
+      "id": 1778108027425,
+      "teacherId": 1778107616372,
+      "teacherName": "David",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-06T22:52:44.447Z",
+      "logoutAt": "2026-05-06T22:52:50.136Z",
+      "createdAt": "2026-05-06T22:52:44.447Z",
+      "updatedAt": "2026-05-06T22:52:50.136Z"
+    },
+    {
+      "id": 1778108057383,
+      "teacherId": 1778107958532,
+      "teacherName": "Chari",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-06T22:52:55.625Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-06T22:52:55.625Z",
+      "updatedAt": "2026-05-06T22:52:55.625Z"
+    }
+  ],
+  "absences": [
+    {
+      "id": 1778107845193,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "admin",
+      "type": "LR",
+      "date": "2026-05-06",
+      "notes": "",
+      "recordedById": 1778107616372,
+      "recordedByName": "David",
+      "recordedByRole": "admin",
+      "createdAt": "2026-05-06T22:50:42.361Z",
+      "updatedAt": "2026-05-06T22:50:42.361Z"
+    }
+  ],
+  "updatedAt": "2026-05-06T22:53:21.561Z"
+}

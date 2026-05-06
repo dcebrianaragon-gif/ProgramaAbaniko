@@ -242,8 +242,8 @@
     </main>
   </div>
 
-  <script src="supabase-config.js"></script>
-  <script src="abaniko-app.js"></script>
+  <script src="config/supabase-config.js"></script>
+  <script src="core/abaniko-app.js"></script>
   <script>
     const authGate = document.getElementById("authGate");
     const appShell = document.getElementById("appShell");
@@ -623,11 +623,11 @@
     }
 
     AbanikoStore.startBackendAutoSync(() => {
-      renderSystemStatus();
+      renderMode();
     });
 
     AbanikoStore.startCloudAutoSync(() => {
-      renderSystemStatus();
+      renderMode();
     });
 
     renderMode();

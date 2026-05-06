@@ -651,16 +651,16 @@ const AbanikoStore = (() => {
     if (!currentTeacher || !targetTeacher) {
       return false;
     }
-    return currentTeacher.role === "admin";
+    if (currentTeacher.role === "admin") {
+      return targetTeacher.role !== "admin";
+    }
+    return targetTeacher.role === "admin";
   }
 
   function registerTeacherAbsence(payload) {
     const currentTeacher = getCurrentTeacher();
     if (!currentTeacher) {
       return { ok: false, message: "Debes iniciar sesion para registrar una falta." };
-    }
-    if (currentTeacher.role !== "admin") {
-      return { ok: false, message: "Solo un administrador puede registrar faltas del profesorado." };
     }
 
     const teacher = getTeacherById(payload.teacherId);

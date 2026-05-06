@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "description": "Programa Abaniko con backend local y guardado inmediato en JSON.",
-  "main": "server.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node backend/server.js"
   }
 }
