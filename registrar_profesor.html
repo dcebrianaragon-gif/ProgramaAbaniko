@@ -11,7 +11,7 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Profesores y acceso</h1>
-        <p>Registra profesores, configura su PIN de entrada y consulta el histórico de accesos por profesor.</p>
+        <p>Registra profesores, asigna su rol, configura el PIN de entrada y consulta su histórico de accesos.</p>
       </section>
 
       <section class="session-banner">
@@ -19,7 +19,7 @@
           <strong id="currentTeacherName">Profesor conectado</strong>
           <span id="currentTeacherMeta">Sin sesión activa</span>
         </div>
-        <div class="button-row">
+        <div class="button-row" id="topActions">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Jornadas</button>
           <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
@@ -33,6 +33,7 @@
               <h2 id="formTitle">Nuevo profesor</h2>
               <p>Cada profesor necesita un PIN para poder entrar en la aplicación.</p>
             </div>
+            <span id="roleHelp" class="inline-badge">El primer profesor queda como administrador</span>
           </div>
 
           <form id="teacherForm" class="panel-soft section-shell">
@@ -42,7 +43,7 @@
                 <input id="teacherName" name="teacherName" type="text" required>
               </div>
               <div class="field">
-                <label for="teacherSubject">Asignatura</label>
+                <label for="teacherSubject">Área o asignatura</label>
                 <input id="teacherSubject" name="teacherSubject" type="text" required>
               </div>
               <div class="field">
@@ -56,6 +57,13 @@
               <div class="field">
                 <label for="teacherPin">PIN de acceso</label>
                 <input id="teacherPin" name="teacherPin" type="password" inputmode="numeric" required>
+              </div>
+              <div class="field">
+                <label for="teacherRole">Rol</label>
+                <select id="teacherRole" name="teacherRole">
+                  <option value="profesor">Profesor</option>
+                  <option value="admin">Administrador</option>
+                </select>
               </div>
             </div>
             <div class="button-row">
@@ -90,6 +98,7 @@
     </main>
   </div>
 
+  <script src="supabase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     const form = document.getElementById("teacherForm");
@@ -97,24 +106,38 @@
     const teacherCount = document.getElementById("teacherCount");
     const accessList = document.getElementById("accessList");
     const formTitle = document.getElementById("formTitle");
+    const roleHelp = document.getElementById("roleHelp");
     const message = document.getElementById("message");
     const currentTeacherName = document.getElementById("currentTeacherName");
     const currentTeacherMeta = document.getElementById("currentTeacherMeta");
+    const topActions = document.getElementById("topActions");
     let editingId = null;
-    const hasSession = Boolean(AbanikoStore.getCurrentTeacher());
 
     function openPage(page) {
       window.open(page, "_self");
+    }
+
+    function hasSession() {
+      return Boolean(AbanikoStore.getCurrentTeacher());
+    }
+
+    function canManageRoles() {
+      return AbanikoStore.isCurrentTeacherAdmin() || AbanikoStore.load().teachers.length === 0;
+    }
+
+    function canManageTeachers() {
+      return AbanikoStore.isCurrentTeacherAdmin() || AbanikoStore.load().teachers.length === 0;
     }
 
     function renderCurrentTeacher() {
       const teacher = AbanikoStore.getCurrentTeacher();
       if (!teacher) {
         currentTeacherName.textContent = "Registro previo al acceso";
-        currentTeacherMeta.textContent = "Crea primero tu profesor y luego vuelve al inicio para entrar";
+        currentTeacherMeta.textContent = "Puedes crear un profesor y luego volver al inicio para iniciar sesión";
+        topActions.innerHTML = '<button type="button" class="btn-secondary" onclick="openPage(\'Index.html\')">Volver al inicio</button>';
         return;
       }
-      currentTeacherName.textContent = teacher.name;
+      currentTeacherName.textContent = `${teacher.name} - ${AbanikoStore.formatRole(teacher.role)}`;
       const latestLog = AbanikoStore.getTeacherAccessLogs(teacher.id)[0];
       currentTeacherMeta.textContent = `Entrada actual: ${AbanikoStore.formatDateTime(latestLog?.loginAt || "")}`;
     }
@@ -124,13 +147,33 @@
       clearTimeout(showMessage.timeoutId);
       showMessage.timeoutId = setTimeout(() => {
         message.textContent = "";
-      }, 2400);
+      }, 2600);
     }
 
     function resetFormMode() {
       editingId = null;
       formTitle.textContent = "Nuevo profesor";
       form.reset();
+      renderRoleField();
+    }
+
+    function renderRoleField() {
+      const teachers = AbanikoStore.load().teachers;
+      const roleField = form.teacherRole;
+      if (teachers.length === 0) {
+        roleField.value = "admin";
+        roleField.disabled = true;
+        roleHelp.textContent = "El primer profesor queda como administrador";
+        return;
+      }
+      if (!canManageRoles()) {
+        roleField.value = "profesor";
+        roleField.disabled = true;
+        roleHelp.textContent = "Solo un administrador puede cambiar roles";
+        return;
+      }
+      roleField.disabled = false;
+      roleHelp.textContent = "Los administradores pueden gestionar profesores y permisos";
     }
 
     function renderTeachers() {
@@ -146,15 +189,18 @@
           <div>
             <strong>${AbanikoStore.escapeHtml(teacher.name)}</strong>
             <div class="card-lines">
-              <span>Asignatura: ${AbanikoStore.escapeHtml(teacher.subject || "Sin asignatura")}</span>
+              <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(teacher.role))}</span>
+              <span>Área: ${AbanikoStore.escapeHtml(teacher.subject || "Sin área")}</span>
               <span>Email: ${AbanikoStore.escapeHtml(teacher.email || "No indicado")}</span>
               <span>Teléfono: ${AbanikoStore.escapeHtml(teacher.phone || "No indicado")}</span>
               <span>PIN configurado: ${teacher.pin ? "Sí" : "No"}</span>
             </div>
           </div>
           <div class="actions">
-            <button type="button" class="btn-secondary" onclick="editTeacher(${teacher.id})">Editar</button>
-            <button type="button" class="btn-danger" onclick="deleteTeacher(${teacher.id})">Eliminar</button>
+            ${canManageTeachers() ? `
+              <button type="button" class="btn-secondary" onclick="editTeacher(${teacher.id})">Editar</button>
+              <button type="button" class="btn-danger" onclick="deleteTeacher(${teacher.id})">Eliminar</button>
+            ` : '<span class="status-pill">Solo lectura</span>'}
           </div>
         </article>
       `).join("");
@@ -170,6 +216,7 @@
         <div class="compact-item">
           <div>
             <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+            <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(log.teacherRole || "profesor"))}</span>
             <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
             <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
           </div>
@@ -184,16 +231,21 @@
         subject: form.teacherSubject.value.trim(),
         email: form.teacherEmail.value.trim(),
         phone: form.teacherPhone.value.trim(),
-        pin: form.teacherPin.value.trim()
+        pin: form.teacherPin.value.trim(),
+        role: form.teacherRole.value
       };
       if (!payload.name || !payload.subject || !payload.pin) {
-        showMessage("Completa nombre, asignatura y PIN.");
+        showMessage("Completa nombre, área y PIN.");
         return;
+      }
+      if (!canManageRoles()) {
+        payload.role = "profesor";
       }
       AbanikoStore.upsertTeacher(payload, editingId);
       renderTeachers();
+      renderAccessLogs();
       resetFormMode();
-      if (hasSession) {
+      if (hasSession()) {
         showMessage("Profesor guardado correctamente.");
       } else {
         showMessage("Profesor guardado correctamente. Ahora vuelve al inicio para iniciar sesión.");
@@ -205,6 +257,10 @@
     });
 
     function editTeacher(id) {
+      if (!canManageTeachers()) {
+        showMessage("Solo un administrador puede editar profesores.");
+        return;
+      }
       const teacher = AbanikoStore.getTeacherById(id);
       if (!teacher) return;
       editingId = id;
@@ -214,15 +270,25 @@
       form.teacherEmail.value = teacher.email || "";
       form.teacherPhone.value = teacher.phone || "";
       form.teacherPin.value = teacher.pin || "";
+      renderRoleField();
+      form.teacherRole.value = teacher.role || "profesor";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function deleteTeacher(id) {
-      AbanikoStore.removeTeacher(id);
+      if (!canManageTeachers()) {
+        showMessage("Solo un administrador puede eliminar profesores.");
+        return;
+      }
+      const result = AbanikoStore.removeTeacher(id);
+      showMessage(result.message);
+      if (!result.ok) {
+        return;
+      }
       renderTeachers();
       renderAccessLogs();
+      renderRoleField();
       if (editingId === id) resetFormMode();
-      showMessage("Profesor eliminado correctamente.");
     }
 
     function logoutTeacher() {
@@ -234,16 +300,16 @@
     window.deleteTeacher = deleteTeacher;
     window.logoutTeacher = logoutTeacher;
 
+    AbanikoStore.startCloudAutoSync(() => {
+      renderTeachers();
+      renderAccessLogs();
+      renderRoleField();
+    });
+
     renderCurrentTeacher();
+    renderRoleField();
     renderTeachers();
     renderAccessLogs();
-
-    if (!hasSession) {
-      const navButtons = document.querySelector(".session-banner .button-row");
-      navButtons.innerHTML = `
-        <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Volver al inicio</button>
-      `;
-    }
   </script>
 </body>
 </html>

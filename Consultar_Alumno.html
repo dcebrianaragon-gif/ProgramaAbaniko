@@ -8,23 +8,63 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Consultar alumnos</h1><p>Busca por nombre, apellidos, DNI, fecha de nacimiento, edad o sexo y abre la ficha completa del alumno.</p></section>
-    <section class="panel">
-      <div class="button-row" style="margin-bottom: 16px;">
+    <section class="hero">
+      <h1>Consultar alumnos</h1>
+      <p>Busca por texto general o usa filtros separados por fecha de nacimiento, edad, sexo y localidad.</p>
+    </section>
+
+    <section class="panel section-shell">
+      <div class="button-row">
         <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
-        <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Menu alumno</button>
+        <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Menú alumno</button>
       </div>
-      <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" placeholder="Nombre, apellidos, DNI, fecha, edad o sexo"></div>
-      <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 alumnos</p></div>
+
+      <div class="filter-grid">
+        <div class="field">
+          <label for="searchInput">Texto general</label>
+          <input id="searchInput" placeholder="Nombre, apellidos, DNI o actividad">
+        </div>
+        <div class="field">
+          <label for="birthInput">Fecha de nacimiento</label>
+          <input id="birthInput" type="date">
+        </div>
+        <div class="field">
+          <label for="ageInput">Edad</label>
+          <input id="ageInput" type="number" min="0" placeholder="Ej. 16">
+        </div>
+        <div class="field">
+          <label for="sexInput">Sexo</label>
+          <select id="sexInput">
+            <option value="">Todos</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cityInput">Localidad</label>
+          <input id="cityInput" placeholder="Ej. Córdoba">
+        </div>
+      </div>
+
+      <div class="list-header">
+        <h2>Resultados</h2>
+        <p id="resultInfo">0 alumnos</p>
+      </div>
       <div id="studentList" class="list"></div>
     </section>
   </div>
+  <script src="supabase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
     function go(page) { window.open(page, "_self"); }
     const searchInput = document.getElementById("searchInput");
+    const birthInput = document.getElementById("birthInput");
+    const ageInput = document.getElementById("ageInput");
+    const sexInput = document.getElementById("sexInput");
+    const cityInput = document.getElementById("cityInput");
     const resultInfo = document.getElementById("resultInfo");
     const studentList = document.getElementById("studentList");
 
@@ -38,17 +78,34 @@
       go("editar_alumno.html");
     }
 
+    function matchesText(student, term) {
+      if (!term) return true;
+      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${student.actividad_deseada || ""} ${student.localidad || ""}`.toLowerCase();
+      return bag.includes(term);
+    }
+
     function renderStudents() {
       const term = searchInput.value.trim().toLowerCase();
+      const birth = birthInput.value;
+      const age = ageInput.value.trim();
+      const sex = sexInput.value.trim().toLowerCase();
+      const city = cityInput.value.trim().toLowerCase();
+
       const students = AbanikoStore.load().students.filter((student) => {
-        const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${student.fecha_nacimiento || ""} ${student.edad || ""} ${student.sexo || ""}`.toLowerCase();
-        return bag.includes(term);
+        if (!matchesText(student, term)) return false;
+        if (birth && String(student.fecha_nacimiento || "") !== birth) return false;
+        if (age && String(student.edad || "") !== age) return false;
+        if (sex && String(student.sexo || "").toLowerCase() !== sex) return false;
+        if (city && !String(student.localidad || "").toLowerCase().includes(city)) return false;
+        return true;
       });
+
       resultInfo.textContent = `${students.length} alumnos`;
       if (students.length === 0) {
-        studentList.innerHTML = '<p class="empty-state">No hay alumnos que coincidan con la busqueda.</p>';
+        studentList.innerHTML = '<p class="empty-state">No hay alumnos que coincidan con los filtros.</p>';
         return;
       }
+
       studentList.innerHTML = students.map((student) => `
         <article class="card">
           <div>
@@ -72,7 +129,12 @@
 
     window.openStudent = openStudent;
     window.editStudent = editStudent;
-    searchInput.addEventListener("input", renderStudents);
+    [searchInput, birthInput, ageInput, sexInput, cityInput].forEach((element) => {
+      element.addEventListener("input", renderStudents);
+      element.addEventListener("change", renderStudents);
+    });
+
+    AbanikoStore.startCloudAutoSync(renderStudents);
     renderStudents();
   </script>
 </body>

@@ -1,3 +1,8 @@
 @echo off
-set "APP_PATH=%~dp0Index.html"
-start "" "%APP_PATH%"
+set "APP_DIR=%~dp0"
+set "APP_URL=http://127.0.0.1:3000"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$conn = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue; if (-not $conn) { Start-Process -WindowStyle Hidden cmd.exe -ArgumentList '/c','cd /d ""%APP_DIR%"" && node server.js' }; Start-Sleep -Milliseconds 1500"
+
+start "" "%APP_URL%"

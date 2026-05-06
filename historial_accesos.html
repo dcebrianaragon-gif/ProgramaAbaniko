@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial de Accesos</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <h1>Historial de accesos</h1>
+        <p>Consulta quién ha entrado, a qué hora y cuándo salió, con filtros por profesor y fecha.</p>
+      </section>
+
+      <section class="panel section-shell">
+        <div class="button-row">
+          <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
+          <button type="button" class="btn-secondary" onclick="go('registrar_profesor.html')">Profesores</button>
+        </div>
+
+        <div class="filter-grid">
+          <div class="field">
+            <label for="teacherFilter">Profesor</label>
+            <select id="teacherFilter">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dateFilter">Fecha</label>
+            <input id="dateFilter" type="date">
+          </div>
+          <div class="field">
+            <label for="stateFilter">Estado</label>
+            <select id="stateFilter">
+              <option value="">Todos</option>
+              <option value="abierta">Sesión abierta</option>
+              <option value="cerrada">Sesión cerrada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="list-header">
+          <h2>Registros</h2>
+          <p id="resultInfo">0 accesos</p>
+        </div>
+        <div id="accessList" class="list"></div>
+      </section>
+    </main>
+  </div>
+  <script src="supabase-config.js"></script>
+  <script src="abaniko-app.js"></script>
+  <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
+    function go(page) { window.open(page, "_self"); }
+    const teacherFilter = document.getElementById("teacherFilter");
+    const dateFilter = document.getElementById("dateFilter");
+    const stateFilter = document.getElementById("stateFilter");
+    const resultInfo = document.getElementById("resultInfo");
+    const accessList = document.getElementById("accessList");
+
+    function renderTeacherOptions() {
+      const teachers = AbanikoStore.load().teachers;
+      teacherFilter.innerHTML = ['<option value="">Todos</option>', ...teachers.map((teacher) =>
+        `<option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)}</option>`
+      )].join("");
+    }
+
+    function renderLogs() {
+      const teacherId = teacherFilter.value;
+      const dateValue = dateFilter.value;
+      const stateValue = stateFilter.value;
+      const logs = AbanikoStore.getAccessLogs().filter((log) => {
+        if (teacherId && String(log.teacherId) !== String(teacherId)) return false;
+        if (dateValue && String(log.loginAt || "").slice(0, 10) !== dateValue) return false;
+        if (stateValue === "abierta" && log.logoutAt) return false;
+        if (stateValue === "cerrada" && !log.logoutAt) return false;
+        return true;
+      });
+
+      resultInfo.textContent = `${logs.length} accesos`;
+      if (logs.length === 0) {
+        accessList.innerHTML = '<p class="empty-state">No hay accesos que coincidan con los filtros.</p>';
+        return;
+      }
+
+      accessList.innerHTML = logs.map((log) => `
+        <article class="card">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+            <div class="card-lines">
+              <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(log.teacherRole || "profesor"))}</span>
+              <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
+              <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
+              <span>Estado: ${log.logoutAt ? "Cerrada" : "Abierta"}</span>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    [teacherFilter, dateFilter, stateFilter].forEach((element) => {
+      element.addEventListener("change", renderLogs);
+      element.addEventListener("input", renderLogs);
+    });
+
+    AbanikoStore.startCloudAutoSync(() => {
+      renderTeacherOptions();
+      renderLogs();
+    });
+
+    renderTeacherOptions();
+    renderLogs();
+  </script>
+</body>
+</html>
