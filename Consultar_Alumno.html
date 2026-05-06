@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar Alumnos</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <section class="hero"><h1>Consultar alumnos</h1><p>Busca por nombre, apellidos o DNI y abre la ficha completa del alumno.</p></section>
+    <section class="panel">
+      <div class="button-row" style="margin-bottom: 16px;">
+        <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
+        <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Menu alumno</button>
+      </div>
+      <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" placeholder="Nombre, apellidos o DNI"></div>
+      <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 alumnos</p></div>
+      <div id="studentList" class="list"></div>
+    </section>
+  </div>
+  <script src="abaniko-app.js"></script>
+  <script>
+    function go(page) { window.open(page, "_self"); }
+    const searchInput = document.getElementById("searchInput");
+    const resultInfo = document.getElementById("resultInfo");
+    const studentList = document.getElementById("studentList");
+
+    function openStudent(dni) {
+      AbanikoStore.setSelectedStudent(dni);
+      go("mostrar_datos_alumnos.html");
+    }
+
+    function editStudent(dni) {
+      AbanikoStore.setStudentToEdit(dni);
+      go("editar_alumno.html");
+    }
+
+    function renderStudents() {
+      const term = searchInput.value.trim().toLowerCase();
+      const students = AbanikoStore.load().students.filter((student) => {
+        const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""}`.toLowerCase();
+        return bag.includes(term);
+      });
+      resultInfo.textContent = `${students.length} alumnos`;
+      if (students.length === 0) {
+        studentList.innerHTML = '<p class="empty-state">No hay alumnos que coincidan con la busqueda.</p>';
+        return;
+      }
+      studentList.innerHTML = students.map((student) => `
+        <article class="card">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(student.nombre || "")} ${AbanikoStore.escapeHtml(student.apellidos || "")}</strong>
+            <div class="card-lines">
+              <span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span>
+              <span>Localidad: ${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span>
+              <span>Actividad deseada: ${AbanikoStore.escapeHtml(student.actividad_deseada || "No indicada")}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-success" onclick="openStudent('${student.dni}')">Ver ficha</button>
+            <button type="button" class="btn-secondary" onclick="editStudent('${student.dni}')">Editar</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    window.openStudent = openStudent;
+    window.editStudent = editStudent;
+    searchInput.addEventListener("input", renderStudents);
+    renderStudents();
+  </script>
+</body>
+</html>

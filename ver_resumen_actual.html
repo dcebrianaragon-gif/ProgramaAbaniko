@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen Actual</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <section class="hero"><h1>Resumen actual</h1><p>Detalle completo de la jornada seleccionada.</p></section>
+    <section class="panel">
+      <div class="button-row" style="margin-bottom: 16px;">
+        <button type="button" class="btn-secondary" onclick="go('seleccionar_resumen.html')">Volver</button>
+        <button type="button" class="btn-secondary" onclick="go('registrar_jornada.html')">Gestionar jornadas</button>
+      </div>
+      <div id="content" class="summary-box"></div>
+    </section>
+  </div>
+  <script src="abaniko-app.js"></script>
+  <script>
+    function go(page) { window.open(page, "_self"); }
+    function row(label, value) {
+      return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(value || "No indicado")}</span></div>`;
+    }
+    const content = document.getElementById("content");
+    const session = AbanikoStore.getSelectedSession();
+    if (!session) {
+      content.innerHTML = '<p class="empty-state">No hay jornadas seleccionadas.</p>';
+    } else {
+      content.innerHTML = [
+        row("Jornada", session.title),
+        row("Fecha", AbanikoStore.formatDate(session.date)),
+        row("Profesor responsable", session.teacherNameSnapshot || "Sin profesor asignado"),
+        row("Lugar", session.place || "No indicado"),
+        row("Resumen", session.summary || "Sin resumen")
+      ].join("");
+    }
+  </script>
+</body>
+</html>

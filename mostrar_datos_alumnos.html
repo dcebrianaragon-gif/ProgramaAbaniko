@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Alumno</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <section class="hero"><h1>Ficha del alumno</h1><p>Vista completa de la información guardada en todos los formularios.</p></section>
+    <section class="panel">
+      <div class="button-row" style="margin-bottom: 16px;">
+        <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Volver</button>
+        <button type="button" class="btn-secondary" onclick="editCurrent()">Editar</button>
+      </div>
+      <div id="content" class="summary-box"></div>
+    </section>
+  </div>
+  <script src="abaniko-app.js"></script>
+  <script>
+    function go(page) { window.open(page, "_self"); }
+    function editCurrent() {
+      const student = AbanikoStore.getSelectedStudent();
+      if (!student) return;
+      AbanikoStore.setStudentToEdit(student.dni);
+      go("editar_alumno.html");
+    }
+    function row(label, value) {
+      return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(value || "No indicado")}</span></div>`;
+    }
+    const student = AbanikoStore.getSelectedStudent();
+    const content = document.getElementById("content");
+    if (!student) {
+      content.innerHTML = '<p class="empty-state">No hay ningun alumno seleccionado.</p>';
+    } else {
+      content.innerHTML = [
+        row("Nombre", `${student.nombre || ""} ${student.apellidos || ""}`.trim()),
+        row("DNI", student.dni),
+        row("Fecha de nacimiento", student.fecha_nacimiento),
+        row("Edad", student.edad),
+        row("Domicilio", student.domicilio),
+        row("Localidad", student.localidad),
+        row("Provincia", student.provincia),
+        row("Telefono casa", student.telefono_casa),
+        row("Movil alumno", student.movil_alumno),
+        row("Movil padre", student.movil_padre),
+        row("Movil madre", student.movil_madre),
+        row("Discapacidad", student.discapacidad),
+        row("Estudios", student.estudios),
+        row("Cursos", student.cursos),
+        row("Trabajo", student.trabajo),
+        row("Actividad actual", student.actividad_actual),
+        row("Actividad deseada", student.actividad_deseada),
+        row("Notas tecnico", student.notas_tecnico),
+        row("Datos de interes", JSON.stringify(student.interest || {})),
+        row("Programa deportes", JSON.stringify(student.sports || {})),
+        row("Programa insercion", JSON.stringify(student.insertion || {})),
+        row("Programa ocio", JSON.stringify(student.leisure || {}))
+      ].join("");
+    }
+  </script>
+</body>
+</html>

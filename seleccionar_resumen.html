@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seleccionar Resumen</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <section class="hero"><h1>Seleccionar resumen</h1><p>Busca entre las jornadas guardadas y deja una activa para verla en detalle.</p></section>
+    <section class="panel">
+      <div class="button-row" style="margin-bottom: 16px;">
+        <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
+        <button type="button" class="btn-secondary" onclick="go('registrar_jornada.html')">Jornadas</button>
+      </div>
+      <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" placeholder="Nombre, fecha, lugar o profesor"></div>
+      <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 jornadas</p></div>
+      <div id="sessionList" class="list"></div>
+    </section>
+  </div>
+  <script src="abaniko-app.js"></script>
+  <script>
+    function go(page) { window.open(page, "_self"); }
+    const searchInput = document.getElementById("searchInput");
+    const resultInfo = document.getElementById("resultInfo");
+    const sessionList = document.getElementById("sessionList");
+    function openSession(id) {
+      AbanikoStore.setSelectedSession(id);
+      go("ver_resumen_actual.html");
+    }
+    function editSession(id) {
+      AbanikoStore.setSelectedSession(id);
+      AbanikoStore.setSessionToEdit(id);
+      go("registrar_jornada.html");
+    }
+    function renderSessions() {
+      const term = searchInput.value.trim().toLowerCase();
+      const sessions = AbanikoStore.load().sessions.filter((session) => {
+        const bag = `${session.title || ""} ${session.date || ""} ${session.place || ""} ${session.summary || ""} ${session.teacherNameSnapshot || ""}`.toLowerCase();
+        return bag.includes(term);
+      });
+      resultInfo.textContent = `${sessions.length} jornadas`;
+      if (sessions.length === 0) {
+        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la busqueda.</p>';
+        return;
+      }
+      sessionList.innerHTML = sessions.map((session) => `
+        <article class="card">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(session.title || "")}</strong>
+            <div class="card-lines">
+              <span>Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+              <span>Profesor: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
+              <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-success" onclick="openSession(${session.id})">Abrir</button>
+            <button type="button" class="btn-secondary" onclick="editSession(${session.id})">Editar</button>
+          </div>
+        </article>
+      `).join("");
+    }
+    window.openSession = openSession;
+    window.editSession = editSession;
+    searchInput.addEventListener("input", renderSessions);
+    renderSessions();
+  </script>
+</body>
+</html>

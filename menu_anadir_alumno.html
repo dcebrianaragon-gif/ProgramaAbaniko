@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu de Alumno</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Gestión de alumnos</h1>
+      <p>Elige qué parte de la ficha del alumno quieres rellenar o consulta los registros guardados.</p>
+    </section>
+
+    <section class="nav-grid">
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Consultar</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('Borrar_Alumno.html')">Eliminar</button></article>
+    </section>
+
+    <section class="nav-grid">
+      <article class="nav-card"><button type="button" class="btn-primary" onclick="go('form.alumno.html')">Formulario alumno</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('form_datos_interes.html')">Datos de interes</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('form_programa_deportes.html')">Programa deportes</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('Form_programa_insercion.html')">Programa insercion</button></article>
+      <article class="nav-card"><button type="button" class="btn-secondary" onclick="go('form_programa_ocio.html')">Programa ocio</button></article>
+    </section>
+  </div>
+
+  <script>
+    function go(page) {
+      window.open(page, "_self");
+    }
+  </script>
+</body>
+</html>

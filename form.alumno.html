@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Alumno</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <h1>Formulario de alumno</h1>
+        <p>Da de alta un alumno nuevo o actualiza su ficha principal usando el mismo DNI.</p>
+      </section>
+
+      <section class="panel section-shell">
+        <div class="section-head">
+          <div>
+            <h2>Datos principales</h2>
+            <p>Rellena la información básica primero. Después podrás completar el resto de programas desde el menú del alumno.</p>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
+          </div>
+        </div>
+
+        <div class="panel-soft">
+          <p class="micro-copy">Consejo: usa siempre el mismo DNI si quieres actualizar una ficha ya existente en lugar de crear otra nueva.</p>
+        </div>
+
+        <form id="studentForm" class="section-shell">
+          <div class="page-grid">
+            <div class="panel-soft section-shell">
+              <div class="section-head">
+                <div>
+                  <h3>Identificación</h3>
+                  <p>Datos personales y documento del alumno.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label for="nombre">Nombre</label><input id="nombre" name="nombre" required></div>
+                <div class="field"><label for="apellidos">Apellidos</label><input id="apellidos" name="apellidos" required></div>
+                <div class="field"><label for="fecha_nacimiento">Fecha de nacimiento</label><input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required></div>
+                <div class="field"><label for="edad">Edad</label><input id="edad" name="edad" type="number" min="0" required></div>
+                <div class="field"><label for="dni">DNI</label><input id="dni" name="dni" required></div>
+              </div>
+            </div>
+
+            <div class="panel-soft section-shell">
+              <div class="section-head">
+                <div>
+                  <h3>Dirección y contacto</h3>
+                  <p>Ubicación y teléfonos relacionados con el alumno.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label for="domicilio">Domicilio</label><input id="domicilio" name="domicilio" required></div>
+                <div class="field"><label for="localidad">Localidad</label><input id="localidad" name="localidad" required></div>
+                <div class="field"><label for="provincia">Provincia</label><input id="provincia" name="provincia" required></div>
+                <div class="field"><label for="telefono_casa">Teléfono casa</label><input id="telefono_casa" name="telefono_casa"></div>
+                <div class="field"><label for="movil_alumno">Móvil alumno</label><input id="movil_alumno" name="movil_alumno"></div>
+                <div class="field"><label for="movil_padre">Móvil padre</label><input id="movil_padre" name="movil_padre"></div>
+                <div class="field"><label for="movil_madre">Móvil madre</label><input id="movil_madre" name="movil_madre"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-grid">
+            <div class="panel-soft section-shell">
+              <div class="section-head">
+                <div>
+                  <h3>Perfil académico y laboral</h3>
+                  <p>Situación actual y orientación deseada.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label for="discapacidad">Discapacidad</label><input id="discapacidad" name="discapacidad"></div>
+                <div class="field"><label for="estudios">Estudios</label><input id="estudios" name="estudios"></div>
+                <div class="field"><label for="cursos">Cursos</label><input id="cursos" name="cursos"></div>
+                <div class="field"><label for="trabajo">Trabajo</label><input id="trabajo" name="trabajo"></div>
+                <div class="field"><label for="actividad_actual">Actividad actual</label><input id="actividad_actual" name="actividad_actual"></div>
+                <div class="field"><label for="actividad_deseada">Actividad deseada</label><input id="actividad_deseada" name="actividad_deseada"></div>
+              </div>
+            </div>
+
+            <div class="panel-soft section-shell">
+              <div class="section-head">
+                <div>
+                  <h3>Observaciones</h3>
+                  <p>Apoyo adicional y notas técnicas de seguimiento.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label><input id="mueve_solo_ciudad" name="mueve_solo_ciudad" type="checkbox"> Se mueve solo por ciudad</label></div>
+                <div class="field"><label for="notas_tecnico">Notas técnico</label><textarea id="notas_tecnico" name="notas_tecnico"></textarea></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="btn-primary">Guardar alumno</button>
+            <button type="reset" class="btn-secondary">Limpiar</button>
+          </div>
+        </form>
+        <p id="message" class="message"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="abaniko-app.js"></script>
+  <script>
+    const form = document.getElementById("studentForm");
+    const message = document.getElementById("message");
+
+    function go(page) {
+      window.open(page, "_self");
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+      clearTimeout(showMessage.timer);
+      showMessage.timer = setTimeout(() => message.textContent = "", 2600);
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const payload = {
+        nombre: form.nombre.value.trim(),
+        apellidos: form.apellidos.value.trim(),
+        fecha_nacimiento: form.fecha_nacimiento.value,
+        edad: form.edad.value.trim(),
+        dni: form.dni.value.trim().toUpperCase(),
+        domicilio: form.domicilio.value.trim(),
+        localidad: form.localidad.value.trim(),
+        provincia: form.provincia.value.trim(),
+        telefono_casa: form.telefono_casa.value.trim(),
+        movil_alumno: form.movil_alumno.value.trim(),
+        movil_padre: form.movil_padre.value.trim(),
+        movil_madre: form.movil_madre.value.trim(),
+        discapacidad: form.discapacidad.value.trim(),
+        estudios: form.estudios.value.trim(),
+        cursos: form.cursos.value.trim(),
+        trabajo: form.trabajo.value.trim(),
+        actividad_actual: form.actividad_actual.value.trim(),
+        actividad_deseada: form.actividad_deseada.value.trim(),
+        mueve_solo_ciudad: form.mueve_solo_ciudad.checked,
+        notas_tecnico: form.notas_tecnico.value.trim()
+      };
+
+      if (!payload.nombre || !payload.apellidos || !payload.dni) {
+        showMessage("Completa nombre, apellidos y DNI.");
+        return;
+      }
+
+      AbanikoStore.upsertStudent(payload);
+      AbanikoStore.setSelectedStudent(payload.dni);
+      AbanikoStore.clearStudentToEdit();
+      showMessage("Alumno guardado correctamente.");
+      form.reset();
+    });
+
+    (function loadEditingData() {
+      const student = AbanikoStore.getStudent(AbanikoStore.getStudentToEdit());
+      if (!student) return;
+      for (const key of ["nombre", "apellidos", "fecha_nacimiento", "edad", "dni", "domicilio", "localidad", "provincia", "telefono_casa", "movil_alumno", "movil_padre", "movil_madre", "discapacidad", "estudios", "cursos", "trabajo", "actividad_actual", "actividad_deseada", "notas_tecnico"]) {
+        if (form[key]) form[key].value = student[key] || "";
+      }
+      form.mueve_solo_ciudad.checked = Boolean(student.mueve_solo_ciudad);
+    })();
+  </script>
+</body>
+</html>

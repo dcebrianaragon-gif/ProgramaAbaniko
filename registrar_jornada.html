@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Jornada</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <h1>Registrar jornadas</h1>
+        <p>Crea jornadas, asígnales un profesor responsable y deja listo el resumen para poder consultarlo desde las otras pantallas.</p>
+      </section>
+
+      <section class="panel section-shell">
+        <div class="section-head">
+          <div>
+            <h2>Navegación</h2>
+            <p>Muévete entre profesores, selector de resúmenes y vista actual sin perder el contexto.</p>
+          </div>
+        </div>
+        <div class="action-grid">
+          <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
+          <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
+          <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Seleccionar resumen</button>
+          <button type="button" class="btn-secondary" onclick="openPage('ver_resumen_actual.html')">Resumen actual</button>
+        </div>
+      </section>
+
+      <section class="page-grid">
+        <section class="panel section-shell">
+          <div class="section-head">
+            <div>
+              <h2 id="formTitle">Nueva jornada</h2>
+              <p>Rellena los datos principales. Si editas una jornada, el formulario se actualizará automáticamente.</p>
+            </div>
+          </div>
+
+          <form id="sessionForm" class="panel-soft section-shell">
+            <div class="form-grid">
+              <div class="field">
+                <label for="sessionTitle">Nombre de la jornada</label>
+                <input id="sessionTitle" name="sessionTitle" type="text" required>
+              </div>
+              <div class="field">
+                <label for="sessionDate">Fecha</label>
+                <input id="sessionDate" name="sessionDate" type="date" required>
+              </div>
+              <div class="field">
+                <label for="sessionPlace">Lugar</label>
+                <input id="sessionPlace" name="sessionPlace" type="text" placeholder="Salón principal">
+              </div>
+              <div class="field">
+                <label for="sessionTeacher">Profesor responsable</label>
+                <select id="sessionTeacher" name="sessionTeacher"></select>
+              </div>
+              <div class="field">
+                <label for="sessionSummary">Resumen</label>
+                <textarea id="sessionSummary" name="sessionSummary" required></textarea>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Guardar jornada</button>
+              <button type="reset" class="btn-secondary">Limpiar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Jornadas registradas</h2>
+              <p id="sessionCount">0 registradas</p>
+            </div>
+          </div>
+          <div id="sessionList" class="list"></div>
+        </section>
+      </section>
+
+      <p id="message" class="message" aria-live="polite"></p>
+    </main>
+  </div>
+
+  <script src="abaniko-app.js"></script>
+  <script>
+    const form = document.getElementById("sessionForm");
+    const teacherSelect = document.getElementById("sessionTeacher");
+    const sessionList = document.getElementById("sessionList");
+    const sessionCount = document.getElementById("sessionCount");
+    const formTitle = document.getElementById("formTitle");
+    const message = document.getElementById("message");
+    let editingId = null;
+
+    function openPage(page) {
+      window.open(page, "_self");
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+      clearTimeout(showMessage.timeoutId);
+      showMessage.timeoutId = setTimeout(() => {
+        message.textContent = "";
+      }, 2400);
+    }
+
+    function populateTeachers() {
+      const teachers = AbanikoStore.load().teachers;
+      teacherSelect.innerHTML = [
+        '<option value="">Sin profesor asignado</option>',
+        ...teachers.map((teacher) => `<option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)} - ${AbanikoStore.escapeHtml(teacher.subject || "")}</option>`)
+      ].join("");
+    }
+
+    function resetFormMode() {
+      editingId = null;
+      formTitle.textContent = "Nueva jornada";
+      form.reset();
+      populateTeachers();
+    }
+
+    function renderSessions() {
+      const data = AbanikoStore.load();
+      sessionCount.textContent = `${data.sessions.length} registradas`;
+
+      if (data.sessions.length === 0) {
+        sessionList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
+        return;
+      }
+
+      const ordered = [...data.sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      sessionList.innerHTML = ordered.map((session) => `
+        <article class="card">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(session.title)}</strong>
+            <div class="card-lines">
+              <span>Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+              <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
+              <span>Profesor: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
+              <span>Resumen: ${AbanikoStore.escapeHtml(session.summary || "")}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-success" onclick="openSummary(${session.id})">Abrir</button>
+            <button type="button" class="btn-secondary" onclick="editSession(${session.id})">Editar</button>
+            <button type="button" class="btn-danger" onclick="deleteSession(${session.id})">Eliminar</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const payload = {
+        title: form.sessionTitle.value.trim(),
+        date: form.sessionDate.value,
+        place: form.sessionPlace.value.trim(),
+        teacherId: form.sessionTeacher.value,
+        summary: form.sessionSummary.value.trim()
+      };
+
+      if (!payload.title || !payload.date || !payload.summary) {
+        showMessage("Completa al menos el nombre, la fecha y el resumen.");
+        return;
+      }
+
+      AbanikoStore.upsertSession(payload, editingId);
+      renderSessions();
+      resetFormMode();
+      showMessage("Jornada guardada correctamente.");
+    });
+
+    form.addEventListener("reset", () => {
+      setTimeout(resetFormMode, 0);
+    });
+
+    function editSession(id) {
+      const session = AbanikoStore.load().sessions.find((item) => String(item.id) === String(id));
+      if (!session) {
+        return;
+      }
+
+      editingId = id;
+      formTitle.textContent = "Editar jornada";
+      populateTeachers();
+      form.sessionTitle.value = session.title || "";
+      form.sessionDate.value = session.date || "";
+      form.sessionPlace.value = session.place || "";
+      form.sessionTeacher.value = session.teacherId || "";
+      form.sessionSummary.value = session.summary || "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteSession(id) {
+      AbanikoStore.removeSession(id);
+      renderSessions();
+      if (editingId === id) {
+        resetFormMode();
+      }
+      showMessage("Jornada eliminada correctamente.");
+    }
+
+    function openSummary(id) {
+      AbanikoStore.setSelectedSession(id);
+      openPage("ver_resumen_actual.html");
+    }
+
+    function loadSelectedForEditingIfNeeded() {
+      const editId = AbanikoStore.getSessionToEdit();
+      if (!editId) {
+        return;
+      }
+
+      editSession(editId);
+      AbanikoStore.clearSessionToEdit();
+    }
+
+    window.editSession = editSession;
+    window.deleteSession = deleteSession;
+    window.openSummary = openSummary;
+
+    populateTeachers();
+    renderSessions();
+    loadSelectedForEditingIfNeeded();
+  </script>
+</body>
+</html>
