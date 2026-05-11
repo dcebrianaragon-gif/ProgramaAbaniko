@@ -8,13 +8,13 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Programa insercion</h1><p>Registra informacion de insercion social o laboral para un alumno ya creado.</p></section>
+    <section class="hero"><h1>Programa inserción</h1><p>Registra información de inserción social o laboral para un alumno ya creado.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;"><button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button></div>
       <form id="insertionForm" class="form-grid">
         <div class="field"><label for="dni">DNI del alumno</label><input id="dni" required></div>
-        <div class="field"><label for="situacion">Situacion actual</label><input id="situacion"></div>
-        <div class="field"><label for="objetivo">Objetivo de insercion</label><textarea id="objetivo"></textarea></div>
+        <div class="field"><label for="situacion">Situación actual</label><input id="situacion"></div>
+        <div class="field"><label for="objetivo">Objetivo de inserción</label><textarea id="objetivo"></textarea></div>
         <div class="field"><label for="seguimiento">Seguimiento</label><textarea id="seguimiento"></textarea></div>
         <div class="button-row"><button type="submit" class="btn-primary">Guardar programa</button></div>
       </form>
@@ -62,7 +62,7 @@
         seguimiento: seguimientoInput.value.trim()
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Programa de insercion guardado.";
+      message.textContent = "Programa de inserción guardado.";
       dniInput.value = dni;
       loadStudentSection(dni);
     });

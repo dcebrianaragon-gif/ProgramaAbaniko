@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+�<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -11,18 +11,18 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Registrar jornadas</h1>
-        <p>Crea jornadas, asÃ­gnales un profesor responsable y deja listo el resumen para poder consultarlo desde las otras pantallas.</p>
+        <p>Crea jornadas, asígnales un profesor responsable y deja listo el resumen para poder consultarlo desde las otras pantallas.</p>
       </section>
 
       <section class="session-banner">
         <div>
           <strong id="currentTeacherName">Profesor conectado</strong>
-          <span id="currentTeacherMeta">Sin sesiÃ³n activa</span>
+          <span id="currentTeacherMeta">Sin sesión activa</span>
         </div>
         <div class="button-row">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
-          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesiÃ³n</button>
+          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
         </div>
       </section>
 
@@ -31,7 +31,7 @@
           <div class="section-head">
             <div>
               <h2 id="formTitle">Nueva jornada</h2>
-              <p>Rellena los datos principales. Si editas una jornada, el formulario se actualizarÃ¡ automÃ¡ticamente.</p>
+              <p>Rellena los datos principales. Si editas una jornada, el formulario se actualizará automáticamente.</p>
             </div>
           </div>
 
@@ -47,7 +47,7 @@
               </div>
               <div class="field">
                 <label for="sessionPlace">Lugar</label>
-                <input id="sessionPlace" name="sessionPlace" type="text" placeholder="SalÃ³n principal">
+                <input id="sessionPlace" name="sessionPlace" type="text" placeholder="Salón principal">
               </div>
               <div class="field">
                 <label for="sessionTeacher">Profesor responsable</label>
@@ -134,7 +134,7 @@
       const data = AbanikoStore.load();
       sessionCount.textContent = `${data.sessions.length} registradas`;
       if (data.sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">TodavÃ­a no hay jornadas registradas.</p>';
+        sessionList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
         return;
       }
       const ordered = [...data.sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));

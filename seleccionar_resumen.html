@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+�<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -53,7 +53,7 @@
       .sort((a, b) => String(b.date || b.updatedAt || "").localeCompare(String(a.date || a.updatedAt || "")));
       resultInfo.textContent = `${sessions.length} jornadas`;
       if (sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la bÃºsqueda. Prueba con el nombre, la fecha, el lugar o el profesor.</p>';
+        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la búsqueda. Prueba con el nombre, la fecha, el lugar o el profesor.</p>';
         return;
       }
       sessionList.innerHTML = sessions.map((session) => `

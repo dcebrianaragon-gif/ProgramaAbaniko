@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Datos de interes</h1><p>Asocia informacion complementaria a un alumno existente mediante su DNI.</p></section>
+    <section class="hero"><h1>Datos de interés</h1><p>Asocia información complementaria a un alumno existente mediante su DNI.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;"><button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button></div>
       <form id="interestForm" class="form-grid">
@@ -62,7 +62,7 @@
         referente: referenteInput.value.trim()
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Datos de interes guardados.";
+      message.textContent = "Datos de interés guardados.";
       dniInput.value = dni;
       loadStudentSection(dni);
     });

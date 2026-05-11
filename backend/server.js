@@ -87,7 +87,7 @@ async function readBody(request) {
   for await (const chunk of request) {
     chunks.push(chunk);
     if (Buffer.concat(chunks).length > 10 * 1024 * 1024) {
-      throw new Error("El cuerpo de la peticion es demasiado grande.");
+      throw new Error("El cuerpo de la petición es demasiado grande.");
     }
   }
   const raw = Buffer.concat(chunks).toString("utf8");
@@ -201,6 +201,14 @@ const server = http.createServer(async (request, response) => {
       message: "Error interno del servidor."
     });
   }
+});
+
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.log(`Programa Abaniko ya parece estar abierto en http://${HOST}:${PORT}`);
+    return;
+  }
+  throw error;
 });
 
 server.listen(PORT, HOST, async () => {

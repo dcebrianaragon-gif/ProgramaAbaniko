@@ -1,40 +1,5 @@
 {
-  "students": [
-    {
-      "dni": "77176710A",
-      "createdAt": "2026-05-06T22:33:00.523Z",
-      "updatedAt": "2026-05-06T22:47:06.847Z",
-      "nombre": "Mario",
-      "apellidos": "Sanchez Obrera",
-      "fecha_nacimiento": "1999-07-16",
-      "edad": "27",
-      "sexo": "Masculino",
-      "domicilio": "Cadi",
-      "localidad": "Cadiz",
-      "provincia": "Cadiz",
-      "telefono_casa": "956874214",
-      "movil_alumno": "633082500",
-      "movil_padre": "666660616",
-      "movil_madre": "451784357",
-      "discapacidad": "Down",
-      "estudios": "Ninguno",
-      "cursos": "Todos",
-      "trabajo": "No",
-      "actividad_actual": "Insercion",
-      "actividad_deseada": "Deporete",
-      "mueve_solo_ciudad": true,
-      "notas_tecnico": "",
-      "interest": {},
-      "sports": {
-        "practica_deporte": true,
-        "gusto_actividad_fisica": false,
-        "gusto_jugar_grupo": false,
-        "entender_seguir_normas": true
-      },
-      "insertion": {},
-      "leisure": {}
-    }
-  ],
+  "students": [],
   "teachers": [
     {
       "id": 1778067149021,
@@ -81,19 +46,7 @@
       "updatedAt": "2026-05-06T22:51:22.790Z"
     }
   ],
-  "sessions": [
-    {
-      "id": 1778106970718,
-      "createdAt": "2026-05-06T22:34:38.081Z",
-      "title": "Concierto Falla",
-      "date": "2026-05-28",
-      "place": "Falla",
-      "teacherId": "1778067149021",
-      "summary": "Concierto para programa de insercion",
-      "teacherNameSnapshot": "emilio",
-      "updatedAt": "2026-05-06T22:34:38.081Z"
-    }
-  ],
+  "sessions": [],
   "accessLogs": [
     {
       "id": 1778063375851,
@@ -400,9 +353,9 @@
       "teacherName": "Maria Angeles",
       "teacherRole": "admin",
       "loginAt": "2026-05-08T18:11:48.189Z",
-      "logoutAt": "",
+      "logoutAt": "2026-05-11T11:05:17.574Z",
       "createdAt": "2026-05-08T18:11:48.189Z",
-      "updatedAt": "2026-05-08T18:11:48.189Z"
+      "updatedAt": "2026-05-11T11:05:17.574Z"
     },
     {
       "id": 1778486283205,
@@ -413,6 +366,46 @@
       "logoutAt": "2026-05-11T07:57:43.134Z",
       "createdAt": "2026-05-11T07:57:04.925Z",
       "updatedAt": "2026-05-11T07:57:43.134Z"
+    },
+    {
+      "id": 1778497614570,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-11T11:05:17.574Z",
+      "logoutAt": "2026-05-11T11:41:42.978Z",
+      "createdAt": "2026-05-11T11:05:17.574Z",
+      "updatedAt": "2026-05-11T11:41:42.978Z"
+    },
+    {
+      "id": 1778498180947,
+      "teacherId": 1778107616372,
+      "teacherName": "David",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-11T11:16:14.513Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-11T11:16:14.513Z",
+      "updatedAt": "2026-05-11T11:16:14.513Z"
+    },
+    {
+      "id": 1778499693870,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-11T11:41:09.812Z",
+      "logoutAt": "2026-05-11T11:41:38.927Z",
+      "createdAt": "2026-05-11T11:41:09.812Z",
+      "updatedAt": "2026-05-11T11:41:38.927Z"
+    },
+    {
+      "id": 1778499795976,
+      "teacherId": 1778106998765,
+      "teacherName": "Maria Angeles",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-11T11:41:42.978Z",
+      "logoutAt": "2026-05-11T11:45:33.921Z",
+      "createdAt": "2026-05-11T11:41:42.978Z",
+      "updatedAt": "2026-05-11T11:45:33.921Z"
     }
   ],
   "absences": [
@@ -431,5 +424,5 @@
       "updatedAt": "2026-05-06T22:50:42.361Z"
     }
   ],
-  "updatedAt": "2026-05-11T07:57:43.135Z"
+  "updatedAt": "2026-05-11T11:45:33.924Z"
 }

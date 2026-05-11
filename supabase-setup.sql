@@ -1,9 +1,7 @@
 create table if not exists public.app_state (
   app_id text primary key,
-  payload jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
+  payload jsonb not null default '{}'::jsonb
 );
-
 alter table public.app_state enable row level security;
 
 drop policy if exists "allow anon select app_state" on public.app_state;

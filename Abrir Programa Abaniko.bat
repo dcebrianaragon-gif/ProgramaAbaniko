@@ -39,4 +39,5 @@ if errorlevel 1 (
 )
 
 start "" "%APP_URL%"
+start "" "%APP_DIR%Abrir Firebase Si Hace Falta.bat"
 endlocal

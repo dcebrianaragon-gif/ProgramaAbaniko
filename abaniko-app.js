@@ -143,7 +143,7 @@ const AbanikoStore = (() => {
       const backend = loadFromBackendSync();
       return backend ? getNewestData(local, backend) : local;
     } catch (error) {
-      console.error("No se pudo cargar la informacion:", error);
+      console.error("No se pudo cargar la información:", error);
       const remote = loadFromBackendSync();
       return remote || persistLocal({});
     }
@@ -316,7 +316,7 @@ const AbanikoStore = (() => {
 
   async function importBackupFromFile(file) {
     if (!file) {
-      throw new Error("No se ha seleccionado ningun archivo.");
+      throw new Error("No se ha seleccionado ningún archivo.");
     }
     const text = await file.text();
     const parsed = normalize(JSON.parse(text));
@@ -693,7 +693,7 @@ const AbanikoStore = (() => {
   function registerTeacherAbsence(payload) {
     const currentTeacher = getCurrentTeacher();
     if (!currentTeacher) {
-      return { ok: false, message: "Debes iniciar sesion para registrar una falta." };
+      return { ok: false, message: "Debes iniciar sesión para registrar una falta." };
     }
     if (currentTeacher.role !== "admin") {
       return { ok: false, message: "Solo un administrador puede registrar faltas del profesorado." };
@@ -709,7 +709,7 @@ const AbanikoStore = (() => {
     }
 
     if (!getAbsenceTypes().includes(payload.type)) {
-      return { ok: false, message: "Tipo de falta no valido." };
+      return { ok: false, message: "Tipo de falta no válido." };
     }
 
     const data = load();
@@ -796,7 +796,7 @@ const AbanikoStore = (() => {
 
   async function pullFromCloud() {
     if (!isCloudConfigured()) {
-      return { ok: false, message: "La nube no esta configurada." };
+      return { ok: false, message: "La nube no está configurada." };
     }
     if (cloudPullPromise) {
       return cloudPullPromise;
@@ -828,8 +828,8 @@ const AbanikoStore = (() => {
         rememberCloudSync();
         return { ok: true, updated: false, data: local };
       } catch (error) {
-        rememberCloudError(error.message || "No se pudo descargar la informacion.");
-        return { ok: false, message: error.message || "No se pudo descargar la informacion." };
+        rememberCloudError(error.message || "No se pudo descargar la información.");
+        return { ok: false, message: error.message || "No se pudo descargar la información." };
       } finally {
         cloudPullPromise = null;
       }
@@ -840,7 +840,7 @@ const AbanikoStore = (() => {
 
   async function testCloudConnection() {
     if (!isCloudConfigured()) {
-      return { ok: false, connected: false, message: "La nube no esta configurada." };
+      return { ok: false, connected: false, message: "La nube no está configurada." };
     }
 
     try {
@@ -849,7 +849,7 @@ const AbanikoStore = (() => {
       rememberCloudSync();
       return { ok: true, connected: true, message: "Firebase disponible. Firestore responde correctamente." };
     } catch (error) {
-      const message = error.message || "No se pudo comprobar la conexion con la nube.";
+      const message = error.message || "No se pudo comprobar la conexión con la nube.";
       rememberCloudError(message);
       return { ok: false, connected: false, message };
     }
@@ -857,7 +857,7 @@ const AbanikoStore = (() => {
 
   async function pullFromBackend() {
     if (!isBackendConfigured()) {
-      return { ok: false, message: "El backend no esta disponible." };
+      return { ok: false, message: "El backend no está disponible." };
     }
     if (backendPullPromise) {
       return backendPullPromise;
@@ -877,8 +877,8 @@ const AbanikoStore = (() => {
         rememberBackendSync();
         return { ok: true, data: remote };
       } catch (error) {
-        rememberBackendError(error.message || "No se pudo descargar la informacion del backend.");
-        return { ok: false, message: error.message || "No se pudo descargar la informacion del backend." };
+        rememberBackendError(error.message || "No se pudo descargar la información del backend.");
+        return { ok: false, message: error.message || "No se pudo descargar la información del backend." };
       } finally {
         backendPullPromise = null;
       }
@@ -889,7 +889,7 @@ const AbanikoStore = (() => {
 
   async function pushToBackend() {
     if (!isBackendConfigured()) {
-      return { ok: false, message: "El backend no esta disponible." };
+      return { ok: false, message: "El backend no está disponible." };
     }
     if (backendPushPromise) {
       return backendPushPromise;
@@ -904,8 +904,8 @@ const AbanikoStore = (() => {
         rememberBackendSync();
         return { ok: true, data: saved };
       } catch (error) {
-        rememberBackendError(error.message || "No se pudo guardar la informacion en el backend.");
-        return { ok: false, message: error.message || "No se pudo guardar la informacion en el backend." };
+        rememberBackendError(error.message || "No se pudo guardar la información en el backend.");
+        return { ok: false, message: error.message || "No se pudo guardar la información en el backend." };
       } finally {
         backendPushPromise = null;
       }
@@ -951,7 +951,7 @@ const AbanikoStore = (() => {
 
   async function pushToCloud() {
     if (!isCloudConfigured()) {
-      return { ok: false, message: "La nube no esta configurada." };
+      return { ok: false, message: "La nube no está configurada." };
     }
     if (cloudPushPromise) {
       return cloudPushPromise;
@@ -965,8 +965,8 @@ const AbanikoStore = (() => {
         rememberCloudSync();
         return { ok: true, document };
       } catch (error) {
-        rememberCloudError(error.message || "No se pudo subir la informacion.");
-        return { ok: false, message: error.message || "No se pudo subir la informacion." };
+        rememberCloudError(error.message || "No se pudo subir la información.");
+        return { ok: false, message: error.message || "No se pudo subir la información." };
       } finally {
         cloudPushPromise = null;
       }
@@ -990,7 +990,7 @@ const AbanikoStore = (() => {
     if (!pushed.ok) {
       return pushed;
     }
-    return { ok: true, message: "Sincronizacion completada." };
+    return { ok: true, message: "Sincronización completada." };
   }
 
   function startCloudAutoSync(onUpdate) {

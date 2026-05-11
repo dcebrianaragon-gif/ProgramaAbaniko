@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+�<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Ficha del alumno</h1><p>Vista completa de la informaciÃ³n guardada en todos los formularios.</p></section>
+    <section class="hero"><h1>Ficha del alumno</h1><p>Vista completa de la información guardada en todos los formularios.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;">
         <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Volver</button>
@@ -35,7 +35,7 @@
     const student = AbanikoStore.getSelectedStudent();
     const content = document.getElementById("content");
     if (!student) {
-      content.innerHTML = '<p class="empty-state">No hay ningun alumno seleccionado.</p>';
+      content.innerHTML = '<p class="empty-state">No hay ningún alumno seleccionado.</p>';
     } else {
       content.innerHTML = [
         row("Nombre", `${student.nombre || ""} ${student.apellidos || ""}`.trim()),
@@ -46,20 +46,20 @@
         row("Domicilio", student.domicilio),
         row("Localidad", student.localidad),
         row("Provincia", student.provincia),
-        row("Telefono casa", student.telefono_casa),
-        row("Movil alumno", student.movil_alumno),
-        row("Movil padre", student.movil_padre),
-        row("Movil madre", student.movil_madre),
+        row("Teléfono casa", student.telefono_casa),
+        row("Móvil alumno", student.movil_alumno),
+        row("Móvil padre", student.movil_padre),
+        row("Móvil madre", student.movil_madre),
         row("Discapacidad", student.discapacidad),
         row("Estudios", student.estudios),
         row("Cursos", student.cursos),
         row("Trabajo", student.trabajo),
         row("Actividad actual", student.actividad_actual),
         row("Actividad deseada", student.actividad_deseada),
-        row("Notas tecnico", student.notas_tecnico),
-        row("Datos de interes", JSON.stringify(student.interest || {})),
+        row("Notas técnico", student.notas_tecnico),
+        row("Datos de interés", JSON.stringify(student.interest || {})),
         row("Programa deportes", JSON.stringify(student.sports || {})),
-        row("Programa insercion", JSON.stringify(student.insertion || {})),
+        row("Programa inserción", JSON.stringify(student.insertion || {})),
         row("Programa ocio", JSON.stringify(student.leisure || {}))
       ].join("");
     }
