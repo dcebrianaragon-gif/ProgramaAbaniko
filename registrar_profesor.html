@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -11,18 +11,18 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Profesores y acceso</h1>
-        <p>Registra profesores, asigna su rol, configura el PIN de entrada y consulta su histórico de accesos.</p>
+        <p>Registra profesores, asigna su rol, configura el PIN de entrada y consulta su histÃ³rico de accesos.</p>
       </section>
 
       <section class="session-banner">
         <div>
           <strong id="currentTeacherName">Profesor conectado</strong>
-          <span id="currentTeacherMeta">Sin sesión activa</span>
+          <span id="currentTeacherMeta">Sin sesiÃ³n activa</span>
         </div>
         <div class="button-row" id="topActions">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Jornadas</button>
-          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
+          <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesiÃ³n</button>
         </div>
       </section>
 
@@ -31,7 +31,7 @@
           <div class="section-head">
             <div>
               <h2 id="formTitle">Nuevo profesor</h2>
-              <p>Cada profesor necesita un PIN para poder entrar en la aplicación.</p>
+              <p>Cada profesor necesita un PIN para poder entrar en la aplicaciÃ³n.</p>
             </div>
             <span id="roleHelp" class="inline-badge">Puedes elegir si el alta sera administrador o profesor</span>
           </div>
@@ -40,23 +40,23 @@
             <div class="form-grid">
               <div class="field">
                 <label for="teacherName">Nombre completo</label>
-                <input id="teacherName" name="teacherName" type="text" required>
+                <input id="teacherName" name="teacherName" type="text" autocomplete="name" required>
               </div>
               <div class="field">
-                <label for="teacherSubject">Área o asignatura</label>
-                <input id="teacherSubject" name="teacherSubject" type="text" required>
+                <label for="teacherSubject">Ãrea o asignatura</label>
+                <input id="teacherSubject" name="teacherSubject" type="text" autocomplete="organization-title" required>
               </div>
               <div class="field">
                 <label for="teacherEmail">Email</label>
-                <input id="teacherEmail" name="teacherEmail" type="email" placeholder="ejemplo@centro.es">
+                <input id="teacherEmail" name="teacherEmail" type="email" autocomplete="email" placeholder="ejemplo@centro.es">
               </div>
               <div class="field">
-                <label for="teacherPhone">Teléfono</label>
-                <input id="teacherPhone" name="teacherPhone" type="text" placeholder="600123123">
+                <label for="teacherPhone">TelÃ©fono</label>
+                <input id="teacherPhone" name="teacherPhone" type="tel" inputmode="tel" autocomplete="tel" pattern="[0-9 +()-]{6,18}" placeholder="600123123">
               </div>
               <div class="field">
                 <label for="teacherPin">PIN de acceso</label>
-                <input id="teacherPin" name="teacherPin" type="password" inputmode="numeric" required>
+                <input id="teacherPin" name="teacherPin" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="8" pattern="[0-9]{4,8}" required>
               </div>
               <div class="field">
                 <label for="teacherRole">Rol</label>
@@ -87,7 +87,7 @@
       <section class="panel section-shell">
         <div class="section-head">
           <div>
-            <h2>Últimos accesos</h2>
+            <h2>Ãšltimos accesos</h2>
             <p>Entradas y salidas guardadas con su hora exacta.</p>
           </div>
         </div>
@@ -148,7 +148,7 @@
     </main>
   </div>
 
-  <script src="supabase-config.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     const form = document.getElementById("teacherForm");
@@ -176,7 +176,7 @@
     }
 
     function canManageRoles() {
-      return true;
+      return AbanikoStore.isCurrentTeacherAdmin() || AbanikoStore.load().teachers.length === 0;
     }
 
     function canManageTeachers() {
@@ -187,7 +187,7 @@
       const teacher = AbanikoStore.getCurrentTeacher();
       if (!teacher) {
         currentTeacherName.textContent = "Registro previo al acceso";
-        currentTeacherMeta.textContent = "Puedes crear un profesor y luego volver al inicio para iniciar sesión";
+        currentTeacherMeta.textContent = "Puedes crear un profesor y luego volver al inicio para iniciar sesiÃ³n";
         topActions.innerHTML = '<button type="button" class="btn-secondary" onclick="openPage(\'Index.html\')">Volver al inicio</button>';
         return;
       }
@@ -208,7 +208,24 @@
       editingId = null;
       formTitle.textContent = "Nuevo profesor";
       form.reset();
+      setPinEditMode(false);
       renderRoleField();
+    }
+
+    function setPinEditMode(isEditing) {
+      form.teacherPin.required = !isEditing;
+      form.teacherPin.value = "";
+      form.teacherPin.placeholder = isEditing ? "DÃ©jalo vacÃ­o para mantener el PIN actual" : "";
+    }
+
+    function updateFormAvailability() {
+      const allowed = canManageTeachers();
+      form.querySelectorAll("input, select, textarea, button").forEach((control) => {
+        control.disabled = !allowed;
+      });
+      roleHelp.textContent = allowed
+        ? roleHelp.textContent
+        : "Solo un administrador puede crear o editar profesores";
     }
 
     function renderRoleField() {
@@ -216,27 +233,28 @@
       const roleField = form.teacherRole;
       if (teachers.length === 0) {
         roleField.disabled = false;
-        if (!roleField.value) {
-          roleField.value = "admin";
-        }
-        roleHelp.textContent = "Elige si el primer alta sera administrador o profesor";
+        roleField.value = "admin";
+        roleHelp.textContent = "El primer profesor se crea como administrador para poder gestionar la app";
+        updateFormAvailability();
         return;
       }
       if (!canManageRoles()) {
         roleField.value = "profesor";
         roleField.disabled = true;
         roleHelp.textContent = "Solo un administrador puede cambiar roles";
+        updateFormAvailability();
         return;
       }
       roleField.disabled = false;
       roleHelp.textContent = "Elige libremente si quieres crear un administrador o un profesor";
+      updateFormAvailability();
     }
 
     function renderTeachers() {
       const data = AbanikoStore.load();
       teacherCount.textContent = `${data.teachers.length} registrados`;
       if (data.teachers.length === 0) {
-        teacherList.innerHTML = '<p class="empty-state">Todavía no hay profesores registrados.</p>';
+        teacherList.innerHTML = '<p class="empty-state">TodavÃ­a no hay profesores registrados.</p>';
         return;
       }
 
@@ -246,10 +264,10 @@
             <strong>${AbanikoStore.escapeHtml(teacher.name)}</strong>
             <div class="card-lines">
               <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(teacher.role))}</span>
-              <span>Área: ${AbanikoStore.escapeHtml(teacher.subject || "Sin área")}</span>
+              <span>Ãrea: ${AbanikoStore.escapeHtml(teacher.subject || "Sin Ã¡rea")}</span>
               <span>Email: ${AbanikoStore.escapeHtml(teacher.email || "No indicado")}</span>
-              <span>Teléfono: ${AbanikoStore.escapeHtml(teacher.phone || "No indicado")}</span>
-              <span>PIN configurado: ${teacher.pin ? "Sí" : "No"}</span>
+              <span>TelÃ©fono: ${AbanikoStore.escapeHtml(teacher.phone || "No indicado")}</span>
+              <span>PIN configurado: ${teacher.pin ? "SÃ­" : "No"}</span>
             </div>
           </div>
           <div class="actions">
@@ -265,7 +283,7 @@
     function renderAccessLogs() {
       const logs = AbanikoStore.getAccessLogs().slice(0, 10);
       if (logs.length === 0) {
-        accessList.innerHTML = '<p class="empty-state">Todavía no hay accesos registrados.</p>';
+        accessList.innerHTML = '<p class="empty-state">TodavÃ­a no hay accesos registrados.</p>';
         return;
       }
       accessList.innerHTML = logs.map((log) => `
@@ -283,7 +301,7 @@
     function renderAbsenceTargets() {
       const currentTeacher = AbanikoStore.getCurrentTeacher();
       if (!currentTeacher) {
-        absenceTeacher.innerHTML = '<option value="">Debes iniciar sesiÃ³n</option>';
+        absenceTeacher.innerHTML = '<option value="">Debes iniciar sesiÃƒÂ³n</option>';
         absenceTeacher.disabled = true;
         return;
       }
@@ -310,7 +328,7 @@
       const absences = AbanikoStore.getAbsences().slice(0, 20);
       absenceCount.textContent = `${absences.length} registradas`;
       if (absences.length === 0) {
-        absenceList.innerHTML = '<p class="empty-state">TodavÃ­a no hay faltas registradas.</p>';
+        absenceList.innerHTML = '<p class="empty-state">TodavÃƒÂ­a no hay faltas registradas.</p>';
         return;
       }
       absenceList.innerHTML = absences.map((absence) => `
@@ -337,10 +355,22 @@
         email: form.teacherEmail.value.trim(),
         phone: form.teacherPhone.value.trim(),
         pin: form.teacherPin.value.trim(),
-        role: form.teacherRole.value
+        role: canManageRoles() ? form.teacherRole.value : "profesor"
       };
-      if (!payload.name || !payload.subject || !payload.pin) {
-        showMessage("Completa nombre, área y PIN.");
+      if (!canManageTeachers()) {
+        showMessage("Solo un administrador puede crear o editar profesores.");
+        return;
+      }
+      if (!payload.name || !payload.subject || (!editingId && !payload.pin)) {
+        showMessage("Completa nombre, Ã¡rea y PIN.");
+        return;
+      }
+      if (payload.pin && !/^\d{4,8}$/.test(payload.pin)) {
+        showMessage("El PIN debe tener entre 4 y 8 nÃºmeros.");
+        return;
+      }
+      if (payload.phone && !/^[0-9 +()-]{6,18}$/.test(payload.phone)) {
+        showMessage("Revisa el telÃ©fono: usa solo nÃºmeros, espacios, +, guiones o parÃ©ntesis.");
         return;
       }
       AbanikoStore.upsertTeacher(payload, editingId);
@@ -350,7 +380,7 @@
       if (hasSession()) {
         showMessage("Profesor guardado correctamente.");
       } else {
-        showMessage("Profesor guardado correctamente. Ahora vuelve al inicio para iniciar sesión.");
+        showMessage("Profesor guardado correctamente. Ahora vuelve al inicio para iniciar sesiÃ³n.");
       }
     });
 
@@ -388,7 +418,7 @@
       form.teacherSubject.value = teacher.subject || "";
       form.teacherEmail.value = teacher.email || "";
       form.teacherPhone.value = teacher.phone || "";
-      form.teacherPin.value = teacher.pin || "";
+      setPinEditMode(true);
       renderRoleField();
       form.teacherRole.value = teacher.role || "profesor";
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -437,3 +467,4 @@
   </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -18,7 +18,7 @@
         <div class="section-head">
           <div>
             <h2>Datos principales</h2>
-            <p>Rellena la información básica primero. Después podrás completar el resto de programas desde el menú del alumno.</p>
+            <p>Rellena la informaciÃ³n bÃ¡sica primero. DespuÃ©s podrÃ¡s completar el resto de programas desde el menÃº del alumno.</p>
           </div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
@@ -34,7 +34,7 @@
             <div class="panel-soft section-shell">
               <div class="section-head">
                 <div>
-                  <h3>Identificación</h3>
+                  <h3>IdentificaciÃ³n</h3>
                   <p>Datos personales y documento del alumno.</p>
                 </div>
               </div>
@@ -46,7 +46,7 @@
                 <div class="field">
                   <label for="sexo">Sexo</label>
                   <select id="sexo" name="sexo" required>
-                    <option value="">Selecciona una opción</option>
+                    <option value="">Selecciona una opciÃ³n</option>
                     <option value="Masculino">Masculino</option>
                     <option value="Femenino">Femenino</option>
                     <option value="Otro">Otro</option>
@@ -59,18 +59,18 @@
             <div class="panel-soft section-shell">
               <div class="section-head">
                 <div>
-                  <h3>Dirección y contacto</h3>
-                  <p>Ubicación y teléfonos relacionados con el alumno.</p>
+                  <h3>DirecciÃ³n y contacto</h3>
+                  <p>UbicaciÃ³n y telÃ©fonos relacionados con el alumno.</p>
                 </div>
               </div>
               <div class="form-grid">
                 <div class="field"><label for="domicilio">Domicilio</label><input id="domicilio" name="domicilio" required></div>
                 <div class="field"><label for="localidad">Localidad</label><input id="localidad" name="localidad" required></div>
                 <div class="field"><label for="provincia">Provincia</label><input id="provincia" name="provincia" required></div>
-                <div class="field"><label for="telefono_casa">Teléfono casa</label><input id="telefono_casa" name="telefono_casa"></div>
-                <div class="field"><label for="movil_alumno">Móvil alumno</label><input id="movil_alumno" name="movil_alumno"></div>
-                <div class="field"><label for="movil_padre">Móvil padre</label><input id="movil_padre" name="movil_padre"></div>
-                <div class="field"><label for="movil_madre">Móvil madre</label><input id="movil_madre" name="movil_madre"></div>
+                <div class="field"><label for="telefono_casa">TelÃ©fono casa</label><input id="telefono_casa" name="telefono_casa"></div>
+                <div class="field"><label for="movil_alumno">MÃ³vil alumno</label><input id="movil_alumno" name="movil_alumno"></div>
+                <div class="field"><label for="movil_padre">MÃ³vil padre</label><input id="movil_padre" name="movil_padre"></div>
+                <div class="field"><label for="movil_madre">MÃ³vil madre</label><input id="movil_madre" name="movil_madre"></div>
               </div>
             </div>
           </div>
@@ -79,8 +79,8 @@
             <div class="panel-soft section-shell">
               <div class="section-head">
                 <div>
-                  <h3>Perfil académico y laboral</h3>
-                  <p>Situación actual y orientación deseada.</p>
+                  <h3>Perfil acadÃ©mico y laboral</h3>
+                  <p>SituaciÃ³n actual y orientaciÃ³n deseada.</p>
                 </div>
               </div>
               <div class="form-grid">
@@ -97,12 +97,12 @@
               <div class="section-head">
                 <div>
                   <h3>Observaciones</h3>
-                  <p>Apoyo adicional y notas técnicas de seguimiento.</p>
+                  <p>Apoyo adicional y notas tÃ©cnicas de seguimiento.</p>
                 </div>
               </div>
               <div class="form-grid">
                 <div class="field"><label><input id="mueve_solo_ciudad" name="mueve_solo_ciudad" type="checkbox"> Se mueve solo por ciudad</label></div>
-                <div class="field"><label for="notas_tecnico">Notas técnico</label><textarea id="notas_tecnico" name="notas_tecnico"></textarea></div>
+                <div class="field"><label for="notas_tecnico">Notas tÃ©cnico</label><textarea id="notas_tecnico" name="notas_tecnico"></textarea></div>
               </div>
             </div>
           </div>
@@ -117,7 +117,7 @@
     </main>
   </div>
 
-  <script src="supabase-config.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
@@ -184,3 +184,4 @@
   </script>
 </body>
 </html>
+

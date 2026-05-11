@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,7 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Nube compartida</h1>
-        <p>Esta pantalla deja preparada la aplicacion para varios ordenadores usando Supabase como copia central compartida.</p>
+        <p>Esta pantalla deja preparada la aplicacion para varios ordenadores usando Firebase como copia central compartida.</p>
       </section>
 
       <section class="page-grid">
@@ -25,7 +25,8 @@
           <div id="cloudStatusBox" class="summary-box"></div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('Index.html')">Volver al inicio</button>
-            <button type="button" class="btn-secondary" onclick="downloadExample()">Abrir SQL de la nube</button>
+            <button type="button" class="btn-secondary" onclick="openFirebase()">Abrir Firebase</button>
+            <button type="button" class="btn-secondary" onclick="openRules()">Ver reglas</button>
             <button type="button" class="btn-secondary" onclick="syncBackend()">Sincronizar servidor</button>
             <button type="button" class="btn-success" onclick="syncCloud()">Sincronizar ahora</button>
           </div>
@@ -39,8 +40,8 @@
             </div>
           </div>
           <div class="summary-box">
-            <div class="summary-row"><strong>1. Archivo</strong><span>La app ya trae la URL y la anon key de Supabase listas para usarse.</span></div>
-            <div class="summary-row"><strong>2. Base de datos</strong><span>Este panel comprueba si la tabla remota ya existe y si la app puede leerla.</span></div>
+            <div class="summary-row"><strong>1. Archivo</strong><span>La app ya trae la configuracion de Firebase lista para usarse.</span></div>
+            <div class="summary-row"><strong>2. Base de datos</strong><span>Este panel comprueba si Firestore responde y si la app puede leer y escribir.</span></div>
             <div class="summary-row"><strong>3. Sincronizacion</strong><span>Usa este panel para probar la subida y la descarga en tiempo real.</span></div>
           </div>
         </section>
@@ -55,7 +56,7 @@
         </div>
         <div class="summary-box">
           <div class="summary-row"><strong>Guardado local</strong><span>La app sigue guardando en el navegador para que no se rompa nada ni dependa siempre de internet.</span></div>
-          <div class="summary-row"><strong>Copia central</strong><span>Cuando activas Supabase, la app puede subir una copia completa del estado a una tabla remota.</span></div>
+          <div class="summary-row"><strong>Copia central</strong><span>Cuando activas Firebase, la app puede subir una copia completa del estado a Firestore.</span></div>
           <div class="summary-row"><strong>Lectura desde otros equipos</strong><span>Los demas ordenadores pueden descargar esa copia al abrir la app o al sincronizar.</span></div>
           <div class="summary-row"><strong>Uso real</strong><span>Sirve para compartir profesores, alumnos, jornadas y accesos entre equipos sin depender de un solo navegador.</span></div>
           <div class="summary-row"><strong>Limite actual</strong><span>La sincronizacion esta pensada para una app ligera. Si dos equipos editan exactamente lo mismo a la vez, puede prevalecer la ultima sincronizacion.</span></div>
@@ -63,7 +64,7 @@
       </section>
     </main>
   </div>
-  <script src="supabase-config.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     function go(page) { window.open(page, "_self"); }
@@ -73,10 +74,10 @@
       const status = AbanikoStore.getCloudStatus();
       const backend = AbanikoStore.getBackendStatus();
       const config = AbanikoStore.getCloudConfig();
-      const sqlState = !config.enabled
+      const cloudState = !config.enabled
         ? "Desactivada"
-        : (!connection ? "Comprobando..." : (connection.connected ? "Tabla remota lista" : "Pendiente o inaccesible"));
-      const sqlMessage = connection ? connection.message : "Comprobando el acceso a Supabase.";
+        : (!connection ? "Comprobando..." : (connection.connected ? "Firebase listo" : "Pendiente o inaccesible"));
+      const cloudMessage = connection ? connection.message : "Comprobando el acceso a Firebase.";
 
       cloudStatusBox.innerHTML = `
         <div class="summary-row"><strong>Servidor local</strong><span>${backend.configured ? "Conectado" : "No disponible"}</span></div>
@@ -84,10 +85,10 @@
         <div class="summary-row"><strong>Error del servidor</strong><span>${AbanikoStore.escapeHtml(backend.lastError || "Sin errores")}</span></div>
         <div class="summary-row"><strong>Modo</strong><span>${status.mode === "cloud" ? "Con nube activa" : "Solo local"}</span></div>
         <div class="summary-row"><strong>Configurada</strong><span>${status.configured ? "Si" : "No"}</span></div>
-        <div class="summary-row"><strong>Proyecto</strong><span>${AbanikoStore.escapeHtml(config.projectUrl || "No indicado")}</span></div>
-        <div class="summary-row"><strong>Tabla</strong><span>${AbanikoStore.escapeHtml(config.tableName || "app_state")}</span></div>
-        <div class="summary-row"><strong>Estado SQL</strong><span>${AbanikoStore.escapeHtml(sqlState)}</span></div>
-        <div class="summary-row"><strong>Comprobacion</strong><span>${AbanikoStore.escapeHtml(sqlMessage)}</span></div>
+        <div class="summary-row"><strong>Proyecto Firebase</strong><span>${AbanikoStore.escapeHtml(config.projectId || "No indicado")}</span></div>
+        <div class="summary-row"><strong>Coleccion</strong><span>${AbanikoStore.escapeHtml(config.collectionName || "app_state")}</span></div>
+        <div class="summary-row"><strong>Estado Firebase</strong><span>${AbanikoStore.escapeHtml(cloudState)}</span></div>
+        <div class="summary-row"><strong>Comprobacion</strong><span>${AbanikoStore.escapeHtml(cloudMessage)}</span></div>
         <div class="summary-row"><strong>Ultima sincronizacion</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(status.lastSyncAt))}</span></div>
         <div class="summary-row"><strong>Ultimo error</strong><span>${AbanikoStore.escapeHtml(status.lastError || "Sin errores")}</span></div>
       `;
@@ -111,8 +112,12 @@
       await refreshCloudStatus();
     }
 
-    function downloadExample() {
-      go("supabase-setup.sql");
+    function openFirebase() {
+      window.open("https://console.firebase.google.com/project/programaabaniko/firestore", "_blank", "noopener");
+    }
+
+    function openRules() {
+      go("firebase-firestore.rules");
     }
 
     AbanikoStore.startBackendAutoSync(refreshCloudStatus);
@@ -120,7 +125,9 @@
     refreshCloudStatus();
     window.syncBackend = syncBackend;
     window.syncCloud = syncCloud;
-    window.downloadExample = downloadExample;
+    window.openFirebase = openFirebase;
+    window.openRules = openRules;
   </script>
 </body>
 </html>
+

@@ -21,7 +21,7 @@
       "cursos": "Todos",
       "trabajo": "No",
       "actividad_actual": "Insercion",
-      "actividad_deseada": "Deporete",
+      "actividad_deseada": "Deporte",
       "mueve_solo_ciudad": false,
       "notas_tecnico": "",
       "interest": {},
@@ -43,7 +43,7 @@
       "email": "abaniko9@gmail.com",
       "phone": "5001475289",
       "pin": "7222",
-      "role": "profesor",
+      "role": "admin",
       "createdAt": "2026-05-06T11:31:40.051Z",
       "updatedAt": "2026-05-06T22:10:01.325Z"
     },
@@ -54,7 +54,7 @@
       "email": "abaniko@gmail.com",
       "phone": "5001475289",
       "pin": "1234",
-      "role": "profesor",
+      "role": "admin",
       "createdAt": "2026-05-06T22:36:16.504Z",
       "updatedAt": "2026-05-06T22:36:16.504Z"
     }

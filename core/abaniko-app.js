@@ -166,17 +166,29 @@ const AbanikoStore = (() => {
     const config = window.AbanikoCloudConfig || {};
     const defaultCloudConfig = {
       enabled: true,
-      projectUrl: "https://hmgripzugbzhxkrlfhrx.supabase.co",
-      anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZ3JpcHp1Z2J6aHhrcmxmaHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNTM5NDEsImV4cCI6MjA5MzYyOTk0MX0.2W_hI3opO4rCOUCoAiWf5jrdMuSbtLr8Y-gmLa29-V4",
-      tableName: "app_state",
+      provider: "firebase",
+      apiKey: "AIzaSyAX92rdtH30eXT2ZEzDFCd3NInqLNwoB5c",
+      authDomain: "programaabaniko.firebaseapp.com",
+      projectId: "programaabaniko",
+      storageBucket: "programaabaniko.firebasestorage.app",
+      messagingSenderId: "181721941176",
+      firebaseAppId: "1:181721941176:web:06ce9ec85a0c281dd4204d",
+      measurementId: "G-0H5R2P7LC0",
+      collectionName: "app_state",
       appId: "programa-abaniko",
       pollIntervalMs: 30000
     };
     return {
       enabled: Boolean(config.enabled ?? defaultCloudConfig.enabled),
-      projectUrl: String(config.projectUrl || defaultCloudConfig.projectUrl).replace(/\/+$/, ""),
-      anonKey: String(config.anonKey || defaultCloudConfig.anonKey).trim(),
-      tableName: String(config.tableName || defaultCloudConfig.tableName).trim(),
+      provider: String(config.provider || defaultCloudConfig.provider).trim(),
+      apiKey: String(config.apiKey || defaultCloudConfig.apiKey).trim(),
+      authDomain: String(config.authDomain || defaultCloudConfig.authDomain).trim(),
+      projectId: String(config.projectId || defaultCloudConfig.projectId).trim(),
+      storageBucket: String(config.storageBucket || defaultCloudConfig.storageBucket).trim(),
+      messagingSenderId: String(config.messagingSenderId || defaultCloudConfig.messagingSenderId).trim(),
+      firebaseAppId: String(config.firebaseAppId || config.firebaseWebAppId || defaultCloudConfig.firebaseAppId).trim(),
+      measurementId: String(config.measurementId || defaultCloudConfig.measurementId).trim(),
+      collectionName: String(config.collectionName || defaultCloudConfig.collectionName).trim(),
       appId: String(config.appId || defaultCloudConfig.appId).trim(),
       pollIntervalMs: Number(config.pollIntervalMs || defaultCloudConfig.pollIntervalMs)
     };
@@ -184,7 +196,7 @@ const AbanikoStore = (() => {
 
   function isCloudConfigured() {
     const config = getCloudConfig();
-    return Boolean(config.enabled && config.projectUrl && config.anonKey && config.tableName && config.appId);
+    return Boolean(config.enabled && config.provider === "firebase" && config.apiKey && config.projectId && config.collectionName && config.appId);
   }
 
   function getCloudStatus() {
@@ -202,15 +214,36 @@ const AbanikoStore = (() => {
     localStorage.setItem(CLOUD_MODE_KEY, mode);
   }
 
-  async function cloudRequest(method, path, body) {
+  function getFirebaseDocumentUrl() {
     const config = getCloudConfig();
-    const response = await fetch(`${config.projectUrl}/rest/v1/${path}`, {
+    const collection = encodeURIComponent(config.collectionName);
+    const documentId = encodeURIComponent(config.appId);
+    return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(config.projectId)}/databases/(default)/documents/${collection}/${documentId}?key=${encodeURIComponent(config.apiKey)}`;
+  }
+
+  function serializeFirestoreData(data) {
+    const normalized = normalize(data);
+    return {
+      fields: {
+        payloadJson: { stringValue: JSON.stringify(normalized) },
+        updatedAt: { stringValue: normalized.updatedAt || new Date().toISOString() }
+      }
+    };
+  }
+
+  function parseFirestoreDocument(document) {
+    const payloadJson = document?.fields?.payloadJson?.stringValue;
+    if (!payloadJson) {
+      return null;
+    }
+    return normalize(JSON.parse(payloadJson));
+  }
+
+  async function firebaseRequest(method, body) {
+    const response = await fetch(getFirebaseDocumentUrl(), {
       method,
       headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation,resolution=merge-duplicates"
+        "Content-Type": "application/json"
       },
       body: body ? JSON.stringify(body) : undefined
     });
@@ -218,9 +251,12 @@ const AbanikoStore = (() => {
     if (!response.ok) {
       const text = await response.text();
       if (response.status === 404) {
-        throw new Error("La tabla remota app_state no existe todavia. Ejecuta primero supabase-setup.sql en tu proyecto.");
+        return null;
       }
-      throw new Error(text || `Error ${response.status} al contactar con la nube.`);
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Firebase ha rechazado la conexión. Activa Firestore y revisa sus reglas de lectura/escritura.");
+      }
+      throw new Error(text || `Error ${response.status} al contactar con Firebase.`);
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -651,16 +687,16 @@ const AbanikoStore = (() => {
     if (!currentTeacher || !targetTeacher) {
       return false;
     }
-    if (currentTeacher.role === "admin") {
-      return targetTeacher.role !== "admin";
-    }
-    return targetTeacher.role === "admin";
+    return currentTeacher.role === "admin";
   }
 
   function registerTeacherAbsence(payload) {
     const currentTeacher = getCurrentTeacher();
     if (!currentTeacher) {
       return { ok: false, message: "Debes iniciar sesion para registrar una falta." };
+    }
+    if (currentTeacher.role !== "admin") {
+      return { ok: false, message: "Solo un administrador puede registrar faltas del profesorado." };
     }
 
     const teacher = getTeacherById(payload.teacherId);
@@ -768,18 +804,15 @@ const AbanikoStore = (() => {
 
     cloudPullPromise = (async () => {
       try {
-        const config = getCloudConfig();
-        const rows = await cloudRequest(
-          "GET",
-          `${config.tableName}?app_id=eq.${encodeURIComponent(config.appId)}&select=*`
-        );
-        if (!Array.isArray(rows) || rows.length === 0 || !rows[0].payload) {
+        const document = await firebaseRequest("GET");
+        const remoteDocument = parseFirestoreDocument(document);
+        if (!remoteDocument) {
           notifyCloudMode("cloud");
           rememberCloudSync();
           return { ok: true, updated: false, data: load() };
         }
 
-        const remote = normalize(rows[0].payload);
+        const remote = normalize(remoteDocument);
         const local = load();
         if (String(remote.updatedAt || "") > String(local.updatedAt || "")) {
           persistLocal(remote);
@@ -811,14 +844,10 @@ const AbanikoStore = (() => {
     }
 
     try {
-      const config = getCloudConfig();
-      await cloudRequest(
-        "GET",
-        `${config.tableName}?app_id=eq.${encodeURIComponent(config.appId)}&select=app_id&limit=1`
-      );
+      await firebaseRequest("GET");
       notifyCloudMode("cloud");
       rememberCloudSync();
-      return { ok: true, connected: true, message: "Supabase disponible y tabla remota lista." };
+      return { ok: true, connected: true, message: "Firebase disponible. Firestore responde correctamente." };
     } catch (error) {
       const message = error.message || "No se pudo comprobar la conexion con la nube.";
       rememberCloudError(message);
@@ -930,17 +959,11 @@ const AbanikoStore = (() => {
 
     cloudPushPromise = (async () => {
       try {
-        const config = getCloudConfig();
         const data = load();
-        const body = [{
-          app_id: config.appId,
-          payload: data,
-          updated_at: data.updatedAt
-        }];
-        const rows = await cloudRequest("POST", config.tableName, body);
+        const document = await firebaseRequest("PATCH", serializeFirestoreData(data));
         notifyCloudMode("cloud");
         rememberCloudSync();
-        return { ok: true, rows };
+        return { ok: true, document };
       } catch (error) {
         rememberCloudError(error.message || "No se pudo subir la informacion.");
         return { ok: false, message: error.message || "No se pudo subir la informacion." };

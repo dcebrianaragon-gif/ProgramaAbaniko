@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -14,12 +14,12 @@
         <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
         <button type="button" class="btn-secondary" onclick="go('registrar_jornada.html')">Jornadas</button>
       </div>
-      <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" placeholder="Nombre, fecha, lugar o profesor"></div>
+      <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" type="search" autocomplete="off" placeholder="Nombre, fecha, lugar o profesor"></div>
       <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 jornadas</p></div>
       <div id="sessionList" class="list"></div>
     </section>
   </div>
-  <script src="supabase-config.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
@@ -37,15 +37,23 @@
       AbanikoStore.setSessionToEdit(id);
       go("registrar_jornada.html");
     }
+    function normalizeSearch(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
     function renderSessions() {
-      const term = searchInput.value.trim().toLowerCase();
-      const sessions = AbanikoStore.load().sessions.filter((session) => {
-        const bag = `${session.title || ""} ${session.date || ""} ${session.place || ""} ${session.summary || ""} ${session.teacherNameSnapshot || ""}`.toLowerCase();
+      const term = normalizeSearch(searchInput.value.trim());
+      const sessions = AbanikoStore.load().sessions
+      .filter((session) => {
+        const bag = normalizeSearch(`${session.title || ""} ${session.date || ""} ${session.place || ""} ${session.summary || ""} ${session.teacherNameSnapshot || ""}`);
         return bag.includes(term);
-      });
+      })
+      .sort((a, b) => String(b.date || b.updatedAt || "").localeCompare(String(a.date || a.updatedAt || "")));
       resultInfo.textContent = `${sessions.length} jornadas`;
       if (sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la busqueda.</p>';
+        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la bÃºsqueda. Prueba con el nombre, la fecha, el lugar o el profesor.</p>';
         return;
       }
       sessionList.innerHTML = sessions.map((session) => `
@@ -72,3 +80,4 @@
   </script>
 </body>
 </html>
+

@@ -17,6 +17,7 @@ const CONTENT_TYPES = {
   ".sql": "text/plain; charset=utf-8",
   ".bat": "text/plain; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
+  ".rules": "text/plain; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -48,6 +49,7 @@ function normalize(data) {
 
 async function ensureDataFile() {
   try {
+    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
     await fs.access(DATA_FILE);
   } catch {
     await writeData(createEmptyState());
@@ -56,14 +58,27 @@ async function ensureDataFile() {
 
 async function readData() {
   await ensureDataFile();
-  const raw = await fs.readFile(DATA_FILE, "utf8");
-  return normalize(JSON.parse(raw));
+  try {
+    const raw = await fs.readFile(DATA_FILE, "utf8");
+    return normalize(JSON.parse(raw));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      const brokenFile = `${DATA_FILE}.broken-${Date.now()}`;
+      await fs.rename(DATA_FILE, brokenFile);
+      console.warn(`JSON corrupto movido a ${brokenFile}`);
+      return writeData(createEmptyState());
+    }
+    throw error;
+  }
 }
 
 async function writeData(data) {
   const normalized = normalize(data);
   normalized.updatedAt = new Date().toISOString();
-  await fs.writeFile(DATA_FILE, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
+  await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
+  const temporaryFile = `${DATA_FILE}.tmp`;
+  await fs.writeFile(temporaryFile, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
+  await fs.rename(temporaryFile, DATA_FILE);
   return normalized;
 }
 
@@ -71,6 +86,9 @@ async function readBody(request) {
   const chunks = [];
   for await (const chunk of request) {
     chunks.push(chunk);
+    if (Buffer.concat(chunks).length > 10 * 1024 * 1024) {
+      throw new Error("El cuerpo de la peticion es demasiado grande.");
+    }
   }
   const raw = Buffer.concat(chunks).toString("utf8");
   return raw ? JSON.parse(raw) : {};
@@ -114,6 +132,7 @@ async function handleApi(request, response, pathname) {
     return sendJson(response, 200, {
       ok: true,
       backend: "node",
+      storage: "json",
       dataFile: DATA_FILE,
       updatedAt: data.updatedAt
     });
@@ -187,4 +206,5 @@ const server = http.createServer(async (request, response) => {
 server.listen(PORT, HOST, async () => {
   await ensureDataFile();
   console.log(`Programa Abaniko disponible en http://${HOST}:${PORT}`);
+  console.log(`Almacenamiento activo: ${DATA_FILE}`);
 });
