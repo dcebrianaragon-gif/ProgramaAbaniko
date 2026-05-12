@@ -1,4 +1,4 @@
-�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -209,7 +209,7 @@
           <section class="preview-card section-shell">
             <div class="section-head">
               <div>
-                <h2>�altimos accesos</h2>
+                <h2>Últimos accesos</h2>
                 <p>Histórico reciente de entradas y salidas registradas.</p>
               </div>
             </div>
@@ -221,7 +221,7 @@
           <section class="panel section-shell">
             <div class="section-head">
               <div>
-                <h2>�altimos alumnos</h2>
+                <h2>Últimos alumnos</h2>
                 <p>Los registros más recientes para retomar trabajo rápido.</p>
               </div>
             </div>
@@ -242,8 +242,8 @@
     </main>
   </div>
 
-  <script src="config/firebase-config.js"></script>
-  <script src="core/abaniko-app.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="abaniko-app.js"></script>
   <script>
     const authGate = document.getElementById("authGate");
     const appShell = document.getElementById("appShell");
@@ -367,11 +367,11 @@
       const teacher = AbanikoStore.getCurrentTeacher();
       systemStatusBox.innerHTML = `
         <div class="summary-row"><strong>Profesor activo</strong><span>${AbanikoStore.escapeHtml(teacher ? `${teacher.name} (${AbanikoStore.formatRole(teacher.role)})` : "Ninguno")}</span></div>
-        <div class="summary-row"><strong>�altima actualización local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
+        <div class="summary-row"><strong>Última actualización local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
         <div class="summary-row"><strong>Servidor local</strong><span>${backend.configured ? "Conectado" : "No disponible"}</span></div>
-        <div class="summary-row"><strong>�altima escritura en JSON</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(backend.lastSyncAt))}</span></div>
+        <div class="summary-row"><strong>Última escritura en JSON</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(backend.lastSyncAt))}</span></div>
         <div class="summary-row"><strong>Nube</strong><span>${cloud.configured ? "Configurada" : "No configurada"}</span></div>
-        <div class="summary-row"><strong>�altima sincronización</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(cloud.lastSyncAt))}</span></div>
+        <div class="summary-row"><strong>Última sincronización</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(cloud.lastSyncAt))}</span></div>
         <div class="summary-row"><strong>Incidencia del servidor</strong><span>${AbanikoStore.escapeHtml(backend.lastError || "Sin incidencias")}</span></div>
         <div class="summary-row"><strong>Incidencia de la nube</strong><span>${AbanikoStore.escapeHtml(cloud.lastError || "Sin incidencias")}</span></div>
       `;

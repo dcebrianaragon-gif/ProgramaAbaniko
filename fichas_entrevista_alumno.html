@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fichas de Entrevista</title>
+  <link rel="stylesheet" href="abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <span class="hero-badge">Historial del alumno</span>
+        <h1>Fichas de entrevista</h1>
+        <p>Guarda entrevistas por alumno, crea nuevas versiones cuando cambie la información y conserva siempre todo el historial anterior.</p>
+      </section>
+
+      <section class="program-grid">
+        <section class="panel section-shell program-shell">
+          <div class="section-head">
+            <div>
+              <h2>Entrevista y seguimiento</h2>
+              <p>Cada guardado puede ser una ficha nueva o una nueva versión de una ficha existente. Nada se sobrescribe.</p>
+            </div>
+            <div class="button-row">
+              <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
+              <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Consultar</button>
+              <button type="button" class="btn-secondary" id="newInterviewButton">Nueva ficha</button>
+            </div>
+          </div>
+
+          <div class="program-card-grid">
+            <article class="program-note">
+              <strong>Histórico real</strong>
+              <span>Si un alumno repite curso o cambia su situación, guardas una nueva versión sin perder las anteriores.</span>
+            </article>
+            <article class="program-note">
+              <strong>Edición segura</strong>
+              <span>Editar una entrevista genera una versión nueva para mantener trazabilidad.</span>
+            </article>
+            <article class="program-note">
+              <strong>Seguimiento por años</strong>
+              <span>Puedes usar el curso escolar y la fecha de entrevista para ordenar mejor la información.</span>
+            </article>
+          </div>
+
+          <form id="interviewForm" class="program-form">
+            <section class="panel-soft section-shell program-section">
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="studentSelect">Alumno</label>
+                  <select id="studentSelect" required></select>
+                  <p class="field-hint">Selecciona al alumno por nombre para abrir su histórico de entrevistas.</p>
+                </div>
+                <div class="selection-card">
+                  <strong id="modeTitle">Nueva ficha de entrevista</strong>
+                  <span id="modeText">Se guardará como una ficha nueva e independiente.</span>
+                </div>
+                <div class="field">
+                  <label for="schoolYear">Curso escolar</label>
+                  <input id="schoolYear" placeholder="Ej. 2026/2027">
+                </div>
+                <div class="field">
+                  <label for="interviewDate">Fecha de entrevista</label>
+                  <input id="interviewDate" type="date">
+                </div>
+                <div class="field">
+                  <label for="interviewer">Entrevistador/a</label>
+                  <input id="interviewer" placeholder="Nombre del profesional">
+                </div>
+                <div class="field">
+                  <label for="courseStage">Curso o etapa</label>
+                  <input id="courseStage" placeholder="Ej. 4º ESO, FP básica...">
+                </div>
+                <div class="field">
+                  <label for="center">Centro o recurso</label>
+                  <input id="center" placeholder="Centro educativo, recurso o entidad">
+                </div>
+                <label class="checkbox-card" for="repeatYear">
+                  <input id="repeatYear" type="checkbox">
+                  <span>
+                    <strong>Repite año o etapa</strong>
+                    <span>Marca esta opción si el alumno continúa o repite y necesitas reflejar los cambios de este nuevo ciclo.</span>
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section class="panel-soft section-shell program-section">
+              <div class="field">
+                <label for="currentSituation">Situación actual</label>
+                <textarea id="currentSituation" class="large-textarea" placeholder="Resumen de la situación actual del alumno en el momento de la entrevista"></textarea>
+              </div>
+              <div class="field">
+                <label for="changesSinceLastYear">Cambios respecto al año anterior</label>
+                <textarea id="changesSinceLastYear" class="large-textarea" placeholder="Cambios relevantes desde la última entrevista o desde el curso anterior"></textarea>
+              </div>
+              <div class="field">
+                <label for="supportNeeds">Necesidades o apoyos</label>
+                <textarea id="supportNeeds" class="large-textarea" placeholder="Apoyos, necesidades detectadas o puntos de atención"></textarea>
+              </div>
+              <div class="field">
+                <label for="goals">Objetivos</label>
+                <textarea id="goals" class="large-textarea" placeholder="Objetivos acordados o líneas de trabajo"></textarea>
+              </div>
+              <div class="field">
+                <label for="agreements">Acuerdos y seguimiento</label>
+                <textarea id="agreements" class="large-textarea" placeholder="Acuerdos, próximos pasos o compromisos tras la entrevista"></textarea>
+              </div>
+              <div class="field">
+                <label for="notes">Observaciones</label>
+                <textarea id="notes" class="large-textarea" placeholder="Información adicional que conviene conservar en el historial"></textarea>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <button type="submit" class="btn-primary" id="submitButton">Guardar ficha</button>
+              <button type="reset" class="btn-secondary" id="resetButton">Limpiar</button>
+            </div>
+          </form>
+          <p id="message" class="message"></p>
+
+          <section class="section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Historial guardado</h2>
+                <p>Cada bloque conserva sus versiones. La más reciente aparece destacada.</p>
+              </div>
+            </div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </section>
+
+        <aside class="program-sidebar">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Alumno cargado</h2>
+                <p>Resumen rápido para mantener el contexto durante la entrevista.</p>
+              </div>
+            </div>
+            <div id="studentSummary" class="summary-box"></div>
+          </section>
+
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Ficha seleccionada</h2>
+                <p>Cuando prepares una nueva versión, aquí verás sobre qué ficha estás trabajando.</p>
+              </div>
+            </div>
+            <div id="selectedRecordBox" class="summary-box"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="abaniko-app.js"></script>
+  <script>
+    AbanikoStore.requireTeacherSession("Index.html");
+
+    const form = document.getElementById("interviewForm");
+    const message = document.getElementById("message");
+    const historyList = document.getElementById("historyList");
+    const studentSummary = document.getElementById("studentSummary");
+    const selectedRecordBox = document.getElementById("selectedRecordBox");
+    const modeTitle = document.getElementById("modeTitle");
+    const modeText = document.getElementById("modeText");
+    const submitButton = document.getElementById("submitButton");
+    const resetButton = document.getElementById("resetButton");
+    const newInterviewButton = document.getElementById("newInterviewButton");
+    const studentSelect = document.getElementById("studentSelect");
+
+    const FIELDS = [
+      "schoolYear",
+      "interviewDate",
+      "interviewer",
+      "courseStage",
+      "center",
+      "currentSituation",
+      "changesSinceLastYear",
+      "supportNeeds",
+      "goals",
+      "agreements",
+      "notes"
+    ];
+
+    let currentRecordId = "";
+    let loadedStudent = null;
+
+    function go(page) {
+      window.open(page, "_self");
+    }
+
+    function getInput(id) {
+      return document.getElementById(id);
+    }
+
+    function showMessage(text, type = "success") {
+      message.textContent = text;
+      message.className = `message ${type === "error" ? "is-error" : "is-success"}`;
+    }
+
+    function populateStudentSelect(selectedDni = "") {
+      const students = AbanikoStore.getStudentsSortedByName();
+      if (students.length === 0) {
+        studentSelect.innerHTML = '<option value="">No hay alumnos guardados</option>';
+        studentSelect.disabled = true;
+        return;
+      }
+      studentSelect.disabled = false;
+      studentSelect.innerHTML = ['<option value="">Selecciona un alumno</option>']
+        .concat(students.map((student) => `
+          <option value="${student.dni}" ${String(student.dni) === String(selectedDni) ? "selected" : ""}>
+            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentDisplayName(student))}
+          </option>
+        `))
+        .join("");
+    }
+
+    function getSelectedDni() {
+      return studentSelect.value;
+    }
+
+    function getStudentActivities(student, key) {
+      const value = student?.[key];
+      return Array.isArray(value) ? value.join(" · ") : (value || "No indicada");
+    }
+
+    function renderStudentSummary(student) {
+      if (!student) {
+        studentSummary.innerHTML = '<p class="empty-state">No hay un alumno válido cargado todavía.</p>';
+        return;
+      }
+      const interviewCount = Array.isArray(student.interviewRecords) ? student.interviewRecords.length : 0;
+      studentSummary.innerHTML = `
+        <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+        <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(getStudentActivities(student, "actividad_deseada"))}</span></div>
+        <div class="summary-row"><strong>Entrevistas guardadas</strong><span>${AbanikoStore.escapeHtml(String(interviewCount))}</span></div>
+      `;
+    }
+
+    function renderSelectedRecord(record) {
+      if (!record) {
+        selectedRecordBox.innerHTML = '<p class="empty-state">No estás editando ninguna ficha anterior. Si guardas ahora, se creará una ficha nueva.</p>';
+        return;
+      }
+      const latest = AbanikoStore.getLatestInterviewRevision(record);
+      selectedRecordBox.innerHTML = `
+        <div class="summary-row"><strong>${AbanikoStore.escapeHtml(latest?.schoolYear || "Sin curso")}</strong><span>Última versión: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(latest?.updatedAt || ""))}</span></div>
+        <div class="summary-row"><strong>Fecha entrevista</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDate(latest?.interviewDate || ""))}</span></div>
+        <div class="summary-row"><strong>Versiones</strong><span>${AbanikoStore.escapeHtml(String(record.revisions?.length || 0))}</span></div>
+      `;
+    }
+
+    function updateMode() {
+      const record = currentRecordId && loadedStudent
+        ? AbanikoStore.getStudentInterviewRecord(loadedStudent.dni, currentRecordId)
+        : null;
+      if (!record) {
+        modeTitle.textContent = "Nueva ficha de entrevista";
+        modeText.textContent = "Se guardará como una ficha nueva e independiente.";
+        submitButton.textContent = "Guardar ficha";
+        resetButton.textContent = "Limpiar";
+        renderSelectedRecord(null);
+        return;
+      }
+      const latest = AbanikoStore.getLatestInterviewRevision(record);
+      modeTitle.textContent = "Nueva versión de ficha existente";
+      modeText.textContent = `La información nueva se añadirá al historial de la ficha ${latest?.schoolYear || "sin curso"} sin borrar las versiones anteriores.`;
+      submitButton.textContent = "Guardar nueva versión";
+      resetButton.textContent = "Restaurar base";
+      renderSelectedRecord(record);
+    }
+
+    function buildPayload() {
+      return {
+        schoolYear: getInput("schoolYear").value.trim(),
+        repeatYear: getInput("repeatYear").checked,
+        interviewDate: getInput("interviewDate").value,
+        interviewer: getInput("interviewer").value.trim(),
+        courseStage: getInput("courseStage").value.trim(),
+        center: getInput("center").value.trim(),
+        currentSituation: getInput("currentSituation").value.trim(),
+        changesSinceLastYear: getInput("changesSinceLastYear").value.trim(),
+        supportNeeds: getInput("supportNeeds").value.trim(),
+        goals: getInput("goals").value.trim(),
+        agreements: getInput("agreements").value.trim(),
+        notes: getInput("notes").value.trim()
+      };
+    }
+
+    function fillForm(payload = {}) {
+      FIELDS.forEach((field) => {
+        getInput(field).value = payload[field] || "";
+      });
+      getInput("repeatYear").checked = Boolean(payload.repeatYear);
+    }
+
+    function clearInterviewMode() {
+      currentRecordId = "";
+      fillForm({});
+      updateMode();
+    }
+
+    function validatePayload(dni, payload) {
+      if (!dni) {
+        return "Selecciona un alumno.";
+      }
+      if (!AbanikoStore.getStudent(dni)) {
+        return "Selecciona un alumno válido.";
+      }
+      if (!payload.schoolYear && !payload.interviewDate && !payload.currentSituation && !payload.goals) {
+        return "Añade al menos curso escolar, fecha o contenido básico de la entrevista.";
+      }
+      return "";
+    }
+
+    function loadStudent(dni) {
+      loadedStudent = AbanikoStore.getStudent(dni);
+      renderStudentSummary(loadedStudent);
+      renderHistory();
+      updateMode();
+    }
+
+    function renderHistory() {
+      if (!loadedStudent) {
+        historyList.innerHTML = '<p class="empty-state">Selecciona primero un alumno para ver su historial de entrevistas.</p>';
+        return;
+      }
+      const records = AbanikoStore.getStudentInterviewRecords(loadedStudent.dni);
+      if (records.length === 0) {
+        historyList.innerHTML = '<p class="empty-state">Este alumno todavía no tiene fichas de entrevista guardadas.</p>';
+        return;
+      }
+
+      historyList.innerHTML = records.map((record) => {
+        const latest = AbanikoStore.getLatestInterviewRevision(record);
+        const versions = [...(record.revisions || [])].sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+        return `
+          <article class="timeline-card">
+            <div class="timeline-head">
+              <div>
+                <strong>${AbanikoStore.escapeHtml(latest?.schoolYear || "Ficha sin curso")}</strong>
+                <span>Última actualización: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(latest?.updatedAt || ""))}</span>
+              </div>
+              <div class="button-row">
+                <button type="button" class="btn-secondary" onclick="loadInterviewRecord('${record.id}')">Nueva versión</button>
+              </div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-row"><strong>Fecha de entrevista</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDate(latest?.interviewDate || ""))}</span></div>
+              <div class="summary-row"><strong>Entrevistador/a</strong><span>${AbanikoStore.escapeHtml(latest?.interviewer || "No indicado")}</span></div>
+              <div class="summary-row"><strong>Versiones guardadas</strong><span>${AbanikoStore.escapeHtml(String(record.revisions?.length || 0))}</span></div>
+            </div>
+            <div class="version-list">
+              ${versions.map((revision, index) => `
+                <div class="version-item${index === 0 ? " is-current" : ""}">
+                  <strong>${AbanikoStore.escapeHtml(revision.schoolYear || "Sin curso")} ${revision.repeatYear ? "(repite)" : ""}</strong>
+                  <span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(revision.updatedAt || ""))}</span>
+                  <span>${AbanikoStore.escapeHtml(revision.currentSituation || revision.goals || "Sin resumen de contenido")}</span>
+                </div>
+              `).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function loadInterviewRecord(recordId) {
+      if (!loadedStudent) {
+        return;
+      }
+      const record = AbanikoStore.getStudentInterviewRecord(loadedStudent.dni, recordId);
+      if (!record) {
+        return;
+      }
+      const latest = AbanikoStore.getLatestInterviewRevision(record);
+      currentRecordId = record.id;
+      fillForm(latest || {});
+      updateMode();
+      showMessage("Ficha cargada como base. Al guardar se creará una nueva versión.", "success");
+    }
+
+    window.loadInterviewRecord = loadInterviewRecord;
+
+    studentSelect.addEventListener("change", () => {
+      const dni = getSelectedDni();
+      if (dni) {
+        AbanikoStore.setSelectedStudent(dni);
+      }
+      clearInterviewMode();
+      loadStudent(dni);
+    });
+
+    newInterviewButton.addEventListener("click", () => {
+      clearInterviewMode();
+      showMessage("Preparado para guardar una ficha nueva.", "success");
+    });
+
+    form.addEventListener("reset", () => {
+      const currentDni = getSelectedDni();
+      window.setTimeout(() => {
+        studentSelect.value = currentDni;
+        if (currentRecordId && loadedStudent) {
+          const record = AbanikoStore.getStudentInterviewRecord(loadedStudent.dni, currentRecordId);
+          fillForm(AbanikoStore.getLatestInterviewRevision(record) || {});
+        } else {
+          fillForm({});
+        }
+        updateMode();
+      }, 0);
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const dni = getSelectedDni();
+      const payload = buildPayload();
+      const validationError = validatePayload(dni, payload);
+      if (validationError) {
+        showMessage(validationError, "error");
+        return;
+      }
+
+      const result = currentRecordId
+        ? AbanikoStore.reviseStudentInterview(dni, currentRecordId, payload)
+        : AbanikoStore.createStudentInterview(dni, payload);
+
+      if (!result.ok) {
+        showMessage(result.message || "No se pudo guardar la ficha.", "error");
+        return;
+      }
+
+      AbanikoStore.setSelectedStudent(dni);
+      loadStudent(dni);
+      currentRecordId = result.record.id;
+      updateMode();
+      showMessage(currentRecordId && result.record.revisions.length > 1
+        ? "Nueva versión guardada sin borrar las anteriores."
+        : "Ficha de entrevista guardada correctamente.", "success");
+    });
+
+    const selectedStudent = AbanikoStore.getSelectedStudent();
+    populateStudentSelect(selectedStudent?.dni || "");
+    if (selectedStudent) {
+      loadStudent(selectedStudent.dni || "");
+    } else {
+      renderStudentSummary(null);
+      renderSelectedRecord(null);
+      renderHistory();
+    }
+  </script>
+</body>
+</html>

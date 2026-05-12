@@ -37,10 +37,61 @@ const AbanikoStore = (() => {
     };
   }
 
+  function normalizeInterviewRevision(revision) {
+    return {
+      id: revision?.id || createId(),
+      createdAt: revision?.createdAt || new Date().toISOString(),
+      updatedAt: revision?.updatedAt || new Date().toISOString(),
+      schoolYear: String(revision?.schoolYear || "").trim(),
+      repeatYear: Boolean(revision?.repeatYear),
+      interviewDate: String(revision?.interviewDate || "").trim(),
+      interviewer: String(revision?.interviewer || "").trim(),
+      courseStage: String(revision?.courseStage || "").trim(),
+      center: String(revision?.center || "").trim(),
+      currentSituation: String(revision?.currentSituation || "").trim(),
+      changesSinceLastYear: String(revision?.changesSinceLastYear || "").trim(),
+      supportNeeds: String(revision?.supportNeeds || "").trim(),
+      goals: String(revision?.goals || "").trim(),
+      agreements: String(revision?.agreements || "").trim(),
+      notes: String(revision?.notes || "").trim()
+    };
+  }
+
+  function normalizeInterviewRecord(record, studentDni = "") {
+    const sourceRevisions = Array.isArray(record?.revisions)
+      ? record.revisions
+      : Array.isArray(record?.history)
+        ? record.history
+        : record?.data
+          ? [record.data]
+          : [];
+    const revisions = sourceRevisions.map((revision) => normalizeInterviewRevision(revision));
+    revisions.sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+    return {
+      id: record?.id || createId(),
+      studentDni: String(record?.studentDni || studentDni || "").trim(),
+      createdAt: record?.createdAt || revisions[0]?.createdAt || new Date().toISOString(),
+      updatedAt: record?.updatedAt || revisions[revisions.length - 1]?.updatedAt || new Date().toISOString(),
+      revisions
+    };
+  }
+
+  function normalizeStudent(student) {
+    const interviewSource = Array.isArray(student?.interviewRecords)
+      ? student.interviewRecords
+      : Array.isArray(student?.interviews)
+        ? student.interviews
+        : [];
+    return {
+      ...student,
+      interviewRecords: interviewSource.map((record) => normalizeInterviewRecord(record, student?.dni || ""))
+    };
+  }
+
   function normalize(data) {
     const teachers = Array.isArray(data?.teachers) ? data.teachers : [];
     return {
-      students: Array.isArray(data?.students) ? data.students : [],
+      students: Array.isArray(data?.students) ? data.students.map((student) => normalizeStudent(student)) : [],
       teachers: teachers.map((teacher, index) => normalizeTeacher(teacher, index)),
       sessions: Array.isArray(data?.sessions) ? data.sessions : [],
       accessLogs: Array.isArray(data?.accessLogs) ? data.accessLogs : [],
@@ -345,7 +396,8 @@ const AbanikoStore = (() => {
       interest: payload.interest || payload.interest === null ? payload.interest : (index >= 0 ? data.students[index].interest || {} : {}),
       sports: payload.sports || payload.sports === null ? payload.sports : (index >= 0 ? data.students[index].sports || {} : {}),
       insertion: payload.insertion || payload.insertion === null ? payload.insertion : (index >= 0 ? data.students[index].insertion || {} : {}),
-      leisure: payload.leisure || payload.leisure === null ? payload.leisure : (index >= 0 ? data.students[index].leisure || {} : {})
+      leisure: payload.leisure || payload.leisure === null ? payload.leisure : (index >= 0 ? data.students[index].leisure || {} : {}),
+      interviewRecords: payload.interviewRecords || payload.interviewRecords === null ? payload.interviewRecords : (index >= 0 ? data.students[index].interviewRecords || [] : [])
     };
 
     if (index >= 0) {
@@ -380,6 +432,100 @@ const AbanikoStore = (() => {
 
   function getStudent(dni) {
     return load().students.find((student) => String(student.dni) === String(dni)) || null;
+  }
+
+  function getStudentFullName(student) {
+    return `${student?.nombre || ""} ${student?.apellidos || ""}`.trim() || "Alumno";
+  }
+
+  function getStudentDisplayName(student) {
+    const fullName = getStudentFullName(student);
+    const locality = String(student?.localidad || "").trim();
+    return locality ? `${fullName} - ${locality}` : fullName;
+  }
+
+  function getStudentsSortedByName() {
+    return load().students
+      .slice()
+      .sort((a, b) => getStudentDisplayName(a).localeCompare(getStudentDisplayName(b), "es", { sensitivity: "base" }));
+  }
+
+  function getLatestInterviewRevision(record) {
+    if (!record || !Array.isArray(record.revisions) || record.revisions.length === 0) {
+      return null;
+    }
+    return record.revisions[record.revisions.length - 1];
+  }
+
+  function getStudentInterviewRecords(dni) {
+    const student = getStudent(dni);
+    if (!student) {
+      return [];
+    }
+    return [...(student.interviewRecords || [])]
+      .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+  }
+
+  function getStudentInterviewRecord(dni, recordId) {
+    return getStudentInterviewRecords(dni).find((record) => String(record.id) === String(recordId)) || null;
+  }
+
+  function createStudentInterview(dni, payload) {
+    const data = load();
+    const index = findStudentIndex(data, dni);
+    if (index === -1) {
+      return { ok: false, message: "Alumno no encontrado." };
+    }
+
+    const revision = normalizeInterviewRevision(payload);
+    const record = normalizeInterviewRecord({
+      studentDni: dni,
+      createdAt: revision.createdAt,
+      updatedAt: revision.updatedAt,
+      revisions: [revision]
+    }, dni);
+
+    const currentRecords = Array.isArray(data.students[index].interviewRecords)
+      ? data.students[index].interviewRecords
+      : [];
+    data.students[index] = {
+      ...data.students[index],
+      interviewRecords: [...currentRecords, record],
+      updatedAt: new Date().toISOString()
+    };
+    save(data);
+    return { ok: true, record, revision };
+  }
+
+  function reviseStudentInterview(dni, recordId, payload) {
+    const data = load();
+    const studentIndex = findStudentIndex(data, dni);
+    if (studentIndex === -1) {
+      return { ok: false, message: "Alumno no encontrado." };
+    }
+
+    const records = Array.isArray(data.students[studentIndex].interviewRecords)
+      ? data.students[studentIndex].interviewRecords
+      : [];
+    const recordIndex = records.findIndex((record) => String(record.id) === String(recordId));
+    if (recordIndex === -1) {
+      return { ok: false, message: "Ficha de entrevista no encontrada." };
+    }
+
+    const revision = normalizeInterviewRevision(payload);
+    const record = normalizeInterviewRecord(records[recordIndex], dni);
+    record.revisions.push(revision);
+    record.updatedAt = revision.updatedAt;
+
+    const nextRecords = [...records];
+    nextRecords[recordIndex] = record;
+    data.students[studentIndex] = {
+      ...data.students[studentIndex],
+      interviewRecords: nextRecords,
+      updatedAt: new Date().toISOString()
+    };
+    save(data);
+    return { ok: true, record, revision };
   }
 
   function removeStudent(dni) {
@@ -1045,6 +1191,14 @@ const AbanikoStore = (() => {
     upsertStudent,
     patchStudentSection,
     getStudent,
+    getStudentFullName,
+    getStudentDisplayName,
+    getStudentsSortedByName,
+    getStudentInterviewRecords,
+    getStudentInterviewRecord,
+    getLatestInterviewRevision,
+    createStudentInterview,
+    reviseStudentInterview,
     removeStudent,
     setSelectedStudent,
     getSelectedStudent,

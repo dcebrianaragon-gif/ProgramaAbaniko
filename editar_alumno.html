@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -7,9 +7,26 @@
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <span class="hero-badge">Modo edición</span>
+        <h1>Preparando ficha del alumno</h1>
+        <p>Estamos abriendo el formulario con los datos guardados para que puedas modificarlos cómodamente.</p>
+      </section>
+
+      <section class="panel section-shell">
+        <p class="micro-copy">Si no se abre automáticamente, pulsa el botón para continuar.</p>
+        <div class="button-row">
+          <button type="button" class="btn-primary" onclick="window.open('form.alumno.html', '_self')">Abrir edición</button>
+          <button type="button" class="btn-secondary" onclick="window.open('Consultar_Alumno.html', '_self')">Volver a consulta</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
   <script>
-    window.open("form.alumno.html", "_self");
+    window.location.replace("form.alumno.html");
   </script>
 </body>
 </html>
-

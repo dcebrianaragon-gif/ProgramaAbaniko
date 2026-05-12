@@ -1,4 +1,4 @@
-�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -10,39 +10,65 @@
   <div class="container">
     <main class="page-stack">
       <section class="hero">
-        <h1>Formulario de alumno</h1>
-        <p>Da de alta un alumno nuevo o actualiza su ficha principal usando el mismo DNI.</p>
+        <span id="modeBadge" class="hero-badge">Nuevo registro</span>
+        <h1 id="heroTitle">Alta de alumno</h1>
+        <p id="heroText">Crea una ficha clara y profesional. Si usas el mismo DNI, la información del alumno se actualiza sin duplicar registros.</p>
       </section>
 
       <section class="panel section-shell">
         <div class="section-head">
           <div>
-            <h2>Datos principales</h2>
-            <p>Rellena la información básica primero. Después podrás completar el resto de programas desde el menú del alumno.</p>
+            <h2 id="formTitle">Datos principales del alumno</h2>
+            <p id="formIntro">Rellena la ficha base y después completa, si hace falta, el resto de programas desde el menú del alumno.</p>
           </div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
+            <button type="button" class="btn-secondary" id="viewRecordButton">Ver ficha</button>
           </div>
         </div>
 
         <div class="panel-soft">
-          <p class="micro-copy">Consejo: usa siempre el mismo DNI si quieres actualizar una ficha ya existente en lugar de crear otra nueva.</p>
+          <p class="micro-copy">La edad se calcula automáticamente al indicar la fecha de nacimiento, aunque puedes corregirla manualmente si lo necesitas.</p>
         </div>
 
-        <form id="studentForm" class="section-shell">
-          <div class="page-grid">
-            <div class="panel-soft section-shell">
+        <div class="insight-grid">
+          <article class="insight-card">
+            <strong>Registro más claro</strong>
+            <span>La ficha está organizada por bloques para reducir errores y acelerar el alta.</span>
+          </article>
+          <article class="insight-card">
+            <strong>Selección guiada</strong>
+            <span>Las actividades se eligen con botones-lista para unificar criterios y evitar escribir cada vez lo mismo.</span>
+          </article>
+          <article class="insight-card">
+            <strong>Resumen en directo</strong>
+            <span>El panel lateral permite revisar de un vistazo lo más importante antes de guardar.</span>
+          </article>
+        </div>
+
+        <form id="studentForm" class="form-layout">
+          <div class="form-main">
+            <section class="panel-soft section-shell form-card">
               <div class="section-head">
                 <div>
                   <h3>Identificación</h3>
-                  <p>Datos personales y documento del alumno.</p>
+                  <p>Información básica para reconocer al alumno y evitar duplicados.</p>
                 </div>
               </div>
-              <div class="form-grid">
-                <div class="field"><label for="nombre">Nombre</label><input id="nombre" name="nombre" required></div>
-                <div class="field"><label for="apellidos">Apellidos</label><input id="apellidos" name="apellidos" required></div>
-                <div class="field"><label for="fecha_nacimiento">Fecha de nacimiento</label><input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required></div>
-                <div class="field"><label for="edad">Edad</label><input id="edad" name="edad" type="number" min="0" required></div>
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="nombre">Nombre</label>
+                  <input id="nombre" name="nombre" autocomplete="given-name" required>
+                </div>
+                <div class="field">
+                  <label for="apellidos">Apellidos</label>
+                  <input id="apellidos" name="apellidos" autocomplete="family-name" required>
+                </div>
+                <div class="field">
+                  <label for="dni">DNI</label>
+                  <input id="dni" name="dni" autocomplete="off" maxlength="12" required>
+                  <p class="field-hint">Usa siempre el mismo DNI cuando edites una ficha ya existente.</p>
+                </div>
                 <div class="field">
                   <label for="sexo">Sexo</label>
                   <select id="sexo" name="sexo" required>
@@ -52,67 +78,163 @@
                     <option value="Otro">Otro</option>
                   </select>
                 </div>
-                <div class="field"><label for="dni">DNI</label><input id="dni" name="dni" required></div>
-              </div>
-            </div>
-
-            <div class="panel-soft section-shell">
-              <div class="section-head">
-                <div>
-                  <h3>Dirección y contacto</h3>
-                  <p>Ubicación y teléfonos relacionados con el alumno.</p>
+                <div class="field">
+                  <label for="fecha_nacimiento">Fecha de nacimiento</label>
+                  <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required>
+                </div>
+                <div class="field">
+                  <label for="edad">Edad</label>
+                  <input id="edad" name="edad" type="number" min="0" max="120" inputmode="numeric" required>
                 </div>
               </div>
-              <div class="form-grid">
-                <div class="field"><label for="domicilio">Domicilio</label><input id="domicilio" name="domicilio" required></div>
-                <div class="field"><label for="localidad">Localidad</label><input id="localidad" name="localidad" required></div>
-                <div class="field"><label for="provincia">Provincia</label><input id="provincia" name="provincia" required></div>
-                <div class="field"><label for="telefono_casa">Teléfono casa</label><input id="telefono_casa" name="telefono_casa"></div>
-                <div class="field"><label for="movil_alumno">Móvil alumno</label><input id="movil_alumno" name="movil_alumno"></div>
-                <div class="field"><label for="movil_padre">Móvil padre</label><input id="movil_padre" name="movil_padre"></div>
-                <div class="field"><label for="movil_madre">Móvil madre</label><input id="movil_madre" name="movil_madre"></div>
-              </div>
-            </div>
-          </div>
+            </section>
 
-          <div class="page-grid">
-            <div class="panel-soft section-shell">
+            <section class="panel-soft section-shell form-card">
               <div class="section-head">
                 <div>
-                  <h3>Perfil académico y laboral</h3>
-                  <p>Situación actual y orientación deseada.</p>
+                  <h3>Contacto y domicilio</h3>
+                  <p>Dirección y teléfonos de referencia para el seguimiento diario.</p>
                 </div>
               </div>
-              <div class="form-grid">
-                <div class="field"><label for="discapacidad">Discapacidad</label><input id="discapacidad" name="discapacidad"></div>
-                <div class="field"><label for="estudios">Estudios</label><input id="estudios" name="estudios"></div>
-                <div class="field"><label for="cursos">Cursos</label><input id="cursos" name="cursos"></div>
-                <div class="field"><label for="trabajo">Trabajo</label><input id="trabajo" name="trabajo"></div>
-                <div class="field"><label for="actividad_actual">Actividad actual</label><input id="actividad_actual" name="actividad_actual"></div>
-                <div class="field"><label for="actividad_deseada">Actividad deseada</label><input id="actividad_deseada" name="actividad_deseada"></div>
+              <div class="form-grid two-columns">
+                <div class="field field-span-full">
+                  <label for="domicilio">Domicilio</label>
+                  <input id="domicilio" name="domicilio" autocomplete="street-address" required>
+                </div>
+                <div class="field">
+                  <label for="localidad">Localidad</label>
+                  <input id="localidad" name="localidad" autocomplete="address-level2" required>
+                </div>
+                <div class="field">
+                  <label for="provincia">Provincia</label>
+                  <input id="provincia" name="provincia" autocomplete="address-level1" required>
+                </div>
+                <div class="field">
+                  <label for="telefono_casa">Teléfono de casa</label>
+                  <input id="telefono_casa" name="telefono_casa" type="tel" inputmode="tel" autocomplete="tel">
+                </div>
+                <div class="field">
+                  <label for="movil_alumno">Móvil del alumno</label>
+                  <input id="movil_alumno" name="movil_alumno" type="tel" inputmode="tel" autocomplete="tel">
+                </div>
+                <div class="field">
+                  <label for="movil_padre">Móvil del padre</label>
+                  <input id="movil_padre" name="movil_padre" type="tel" inputmode="tel" autocomplete="tel">
+                </div>
+                <div class="field">
+                  <label for="movil_madre">Móvil de la madre</label>
+                  <input id="movil_madre" name="movil_madre" type="tel" inputmode="tel" autocomplete="tel">
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div class="panel-soft section-shell">
+            <section class="panel-soft section-shell form-card">
               <div class="section-head">
                 <div>
-                  <h3>Observaciones</h3>
-                  <p>Apoyo adicional y notas técnicas de seguimiento.</p>
+                  <h3>Situación actual</h3>
+                  <p>Contexto académico, laboral y objetivos de participación del alumno.</p>
                 </div>
               </div>
-              <div class="form-grid">
-                <div class="field"><label><input id="mueve_solo_ciudad" name="mueve_solo_ciudad" type="checkbox"> Se mueve solo por ciudad</label></div>
-                <div class="field"><label for="notas_tecnico">Notas técnico</label><textarea id="notas_tecnico" name="notas_tecnico"></textarea></div>
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="discapacidad">Discapacidad</label>
+                  <input id="discapacidad" name="discapacidad" placeholder="Indica tipo o grado si aplica">
+                </div>
+                <div class="field">
+                  <label for="estudios">Estudios</label>
+                  <input id="estudios" name="estudios" placeholder="Ej. ESO, Bachillerato, FP...">
+                </div>
+                <div class="field">
+                  <label for="cursos">Cursos</label>
+                  <input id="cursos" name="cursos" placeholder="Formación complementaria">
+                </div>
+                <div class="field">
+                  <label for="trabajo">Trabajo</label>
+                  <input id="trabajo" name="trabajo" placeholder="Situación laboral actual">
+                </div>
+                <div class="activity-field field-span-full">
+                  <div>
+                    <label>Actividad en la que participa</label>
+                    <p class="field-hint">Pulsa una o varias opciones según lo que está realizando ahora.</p>
+                  </div>
+                  <div id="actividadActualOptions" class="activity-grid"></div>
+                  <div id="actividadActualPreview" class="selection-preview">Sin actividades seleccionadas.</div>
+                </div>
+                <div class="activity-field field-span-full">
+                  <div>
+                    <label>Actividad deseada</label>
+                    <p class="field-hint">Marca las opciones que mejor reflejen el objetivo o interés principal del alumno.</p>
+                  </div>
+                  <div id="actividadDeseadaOptions" class="activity-grid"></div>
+                  <div id="actividadDeseadaPreview" class="selection-preview">Sin objetivos seleccionados.</div>
+                </div>
               </div>
+            </section>
+
+            <section class="panel-soft section-shell form-card">
+              <div class="section-head">
+                <div>
+                  <h3>Seguimiento</h3>
+                  <p>Observaciones útiles para acompañar mejor al alumno.</p>
+                </div>
+              </div>
+              <label class="checkbox-card" for="mueve_solo_ciudad">
+                <input id="mueve_solo_ciudad" name="mueve_solo_ciudad" type="checkbox">
+                <span>
+                  <strong>Se mueve solo por la ciudad</strong>
+                  <span>Marca esta opción si el alumno puede desplazarse de manera autónoma.</span>
+                </span>
+              </label>
+              <div class="field">
+                <label for="notas_tecnico">Notas del técnico</label>
+                <textarea id="notas_tecnico" name="notas_tecnico" placeholder="Observaciones, apoyos necesarios, seguimiento o incidencias relevantes"></textarea>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <button type="submit" id="submitButton" class="btn-primary">Guardar alumno</button>
+              <button type="reset" class="btn-secondary" id="resetButton">Limpiar</button>
             </div>
+            <p id="message" class="message"></p>
           </div>
 
-          <div class="button-row">
-            <button type="submit" class="btn-primary">Guardar alumno</button>
-            <button type="reset" class="btn-secondary">Limpiar</button>
-          </div>
+          <aside class="form-sidebar">
+            <section class="panel section-shell form-summary">
+              <div class="section-head">
+                <div>
+                  <h3>Resumen de la ficha</h3>
+                  <p id="summaryIntro">Mientras escribes, aquí verás un resumen rápido del registro.</p>
+                </div>
+              </div>
+              <div class="summary-list">
+                <div class="summary-mini highlight">
+                  <strong id="summaryName">Alumno sin nombre</strong>
+                  <span id="summaryIdentity">DNI pendiente</span>
+                </div>
+                <div class="summary-mini">
+                  <strong>Contacto principal</strong>
+                  <span id="summaryContact">Sin teléfonos indicados</span>
+                </div>
+                <div class="summary-mini">
+                  <strong>Ubicación</strong>
+                  <span id="summaryLocation">Sin dirección completa</span>
+                </div>
+                <div class="summary-mini">
+                  <strong>Participa en</strong>
+                  <span id="summaryParticipation">Sin actividades actuales</span>
+                </div>
+                <div class="summary-mini">
+                  <strong>Orientación</strong>
+                  <span id="summaryActivity">Sin actividad deseada</span>
+                </div>
+                <div class="summary-mini">
+                  <strong>Estado del formulario</strong>
+                  <span id="summaryStatus">Pendiente de completar los datos obligatorios.</span>
+                </div>
+              </div>
+            </section>
+          </aside>
         </form>
-        <p id="message" class="message"></p>
       </section>
     </main>
   </div>
@@ -122,28 +244,262 @@
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
+    const EDIT_FIELDS = [
+      "nombre",
+      "apellidos",
+      "fecha_nacimiento",
+      "edad",
+      "sexo",
+      "dni",
+      "domicilio",
+      "localidad",
+      "provincia",
+      "telefono_casa",
+      "movil_alumno",
+      "movil_padre",
+      "movil_madre",
+      "discapacidad",
+      "estudios",
+      "cursos",
+      "trabajo",
+      "notas_tecnico"
+    ];
+
+    const ACTIVITY_OPTIONS = [
+      "Formación",
+      "Empleo",
+      "Prácticas",
+      "Deporte",
+      "Ocio",
+      "Inserción social",
+      "Vida independiente",
+      "Voluntariado",
+      "Apoyo educativo",
+      "Taller ocupacional"
+    ];
+
     const form = document.getElementById("studentForm");
     const message = document.getElementById("message");
+    const heroTitle = document.getElementById("heroTitle");
+    const heroText = document.getElementById("heroText");
+    const modeBadge = document.getElementById("modeBadge");
+    const formTitle = document.getElementById("formTitle");
+    const formIntro = document.getElementById("formIntro");
+    const submitButton = document.getElementById("submitButton");
+    const viewRecordButton = document.getElementById("viewRecordButton");
+    const resetButton = document.getElementById("resetButton");
+    const summaryIntro = document.getElementById("summaryIntro");
+    const summaryName = document.getElementById("summaryName");
+    const summaryIdentity = document.getElementById("summaryIdentity");
+    const summaryContact = document.getElementById("summaryContact");
+    const summaryLocation = document.getElementById("summaryLocation");
+    const summaryParticipation = document.getElementById("summaryParticipation");
+    const summaryActivity = document.getElementById("summaryActivity");
+    const summaryStatus = document.getElementById("summaryStatus");
+    const actividadActualOptions = document.getElementById("actividadActualOptions");
+    const actividadDeseadaOptions = document.getElementById("actividadDeseadaOptions");
+    const actividadActualPreview = document.getElementById("actividadActualPreview");
+    const actividadDeseadaPreview = document.getElementById("actividadDeseadaPreview");
+
+    let currentEditDni = AbanikoStore.getStudentToEdit() || "";
+    let editingStudent = null;
+    let ageAutoFilled = false;
+    let selectedActivities = {
+      actividad_actual: [],
+      actividad_deseada: []
+    };
 
     function go(page) {
       window.open(page, "_self");
     }
 
-    function showMessage(text) {
+    function showMessage(text, type = "success") {
       message.textContent = text;
+      message.classList.remove("is-error", "is-success");
+      message.classList.add(type === "error" ? "is-error" : "is-success");
       clearTimeout(showMessage.timer);
-      showMessage.timer = setTimeout(() => message.textContent = "", 2600);
+      showMessage.timer = setTimeout(() => {
+        message.textContent = "";
+        message.classList.remove("is-error", "is-success");
+      }, 3200);
     }
 
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const payload = {
+    function normalizeDni(value) {
+      return String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+    }
+
+    function normalizeActivityValues(value) {
+      if (Array.isArray(value)) {
+        return [...new Set(value.map((item) => String(item || "").trim()).filter(Boolean))];
+      }
+      if (!value) {
+        return [];
+      }
+      const raw = String(value).trim();
+      if (!raw) {
+        return [];
+      }
+      if (raw.startsWith("[") && raw.endsWith("]")) {
+        try {
+          return normalizeActivityValues(JSON.parse(raw));
+        } catch (error) {
+          return [raw];
+        }
+      }
+      const parts = raw.split(/\s*[;,|]\s*/).map((item) => item.trim()).filter(Boolean);
+      return [...new Set(parts.length ? parts : [raw])];
+    }
+
+    function formatActivityValues(values, emptyText) {
+      return values.length ? values.join(" · ") : emptyText;
+    }
+
+    function renderActivityPreview(fieldName) {
+      const values = selectedActivities[fieldName];
+      const previewElement = fieldName === "actividad_actual" ? actividadActualPreview : actividadDeseadaPreview;
+      previewElement.textContent = fieldName === "actividad_actual"
+        ? formatActivityValues(values, "Sin actividades seleccionadas.")
+        : formatActivityValues(values, "Sin objetivos seleccionados.");
+    }
+
+    function renderActivityButtons(fieldName) {
+      const container = fieldName === "actividad_actual" ? actividadActualOptions : actividadDeseadaOptions;
+      const selectedValues = selectedActivities[fieldName];
+      container.innerHTML = ACTIVITY_OPTIONS.map((option) => {
+        const isSelected = selectedValues.includes(option);
+        return `<button type="button" class="choice-button${isSelected ? " is-selected" : ""}" data-field="${fieldName}" data-value="${option}" aria-pressed="${isSelected ? "true" : "false"}">${option}</button>`;
+      }).join("");
+      renderActivityPreview(fieldName);
+    }
+
+    function renderActivitySelectors() {
+      renderActivityButtons("actividad_actual");
+      renderActivityButtons("actividad_deseada");
+    }
+
+    function loadActivitySelections(student) {
+      selectedActivities = {
+        actividad_actual: normalizeActivityValues(student?.actividad_actual),
+        actividad_deseada: normalizeActivityValues(student?.actividad_deseada)
+      };
+      renderActivitySelectors();
+    }
+
+    function toggleActivity(fieldName, value) {
+      const values = selectedActivities[fieldName];
+      selectedActivities[fieldName] = values.includes(value)
+        ? values.filter((item) => item !== value)
+        : [...values, value];
+      renderActivityButtons(fieldName);
+      updateSummary();
+    }
+
+    function calculateAgeFromBirth(dateString) {
+      if (!dateString) {
+        return "";
+      }
+      const birthDate = new Date(dateString);
+      if (Number.isNaN(birthDate.getTime())) {
+        return "";
+      }
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age -= 1;
+      }
+      return age < 0 ? "" : String(age);
+    }
+
+    function getPreferredContact() {
+      return [
+        form.movil_alumno.value.trim(),
+        form.movil_padre.value.trim(),
+        form.movil_madre.value.trim(),
+        form.telefono_casa.value.trim()
+      ].find(Boolean) || "";
+    }
+
+    function updateSummary() {
+      const fullName = `${form.nombre.value.trim()} ${form.apellidos.value.trim()}`.trim();
+      const dni = normalizeDni(form.dni.value);
+      const city = form.localidad.value.trim();
+      const province = form.provincia.value.trim();
+      const phone = getPreferredContact();
+      const hasRequired = Boolean(
+        form.nombre.value.trim() &&
+        form.apellidos.value.trim() &&
+        dni &&
+        form.fecha_nacimiento.value &&
+        form.edad.value.trim() &&
+        form.sexo.value &&
+        form.domicilio.value.trim() &&
+        city &&
+        province
+      );
+
+      summaryName.textContent = fullName || "Alumno sin nombre";
+      summaryIdentity.textContent = dni ? `DNI: ${dni}` : "DNI pendiente";
+      summaryContact.textContent = phone || "Sin teléfonos indicados";
+      summaryLocation.textContent = [form.domicilio.value.trim(), city, province].filter(Boolean).join(", ") || "Sin dirección completa";
+      summaryParticipation.textContent = formatActivityValues(selectedActivities.actividad_actual, "Sin actividades actuales");
+      summaryActivity.textContent = formatActivityValues(selectedActivities.actividad_deseada, "Sin actividad deseada");
+      summaryStatus.textContent = hasRequired
+        ? "La ficha ya tiene completos los datos obligatorios."
+        : "Pendiente de completar los datos obligatorios.";
+    }
+
+    function updateModeUi() {
+      const isEditing = Boolean(editingStudent);
+      modeBadge.textContent = isEditing ? "Modo edición" : "Nuevo registro";
+      heroTitle.textContent = isEditing ? "Editar alumno" : "Alta de alumno";
+      heroText.textContent = isEditing
+        ? "Actualiza la ficha principal del alumno y guarda los cambios sin perder sus programas asociados."
+        : "Crea una ficha clara y profesional. Si usas el mismo DNI, la información del alumno se actualiza sin duplicar registros.";
+      formTitle.textContent = isEditing ? "Editar ficha principal" : "Datos principales del alumno";
+      formIntro.textContent = isEditing
+        ? "Estás modificando una ficha existente. Revisa especialmente DNI, contacto y actividades antes de guardar."
+        : "Rellena la ficha base y después completa, si hace falta, el resto de programas desde el menú del alumno.";
+      submitButton.textContent = isEditing ? "Guardar cambios" : "Guardar alumno";
+      resetButton.textContent = isEditing ? "Restaurar datos" : "Limpiar";
+      summaryIntro.textContent = isEditing
+        ? "Resumen rápido del alumno que estás modificando."
+        : "Mientras escribes, aquí verás un resumen rápido del registro.";
+    }
+
+    function fillForm(student) {
+      EDIT_FIELDS.forEach((key) => {
+        if (form[key]) {
+          form[key].value = student[key] || "";
+        }
+      });
+      form.mueve_solo_ciudad.checked = Boolean(student.mueve_solo_ciudad);
+      loadActivitySelections(student);
+      ageAutoFilled = true;
+    }
+
+    function loadEditingData() {
+      editingStudent = AbanikoStore.getStudent(currentEditDni);
+      updateModeUi();
+      viewRecordButton.disabled = !editingStudent;
+      if (!editingStudent) {
+        loadActivitySelections(null);
+        updateSummary();
+        return;
+      }
+      fillForm(editingStudent);
+      updateSummary();
+    }
+
+    function buildPayload() {
+      return {
         nombre: form.nombre.value.trim(),
         apellidos: form.apellidos.value.trim(),
         fecha_nacimiento: form.fecha_nacimiento.value,
         edad: form.edad.value.trim(),
         sexo: form.sexo.value,
-        dni: form.dni.value.trim().toUpperCase(),
+        dni: normalizeDni(form.dni.value),
         domicilio: form.domicilio.value.trim(),
         localidad: form.localidad.value.trim(),
         provincia: form.provincia.value.trim(),
@@ -155,33 +511,105 @@
         estudios: form.estudios.value.trim(),
         cursos: form.cursos.value.trim(),
         trabajo: form.trabajo.value.trim(),
-        actividad_actual: form.actividad_actual.value.trim(),
-        actividad_deseada: form.actividad_deseada.value.trim(),
+        actividad_actual: [...selectedActivities.actividad_actual],
+        actividad_deseada: [...selectedActivities.actividad_deseada],
         mueve_solo_ciudad: form.mueve_solo_ciudad.checked,
         notas_tecnico: form.notas_tecnico.value.trim()
       };
+    }
 
+    function validatePayload(payload) {
       if (!payload.nombre || !payload.apellidos || !payload.dni) {
-        showMessage("Completa nombre, apellidos y DNI.");
+        return "Completa nombre, apellidos y DNI.";
+      }
+      if (!payload.fecha_nacimiento || !payload.edad || !payload.sexo) {
+        return "Completa fecha de nacimiento, edad y sexo.";
+      }
+      if (!payload.domicilio || !payload.localidad || !payload.provincia) {
+        return "Completa domicilio, localidad y provincia.";
+      }
+      return "";
+    }
+
+    form.fecha_nacimiento.addEventListener("change", () => {
+      if (!form.edad.value.trim() || ageAutoFilled) {
+        form.edad.value = calculateAgeFromBirth(form.fecha_nacimiento.value);
+        ageAutoFilled = true;
+      }
+      updateSummary();
+    });
+
+    form.edad.addEventListener("input", () => {
+      ageAutoFilled = false;
+      updateSummary();
+    });
+
+    form.dni.addEventListener("blur", () => {
+      form.dni.value = normalizeDni(form.dni.value);
+      updateSummary();
+    });
+
+    [actividadActualOptions, actividadDeseadaOptions].forEach((container) => {
+      container.addEventListener("click", (event) => {
+        const button = event.target.closest(".choice-button");
+        if (!button) {
+          return;
+        }
+        toggleActivity(button.dataset.field, button.dataset.value);
+      });
+    });
+
+    Array.from(form.elements).forEach((element) => {
+      if (!element.name) {
+        return;
+      }
+      element.addEventListener("input", updateSummary);
+      element.addEventListener("change", updateSummary);
+    });
+
+    viewRecordButton.addEventListener("click", () => {
+      const dni = normalizeDni(form.dni.value) || currentEditDni;
+      if (!dni) {
+        showMessage("Guarda o carga un alumno antes de abrir su ficha.", "error");
+        return;
+      }
+      AbanikoStore.setSelectedStudent(dni);
+      go("mostrar_datos_alumnos.html");
+    });
+
+    form.addEventListener("reset", () => {
+      window.setTimeout(() => {
+        if (editingStudent) {
+          fillForm(editingStudent);
+        } else {
+          loadActivitySelections(null);
+        }
+        updateSummary();
+      }, 0);
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const payload = buildPayload();
+      const validationError = validatePayload(payload);
+      if (validationError) {
+        showMessage(validationError, "error");
         return;
       }
 
-      AbanikoStore.upsertStudent(payload);
+      AbanikoStore.upsertStudent(payload, editingStudent ? currentEditDni : null);
       AbanikoStore.setSelectedStudent(payload.dni);
       AbanikoStore.clearStudentToEdit();
-      showMessage("Alumno guardado correctamente.");
-      form.reset();
+      currentEditDni = payload.dni;
+      editingStudent = AbanikoStore.getStudent(payload.dni);
+      updateModeUi();
+      viewRecordButton.disabled = false;
+      showMessage("Ficha guardada correctamente.");
+      updateSummary();
     });
 
-    (function loadEditingData() {
-      const student = AbanikoStore.getStudent(AbanikoStore.getStudentToEdit());
-      if (!student) return;
-      for (const key of ["nombre", "apellidos", "fecha_nacimiento", "edad", "sexo", "dni", "domicilio", "localidad", "provincia", "telefono_casa", "movil_alumno", "movil_padre", "movil_madre", "discapacidad", "estudios", "cursos", "trabajo", "actividad_actual", "actividad_deseada", "notas_tecnico"]) {
-        if (form[key]) form[key].value = student[key] || "";
-      }
-      form.mueve_solo_ciudad.checked = Boolean(student.mueve_solo_ciudad);
-    })();
+    loadEditingData();
+    updateSummary();
   </script>
 </body>
 </html>
-

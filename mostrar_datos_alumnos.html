@@ -1,4 +1,4 @@
-�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,11 +8,16 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Ficha del alumno</h1><p>Vista completa de la información guardada en todos los formularios.</p></section>
-    <section class="panel">
-      <div class="button-row" style="margin-bottom: 16px;">
+    <section class="hero">
+      <h1>Ficha del alumno</h1>
+      <p>Vista completa de la información guardada en la ficha principal, los programas y el histórico asociado al alumno.</p>
+    </section>
+
+    <section class="panel section-shell">
+      <div class="button-row">
         <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Volver</button>
         <button type="button" class="btn-secondary" onclick="editCurrent()">Editar</button>
+        <button type="button" class="btn-secondary" onclick="openInterviews()">Entrevistas</button>
       </div>
       <div id="content" class="summary-box"></div>
     </section>
@@ -22,21 +27,51 @@
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
-    function go(page) { window.open(page, "_self"); }
+    function go(page) {
+      window.open(page, "_self");
+    }
+
     function editCurrent() {
       const student = AbanikoStore.getSelectedStudent();
       if (!student) return;
       AbanikoStore.setStudentToEdit(student.dni);
       go("editar_alumno.html");
     }
-    function row(label, value) {
-      return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(value || "No indicado")}</span></div>`;
+
+    function openInterviews() {
+      const student = AbanikoStore.getSelectedStudent();
+      if (!student) return;
+      AbanikoStore.setSelectedStudent(student.dni);
+      go("fichas_entrevista_alumno.html");
     }
+
+    function formatValue(value) {
+      if (Array.isArray(value)) {
+        return value.length ? value.join(" · ") : "No indicado";
+      }
+      if (value && typeof value === "object") {
+        return JSON.stringify(value);
+      }
+      return value || "No indicado";
+    }
+
+    function row(label, value) {
+      return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(formatValue(value))}</span></div>`;
+    }
+
     const student = AbanikoStore.getSelectedStudent();
     const content = document.getElementById("content");
+
     if (!student) {
       content.innerHTML = '<p class="empty-state">No hay ningún alumno seleccionado.</p>';
     } else {
+      const interviewRecords = Array.isArray(student.interviewRecords) ? student.interviewRecords : [];
+      const latestInterview = interviewRecords.length
+        ? AbanikoStore.getLatestInterviewRevision(
+            [...interviewRecords].sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0]
+          )
+        : null;
+
       content.innerHTML = [
         row("Nombre", `${student.nombre || ""} ${student.apellidos || ""}`.trim()),
         row("DNI", student.dni),
@@ -54,16 +89,17 @@
         row("Estudios", student.estudios),
         row("Cursos", student.cursos),
         row("Trabajo", student.trabajo),
-        row("Actividad actual", student.actividad_actual),
+        row("Actividad en la que participa", student.actividad_actual),
         row("Actividad deseada", student.actividad_deseada),
         row("Notas técnico", student.notas_tecnico),
-        row("Datos de interés", JSON.stringify(student.interest || {})),
-        row("Programa deportes", JSON.stringify(student.sports || {})),
-        row("Programa inserción", JSON.stringify(student.insertion || {})),
-        row("Programa ocio", JSON.stringify(student.leisure || {}))
+        row("Fichas de entrevista guardadas", interviewRecords.length),
+        row("Última entrevista", latestInterview ? `${latestInterview.schoolYear || "Sin curso"} - ${AbanikoStore.formatDate(latestInterview.interviewDate || "")}` : "Sin entrevistas"),
+        row("Datos de interés", student.interest || {}),
+        row("Programa deportes", student.sports || {}),
+        row("Programa inserción", student.insertion || {}),
+        row("Programa ocio", student.leisure || {})
       ].join("");
     }
   </script>
 </body>
 </html>
-

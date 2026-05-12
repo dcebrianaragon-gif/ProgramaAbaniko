@@ -1,4 +1,4 @@
-�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -78,10 +78,22 @@
       go("editar_alumno.html");
     }
 
+    function toActivityText(value) {
+      if (Array.isArray(value)) return value.join(" ");
+      return String(value || "");
+    }
+
     function matchesText(student, term) {
       if (!term) return true;
-      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${student.actividad_deseada || ""} ${student.localidad || ""}`.toLowerCase();
+      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${toActivityText(student.actividad_actual)} ${toActivityText(student.actividad_deseada)} ${student.localidad || ""}`.toLowerCase();
       return bag.includes(term);
+    }
+
+    function formatList(value, emptyText) {
+      if (Array.isArray(value)) {
+        return value.length ? value.join(" · ") : emptyText;
+      }
+      return value || emptyText;
     }
 
     function renderStudents() {
@@ -116,7 +128,8 @@
               <span>Edad: ${AbanikoStore.escapeHtml(student.edad || "No indicada")}</span>
               <span>Sexo: ${AbanikoStore.escapeHtml(student.sexo || "No indicado")}</span>
               <span>Localidad: ${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span>
-              <span>Actividad deseada: ${AbanikoStore.escapeHtml(student.actividad_deseada || "No indicada")}</span>
+              <span>Participa en: ${AbanikoStore.escapeHtml(formatList(student.actividad_actual, "No indicada"))}</span>
+              <span>Actividad deseada: ${AbanikoStore.escapeHtml(formatList(student.actividad_deseada, "No indicada"))}</span>
             </div>
           </div>
           <div class="actions">

@@ -1,25 +1,98 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Programa Insercion</title>
+  <title>Programa Inserción</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Programa inserción</h1><p>Registra información de inserción social o laboral para un alumno ya creado.</p></section>
-    <section class="panel">
-      <div class="button-row" style="margin-bottom: 16px;"><button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button></div>
-      <form id="insertionForm" class="form-grid">
-        <div class="field"><label for="dni">DNI del alumno</label><input id="dni" required></div>
-        <div class="field"><label for="situacion">Situación actual</label><input id="situacion"></div>
-        <div class="field"><label for="objetivo">Objetivo de inserción</label><textarea id="objetivo"></textarea></div>
-        <div class="field"><label for="seguimiento">Seguimiento</label><textarea id="seguimiento"></textarea></div>
-        <div class="button-row"><button type="submit" class="btn-primary">Guardar programa</button></div>
-      </form>
-      <p id="message" class="message"></p>
-    </section>
+    <main class="page-stack">
+      <section class="hero">
+        <span class="hero-badge">Programa del alumno</span>
+        <h1>Programa inserción</h1>
+        <p>Recoge la situación actual del alumno, su objetivo de inserción y el seguimiento necesario con una presentación más cuidada.</p>
+      </section>
+
+      <section class="program-grid">
+        <section class="panel section-shell program-shell">
+          <div class="section-head">
+            <div>
+              <h2>Seguimiento de inserción</h2>
+              <p>Un mismo apartado para revisar contexto, meta principal y observaciones de evolución.</p>
+            </div>
+            <div class="button-row">
+              <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
+              <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Consultar</button>
+            </div>
+          </div>
+
+          <div class="program-card-grid">
+            <article class="program-note">
+              <strong>Situación actual</strong>
+              <span>Describe brevemente el punto de partida del alumno.</span>
+            </article>
+            <article class="program-note">
+              <strong>Objetivo</strong>
+              <span>Resume la meta de inserción social, formativa o laboral que se quiere trabajar.</span>
+            </article>
+            <article class="program-note">
+              <strong>Seguimiento</strong>
+              <span>Incluye avances, barreras detectadas o próximos pasos.</span>
+            </article>
+          </div>
+
+          <form id="insertionForm" class="program-form">
+            <section class="panel-soft section-shell program-section">
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="studentSelect">Alumno</label>
+                  <select id="studentSelect" required></select>
+                  <p class="field-hint">Selecciona al alumno por nombre para cargar su seguimiento de inserción.</p>
+                </div>
+                <div class="selection-card">
+                  <strong>Estado del apartado</strong>
+                  <span id="statusText">Selecciona un alumno para empezar.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel-soft section-shell program-section">
+              <div class="field">
+                <label for="situacion">Situación actual</label>
+                <input id="situacion" placeholder="Ej. buscando formación, en prácticas, pendiente de entrevistas...">
+              </div>
+              <div class="field">
+                <label for="objetivo">Objetivo de inserción</label>
+                <textarea id="objetivo" class="large-textarea" placeholder="Describe la meta principal que se quiere alcanzar"></textarea>
+              </div>
+              <div class="field">
+                <label for="seguimiento">Seguimiento</label>
+                <textarea id="seguimiento" class="large-textarea" placeholder="Escribe el seguimiento, acuerdos o próximos pasos"></textarea>
+              </div>
+            </section>
+
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Guardar programa</button>
+            </div>
+          </form>
+          <p id="message" class="message"></p>
+        </section>
+
+        <aside class="program-sidebar">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Alumno cargado</h2>
+                <p>Datos rápidos para mantener el contexto mientras trabajas.</p>
+              </div>
+            </div>
+            <div id="studentSummary" class="summary-box"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
   </div>
   <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
@@ -29,10 +102,41 @@
     function go(page) { window.open(page, "_self"); }
     const form = document.getElementById("insertionForm");
     const message = document.getElementById("message");
-    const dniInput = document.getElementById("dni");
+    const statusText = document.getElementById("statusText");
+    const summary = document.getElementById("studentSummary");
+    const studentSelect = document.getElementById("studentSelect");
     const situacionInput = document.getElementById("situacion");
     const objetivoInput = document.getElementById("objetivo");
     const seguimientoInput = document.getElementById("seguimiento");
+
+    function populateStudentSelect(selectedDni = "") {
+      const students = AbanikoStore.getStudentsSortedByName();
+      if (students.length === 0) {
+        studentSelect.innerHTML = '<option value="">No hay alumnos guardados</option>';
+        studentSelect.disabled = true;
+        return;
+      }
+      studentSelect.disabled = false;
+      studentSelect.innerHTML = ['<option value="">Selecciona un alumno</option>']
+        .concat(students.map((student) => `
+          <option value="${student.dni}" ${String(student.dni) === String(selectedDni) ? "selected" : ""}>
+            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentDisplayName(student))}
+          </option>
+        `))
+        .join("");
+    }
+
+    function renderStudentSummary(student) {
+      if (!student) {
+        summary.innerHTML = '<p class="empty-state">No hay un alumno válido cargado todavía.</p>';
+        return;
+      }
+      summary.innerHTML = `
+        <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+        <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span></div>
+        <div class="summary-row"><strong>Trabajo</strong><span>${AbanikoStore.escapeHtml(student.trabajo || "No indicado")}</span></div>
+      `;
+    }
 
     function loadStudentSection(dni) {
       const student = AbanikoStore.getStudent(dni);
@@ -40,6 +144,8 @@
         situacionInput.value = "";
         objetivoInput.value = "";
         seguimientoInput.value = "";
+        statusText.textContent = "Selecciona un alumno para empezar.";
+        renderStudentSummary(null);
         return;
       }
 
@@ -47,13 +153,17 @@
       situacionInput.value = insertion.situacion || "";
       objetivoInput.value = insertion.objetivo || "";
       seguimientoInput.value = insertion.seguimiento || "";
+      statusText.textContent = "Alumno cargado correctamente. Puedes actualizar el seguimiento.";
+      renderStudentSummary(student);
     }
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const dni = dniInput.value.trim().toUpperCase();
+      const dni = studentSelect.value;
       if (!AbanikoStore.getStudent(dni)) {
-        message.textContent = "Ese DNI no existe. Crea primero el alumno.";
+        message.textContent = "Selecciona un alumno válido.";
+        message.className = "message is-error";
+        statusText.textContent = "Selecciona un alumno válido.";
         return;
       }
       AbanikoStore.patchStudentSection(dni, "insertion", {
@@ -63,19 +173,25 @@
       });
       AbanikoStore.setSelectedStudent(dni);
       message.textContent = "Programa de inserción guardado.";
-      dniInput.value = dni;
+      message.className = "message is-success";
       loadStudentSection(dni);
     });
 
-    dniInput.addEventListener("change", () => loadStudentSection(dniInput.value.trim().toUpperCase()));
-    dniInput.addEventListener("blur", () => loadStudentSection(dniInput.value.trim().toUpperCase()));
+    studentSelect.addEventListener("change", () => {
+      const dni = studentSelect.value;
+      if (dni) {
+        AbanikoStore.setSelectedStudent(dni);
+      }
+      loadStudentSection(dni);
+    });
 
     const selectedStudent = AbanikoStore.getSelectedStudent();
+    populateStudentSelect(selectedStudent?.dni || "");
     if (selectedStudent) {
-      dniInput.value = selectedStudent.dni || "";
       loadStudentSection(selectedStudent.dni || "");
+    } else {
+      renderStudentSummary(null);
     }
   </script>
 </body>
 </html>
-

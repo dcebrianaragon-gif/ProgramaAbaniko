@@ -383,9 +383,9 @@
       "teacherName": "David",
       "teacherRole": "admin",
       "loginAt": "2026-05-11T11:16:14.513Z",
-      "logoutAt": "",
+      "logoutAt": "2026-05-12T07:16:27.072Z",
       "createdAt": "2026-05-11T11:16:14.513Z",
-      "updatedAt": "2026-05-11T11:16:14.513Z"
+      "updatedAt": "2026-05-12T07:16:27.072Z"
     },
     {
       "id": 1778499693870,
@@ -406,6 +406,76 @@
       "logoutAt": "2026-05-11T11:45:33.921Z",
       "createdAt": "2026-05-11T11:41:42.978Z",
       "updatedAt": "2026-05-11T11:45:33.921Z"
+    },
+    {
+      "id": 1778570240202,
+      "teacherId": 1778107616372,
+      "teacherName": "David",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T07:16:27.072Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-12T07:16:27.072Z",
+      "updatedAt": "2026-05-12T07:16:27.072Z"
+    },
+    {
+      "id": 1778570305986,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T07:16:48.553Z",
+      "logoutAt": "2026-05-12T07:22:27.505Z",
+      "createdAt": "2026-05-12T07:16:48.553Z",
+      "updatedAt": "2026-05-12T07:22:27.505Z"
+    },
+    {
+      "id": 1778570624018,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T07:22:27.505Z",
+      "logoutAt": "2026-05-12T07:35:12.501Z",
+      "createdAt": "2026-05-12T07:22:27.505Z",
+      "updatedAt": "2026-05-12T07:35:12.501Z"
+    },
+    {
+      "id": 1778571351457,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T07:35:12.501Z",
+      "logoutAt": "2026-05-12T07:47:50.395Z",
+      "createdAt": "2026-05-12T07:35:12.501Z",
+      "updatedAt": "2026-05-12T07:47:50.395Z"
+    },
+    {
+      "id": 1778572087604,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T07:47:50.395Z",
+      "logoutAt": "2026-05-12T08:06:47.190Z",
+      "createdAt": "2026-05-12T07:47:50.395Z",
+      "updatedAt": "2026-05-12T08:06:47.190Z"
+    },
+    {
+      "id": 1778573251967,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T08:06:47.190Z",
+      "logoutAt": "2026-05-12T08:19:10.390Z",
+      "createdAt": "2026-05-12T08:06:47.190Z",
+      "updatedAt": "2026-05-12T08:19:10.390Z"
+    },
+    {
+      "id": 1778574025601,
+      "teacherId": 1778067149021,
+      "teacherName": "emilio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-12T08:19:10.390Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-12T08:19:10.390Z",
+      "updatedAt": "2026-05-12T08:19:10.390Z"
     }
   ],
   "absences": [
@@ -424,5 +494,5 @@
       "updatedAt": "2026-05-06T22:50:42.361Z"
     }
   ],
-  "updatedAt": "2026-05-11T11:45:33.924Z"
+  "updatedAt": "2026-05-12T08:19:10.395Z"
 }

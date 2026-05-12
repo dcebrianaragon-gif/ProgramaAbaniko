@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,19 +8,107 @@
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Programa deportes</h1><p>Guarda preferencias deportivas asociadas a un alumno.</p></section>
-    <section class="panel">
-      <div class="button-row" style="margin-bottom: 16px;"><button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button></div>
-      <form id="sportsForm" class="form-grid">
-        <div class="field"><label for="dni">DNI del alumno</label><input id="dni" required></div>
-        <div class="field"><label><input id="practica_deporte" type="checkbox"> Practica deporte</label></div>
-        <div class="field"><label><input id="gusto_actividad_fisica" type="checkbox"> Le gusta la actividad fisica</label></div>
-        <div class="field"><label><input id="gusto_jugar_grupo" type="checkbox"> Le gusta jugar en grupo</label></div>
-        <div class="field"><label><input id="entender_seguir_normas" type="checkbox"> Entiende y sigue normas</label></div>
-        <div class="button-row"><button type="submit" class="btn-primary">Guardar programa</button></div>
-      </form>
-      <p id="message" class="message"></p>
-    </section>
+    <main class="page-stack">
+      <section class="hero">
+        <span class="hero-badge">Programa del alumno</span>
+        <h1>Programa deportes</h1>
+        <p>Registra de forma visual si el alumno practica deporte, disfruta de la actividad física y cómo se relaciona en dinámicas de grupo.</p>
+      </section>
+
+      <section class="program-grid">
+        <section class="panel section-shell program-shell">
+          <div class="section-head">
+            <div>
+              <h2>Perfil deportivo</h2>
+              <p>Marca las opciones que describen mejor al alumno en este programa.</p>
+            </div>
+            <div class="button-row">
+              <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
+              <button type="button" class="btn-secondary" onclick="go('Consultar_Alumno.html')">Consultar</button>
+            </div>
+          </div>
+
+          <div class="program-card-grid">
+            <article class="program-note">
+              <strong>Práctica real</strong>
+              <span>Indica si el alumno ya participa en alguna actividad deportiva.</span>
+            </article>
+            <article class="program-note">
+              <strong>Interés y motivación</strong>
+              <span>Valora si disfruta del movimiento y si responde bien en dinámicas activas.</span>
+            </article>
+            <article class="program-note">
+              <strong>Grupo y normas</strong>
+              <span>Ayuda a saber si puede encajar en actividades compartidas o regladas.</span>
+            </article>
+          </div>
+
+          <form id="sportsForm" class="program-form">
+            <section class="panel-soft section-shell program-section">
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="studentSelect">Alumno</label>
+                  <select id="studentSelect" required></select>
+                  <p class="field-hint">Selecciona al alumno por nombre para cargar su perfil deportivo.</p>
+                </div>
+                <div class="selection-card">
+                  <strong>Estado del apartado</strong>
+                  <span id="statusText">Selecciona un alumno para empezar.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel-soft section-shell program-section">
+              <label class="checkbox-card" for="practica_deporte">
+                <input id="practica_deporte" type="checkbox">
+                <span>
+                  <strong>Practica deporte</strong>
+                  <span>Actualmente participa en actividades deportivas o físicas.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="gusto_actividad_fisica">
+                <input id="gusto_actividad_fisica" type="checkbox">
+                <span>
+                  <strong>Le gusta la actividad física</strong>
+                  <span>Muestra interés o motivación por juegos activos, movimiento o ejercicio.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="gusto_jugar_grupo">
+                <input id="gusto_jugar_grupo" type="checkbox">
+                <span>
+                  <strong>Le gusta jugar en grupo</strong>
+                  <span>Se siente cómodo en actividades compartidas o cooperativas.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="entender_seguir_normas">
+                <input id="entender_seguir_normas" type="checkbox">
+                <span>
+                  <strong>Entiende y sigue normas</strong>
+                  <span>Puede comprender y respetar reglas básicas durante la actividad.</span>
+                </span>
+              </label>
+            </section>
+
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Guardar programa</button>
+            </div>
+          </form>
+          <p id="message" class="message"></p>
+        </section>
+
+        <aside class="program-sidebar">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Alumno cargado</h2>
+                <p>Resumen básico para revisar antes de guardar.</p>
+              </div>
+            </div>
+            <div id="studentSummary" class="summary-box"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
   </div>
   <script src="firebase-config.js"></script>
   <script src="abaniko-app.js"></script>
@@ -30,11 +118,42 @@
     function go(page) { window.open(page, "_self"); }
     const form = document.getElementById("sportsForm");
     const message = document.getElementById("message");
-    const dniInput = document.getElementById("dni");
+    const statusText = document.getElementById("statusText");
+    const summary = document.getElementById("studentSummary");
+    const studentSelect = document.getElementById("studentSelect");
     const practicaInput = document.getElementById("practica_deporte");
     const actividadInput = document.getElementById("gusto_actividad_fisica");
     const grupoInput = document.getElementById("gusto_jugar_grupo");
     const normasInput = document.getElementById("entender_seguir_normas");
+
+    function populateStudentSelect(selectedDni = "") {
+      const students = AbanikoStore.getStudentsSortedByName();
+      if (students.length === 0) {
+        studentSelect.innerHTML = '<option value="">No hay alumnos guardados</option>';
+        studentSelect.disabled = true;
+        return;
+      }
+      studentSelect.disabled = false;
+      studentSelect.innerHTML = ['<option value="">Selecciona un alumno</option>']
+        .concat(students.map((student) => `
+          <option value="${student.dni}" ${String(student.dni) === String(selectedDni) ? "selected" : ""}>
+            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentDisplayName(student))}
+          </option>
+        `))
+        .join("");
+    }
+
+    function renderStudentSummary(student) {
+      if (!student) {
+        summary.innerHTML = '<p class="empty-state">No hay un alumno válido cargado todavía.</p>';
+        return;
+      }
+      summary.innerHTML = `
+        <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+        <div class="summary-row"><strong>Localidad</strong><span>${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span></div>
+        <div class="summary-row"><strong>Participa en</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_actual) ? student.actividad_actual.join(" · ") : (student.actividad_actual || "No indicada"))}</span></div>
+      `;
+    }
 
     function loadStudentSection(dni) {
       const student = AbanikoStore.getStudent(dni);
@@ -43,6 +162,8 @@
         actividadInput.checked = false;
         grupoInput.checked = false;
         normasInput.checked = false;
+        statusText.textContent = "Selecciona un alumno para empezar.";
+        renderStudentSummary(null);
         return;
       }
 
@@ -51,13 +172,17 @@
       actividadInput.checked = Boolean(sports.gusto_actividad_fisica);
       grupoInput.checked = Boolean(sports.gusto_jugar_grupo);
       normasInput.checked = Boolean(sports.entender_seguir_normas);
+      statusText.textContent = "Alumno cargado correctamente. Puedes actualizar su perfil deportivo.";
+      renderStudentSummary(student);
     }
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const dni = dniInput.value.trim().toUpperCase();
+      const dni = studentSelect.value;
       if (!AbanikoStore.getStudent(dni)) {
-        message.textContent = "Ese DNI no existe. Crea primero el alumno.";
+        message.textContent = "Selecciona un alumno válido.";
+        message.className = "message is-error";
+        statusText.textContent = "Selecciona un alumno válido.";
         return;
       }
       AbanikoStore.patchStudentSection(dni, "sports", {
@@ -68,19 +193,25 @@
       });
       AbanikoStore.setSelectedStudent(dni);
       message.textContent = "Programa de deportes guardado.";
-      dniInput.value = dni;
+      message.className = "message is-success";
       loadStudentSection(dni);
     });
 
-    dniInput.addEventListener("change", () => loadStudentSection(dniInput.value.trim().toUpperCase()));
-    dniInput.addEventListener("blur", () => loadStudentSection(dniInput.value.trim().toUpperCase()));
+    studentSelect.addEventListener("change", () => {
+      const dni = studentSelect.value;
+      if (dni) {
+        AbanikoStore.setSelectedStudent(dni);
+      }
+      loadStudentSection(dni);
+    });
 
     const selectedStudent = AbanikoStore.getSelectedStudent();
+    populateStudentSelect(selectedStudent?.dni || "");
     if (selectedStudent) {
-      dniInput.value = selectedStudent.dni || "";
       loadStudentSection(selectedStudent.dni || "");
+    } else {
+      renderStudentSummary(null);
     }
   </script>
 </body>
 </html>
-
