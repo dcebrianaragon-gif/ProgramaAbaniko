@@ -42,6 +42,5 @@ echo.
 echo Firebase conectado correctamente.
 echo Ahora puedes sincronizar desde la pantalla de nube.
 echo.
-start "" "http://127.0.0.1:3000/configurar_nube.html"
 pause
 endlocal
