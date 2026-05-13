@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurar nube</title>
-  <link rel="stylesheet" href="abaniko-styles.css">
+  <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
@@ -64,8 +64,8 @@
       </section>
     </main>
   </div>
-  <script src="firebase-config.js"></script>
-  <script src="abaniko-app.js"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/abaniko-app.js"></script>
   <script>
     function go(page) { window.open(page, "_self"); }
     const cloudStatusBox = document.getElementById("cloudStatusBox");
@@ -117,7 +117,7 @@
     }
 
     function openRules() {
-      go("firebase-firestore.rules");
+      window.open("https://console.firebase.google.com/project/programaabaniko/firestore/rules", "_blank", "noopener");
     }
 
     AbanikoStore.startBackendAutoSync(refreshCloudStatus);

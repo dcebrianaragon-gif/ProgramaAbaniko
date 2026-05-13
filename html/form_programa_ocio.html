@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Programa de deportes</title>
-  <link rel="stylesheet" href="abaniko-styles.css">
+  <title>Programa de ocio</title>
+  <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
       <section class="hero">
         <span class="hero-badge">Programa del alumno</span>
-        <h1>Programa de deportes</h1>
-        <p>Registra de forma visual si el alumno practica deporte, disfruta de la actividad física y cómo se relaciona en dinámicas de grupo.</p>
+        <h1>Programa de ocio</h1>
+        <p>Recoge aficiones, preferencias y propuestas de ocio en una pantalla más agradable, útil y coherente con el resto de la gestión.</p>
       </section>
 
       <section class="program-grid">
         <section class="panel section-shell program-shell">
           <div class="section-head">
             <div>
-              <h2>Perfil deportivo</h2>
-              <p>Marca las opciones que describen mejor al alumno en este programa.</p>
+              <h2>Perfil de ocio</h2>
+              <p>Este apartado ayuda a entender qué le gusta al alumno y qué tipo de propuestas pueden encajar mejor.</p>
             </div>
             <div class="button-row">
               <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
@@ -30,26 +30,26 @@
 
           <div class="program-card-grid">
             <article class="program-note">
-              <strong>Práctica real</strong>
-              <span>Indica si el alumno ya participa en alguna actividad deportiva.</span>
+              <strong>Aficiones</strong>
+              <span>Intereses espontáneos, hobbies o actividades que ya disfruta.</span>
             </article>
             <article class="program-note">
-              <strong>Interés y motivación</strong>
-              <span>Valora si disfruta del movimiento y si responde bien en dinámicas activas.</span>
+              <strong>Preferencias</strong>
+              <span>Cómo prefiere participar: en grupo, tranquilo, al aire libre, creativo, etc.</span>
             </article>
             <article class="program-note">
-              <strong>Grupo y normas</strong>
-              <span>Ayuda a saber si puede encajar en actividades compartidas o regladas.</span>
+              <strong>Propuesta de ocio</strong>
+              <span>Sugerencias concretas adaptadas al alumno para futuros pasos.</span>
             </article>
           </div>
 
-          <form id="sportsForm" class="program-form">
+          <form id="leisureForm" class="program-form">
             <section class="panel-soft section-shell program-section">
               <div class="form-grid two-columns">
                 <div class="field">
                   <label for="studentSelect">Alumno</label>
                   <select id="studentSelect" required></select>
-                  <p class="field-hint">Selecciona al alumno por nombre para cargar su perfil deportivo.</p>
+                  <p class="field-hint">Selecciona al alumno por nombre para recuperar su perfil de ocio.</p>
                 </div>
                 <div class="selection-card">
                   <strong>Estado del apartado</strong>
@@ -59,38 +59,22 @@
             </section>
 
             <section class="panel-soft section-shell program-section">
-              <label class="checkbox-card" for="practica_deporte">
-                <input id="practica_deporte" type="checkbox">
-                <span>
-                  <strong>Practica deporte</strong>
-                  <span>Actualmente participa en actividades deportivas o físicas.</span>
-                </span>
-              </label>
-              <label class="checkbox-card" for="gusto_actividad_fisica">
-                <input id="gusto_actividad_fisica" type="checkbox">
-                <span>
-                  <strong>Le gusta la actividad física</strong>
-                  <span>Muestra interés o motivación por juegos activos, movimiento o ejercicio.</span>
-                </span>
-              </label>
-              <label class="checkbox-card" for="gusto_jugar_grupo">
-                <input id="gusto_jugar_grupo" type="checkbox">
-                <span>
-                  <strong>Le gusta jugar en grupo</strong>
-                  <span>Se siente cómodo en actividades compartidas o cooperativas.</span>
-                </span>
-              </label>
-              <label class="checkbox-card" for="entender_seguir_normas">
-                <input id="entender_seguir_normas" type="checkbox">
-                <span>
-                  <strong>Entiende y sigue normas</strong>
-                  <span>Puede comprender y respetar reglas básicas durante la actividad.</span>
-                </span>
-              </label>
+              <div class="field">
+                <label for="aficiones">Aficiones</label>
+                <textarea id="aficiones" class="large-textarea" placeholder="Describe aficiones, gustos o intereses que ya se conocen"></textarea>
+              </div>
+              <div class="field">
+                <label for="preferencias">Preferencias</label>
+                <textarea id="preferencias" class="large-textarea" placeholder="Añade cómo prefiere disfrutar su tiempo de ocio"></textarea>
+              </div>
+              <div class="field">
+                <label for="propuesta">Propuesta de ocio</label>
+                <textarea id="propuesta" class="large-textarea" placeholder="Escribe propuestas adaptadas al alumno y sus intereses"></textarea>
+              </div>
             </section>
 
             <div class="button-row">
-              <button type="submit" class="btn-primary">Guardar programa de deportes</button>
+              <button type="submit" class="btn-primary">Guardar programa de ocio</button>
             </div>
           </form>
           <p id="message" class="message"></p>
@@ -101,7 +85,7 @@
             <div class="section-head">
               <div>
                 <h2>Alumno cargado</h2>
-                <p>Resumen básico para revisar antes de guardar.</p>
+                <p>Pequeño resumen para mantener el contexto mientras rellenas el apartado.</p>
               </div>
             </div>
             <div id="studentSummary" class="summary-box"></div>
@@ -110,21 +94,20 @@
       </section>
     </main>
   </div>
-  <script src="firebase-config.js"></script>
-  <script src="abaniko-app.js"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
     function go(page) { window.open(page, "_self"); }
-    const form = document.getElementById("sportsForm");
+    const form = document.getElementById("leisureForm");
     const message = document.getElementById("message");
     const statusText = document.getElementById("statusText");
     const summary = document.getElementById("studentSummary");
     const studentSelect = document.getElementById("studentSelect");
-    const practicaInput = document.getElementById("practica_deporte");
-    const actividadInput = document.getElementById("gusto_actividad_fisica");
-    const grupoInput = document.getElementById("gusto_jugar_grupo");
-    const normasInput = document.getElementById("entender_seguir_normas");
+    const aficionesInput = document.getElementById("aficiones");
+    const preferenciasInput = document.getElementById("preferencias");
+    const propuestaInput = document.getElementById("propuesta");
 
     function populateStudentSelect(selectedDni = "") {
       const students = AbanikoStore.getStudentsSortedByName();
@@ -150,29 +133,27 @@
       }
       summary.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
-        <div class="summary-row"><strong>Localidad</strong><span>${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span></div>
         <div class="summary-row"><strong>Participa en</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_actual) ? student.actividad_actual.join(" · ") : (student.actividad_actual || "No indicada"))}</span></div>
+        <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span></div>
       `;
     }
 
     function loadStudentSection(dni) {
       const student = AbanikoStore.getStudent(dni);
       if (!student) {
-        practicaInput.checked = false;
-        actividadInput.checked = false;
-        grupoInput.checked = false;
-        normasInput.checked = false;
+        aficionesInput.value = "";
+        preferenciasInput.value = "";
+        propuestaInput.value = "";
         statusText.textContent = "Selecciona un alumno para empezar.";
         renderStudentSummary(null);
         return;
       }
 
-      const sports = student.sports || {};
-      practicaInput.checked = Boolean(sports.practica_deporte);
-      actividadInput.checked = Boolean(sports.gusto_actividad_fisica);
-      grupoInput.checked = Boolean(sports.gusto_jugar_grupo);
-      normasInput.checked = Boolean(sports.entender_seguir_normas);
-      statusText.textContent = "Alumno cargado correctamente. Puedes actualizar su perfil deportivo.";
+      const leisure = student.leisure || {};
+      aficionesInput.value = leisure.aficiones || "";
+      preferenciasInput.value = leisure.preferencias || "";
+      propuestaInput.value = leisure.propuesta || "";
+      statusText.textContent = "Alumno cargado correctamente. Puedes completar su perfil de ocio.";
       renderStudentSummary(student);
     }
 
@@ -185,14 +166,13 @@
         statusText.textContent = "Selecciona un alumno válido.";
         return;
       }
-      AbanikoStore.patchStudentSection(dni, "sports", {
-        practica_deporte: practicaInput.checked,
-        gusto_actividad_fisica: actividadInput.checked,
-        gusto_jugar_grupo: grupoInput.checked,
-        entender_seguir_normas: normasInput.checked
+      AbanikoStore.patchStudentSection(dni, "leisure", {
+        aficiones: aficionesInput.value.trim(),
+        preferencias: preferenciasInput.value.trim(),
+        propuesta: propuestaInput.value.trim()
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Programa de deportes guardado.";
+      message.textContent = "Programa de ocio guardado.";
       message.className = "message is-success";
       loadStudentSection(dni);
     });

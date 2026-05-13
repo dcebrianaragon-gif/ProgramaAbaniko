@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programa Abaniko</title>
+  <link rel="icon" href="../assets/abaniko-logo.png" type="image/png">
+  <link rel="shortcut icon" href="../assets/abaniko-logo.ico" type="image/x-icon">
+  <link rel="stylesheet" href="../css/abaniko-styles.css">
+</head>
+<body>
+  <div class="container">
+    <main class="page-stack">
+      <section class="hero">
+        <div class="hero-profile">
+          <img src="../assets/abaniko-logo.png" alt="Logo de la Asociación Abaniko">
+          <div>
+            <span class="hero-badge">Asociación Abaniko</span>
+            <h1>Programa Abaniko</h1>
+          </div>
+        </div>
+        <p>Gestión de alumnos, profesores, jornadas y accesos con una estructura más clara, copia de seguridad y nube opcional para varios ordenadores.</p>
+        <div class="button-row hero-actions">
+          <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Ir al programa</button>
+          <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
+          <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Configurar nube</button>
+        </div>
+      </section>
+
+      <section class="brand-showcase page-grid">
+        <section class="panel section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Imagen de referencia</h2>
+              <p>He integrado una imagen pública relacionada con la Asociación Abaniko para que la app tenga una identidad visual más cercana.</p>
+            </div>
+          </div>
+          <div class="brand-card">
+            <img src="../assets/abaniko-poster.jpg" alt="Cartel público de la Asociación Abaniko">
+            <div class="brand-copy">
+              <span class="quick-kicker">Asociación Abaniko</span>
+              <h3>Referencia visual de la asociación</h3>
+              <p>Este cartel público ayuda a que la portada del programa se sienta más conectada con la imagen de Abaniko sin recargar el resto de la interfaz.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="authGate" class="auth-grid">
+        <section class="auth-card section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Inicio de sesión</h2>
+              <p>Cada profesor entra con su PIN y la aplicación guarda la hora de entrada y de salida.</p>
+            </div>
+          </div>
+
+          <div class="panel-soft section-shell">
+            <div class="section-head">
+              <div>
+                <h3>Primer acceso</h3>
+                <p>Si todavía no estás dado de alta, crea primero tu profesor y luego vuelve aquí para iniciar sesión.</p>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="button" class="btn-success" onclick="openPage('registrar_profesor.html')">Registrar profesor</button>
+            </div>
+          </div>
+
+          <form id="loginForm" class="panel-soft section-shell">
+            <div class="form-grid">
+              <div class="field">
+                <label for="loginTeacher">Profesor</label>
+                <select id="loginTeacher" required></select>
+              </div>
+              <div class="field">
+                <label for="loginPin">PIN</label>
+                <input id="loginPin" type="password" inputmode="numeric" required>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Entrar</button>
+              <button type="button" class="btn-secondary" onclick="loginPin.value = ''">Limpiar PIN</button>
+            </div>
+          </form>
+          <p id="authMessage" class="message"></p>
+        </section>
+
+        <section class="preview-card section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Cómo queda organizado</h2>
+              <p>El panel principal separa accesos, alumnos, profesores, jornadas y copias para que el trabajo diario sea más limpio.</p>
+            </div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-row">
+              <strong>Accesos</strong>
+              <span>Entrada y salida con hora</span>
+            </div>
+            <div class="summary-row">
+              <strong>Profesores</strong>
+              <span>Rol de administrador o profesor</span>
+            </div>
+            <div class="summary-row">
+              <strong>Nube</strong>
+              <span>Opcional, con sincronización manual y periódica</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="appShell" class="page-stack hidden">
+        <section class="session-banner">
+          <div>
+            <strong id="currentTeacherName">Profesor conectado</strong>
+            <span id="currentTeacherMeta">Sin sesión activa</span>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
+            <button type="button" class="btn-secondary" onclick="openPage('historial_accesos.html')">Historial</button>
+            <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
+          </div>
+        </section>
+
+        <section class="section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Resumen general</h2>
+              <p>Vista rápida del estado actual de la aplicación después de iniciar sesión.</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><span>Alumnos</span><strong id="studentCount">0</strong></article>
+            <article class="stat-card"><span>Profesores</span><strong id="teacherCount">0</strong></article>
+            <article class="stat-card"><span>Jornadas</span><strong id="sessionCount">0</strong></article>
+            <article class="stat-card"><span>Accesos</span><strong id="accessCount">0</strong></article>
+          </div>
+        </section>
+
+        <section class="page-grid">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Áreas principales</h2>
+                <p>Cada bloque agrupa una parte del trabajo para que no tengas que ir saltando sin orden.</p>
+              </div>
+            </div>
+            <div class="quick-grid">
+              <article class="quick-card">
+                <span class="quick-kicker">Alumnos</span>
+                <h2>Gestión completa</h2>
+                <p>Alta, consulta, edición, borrado y programas asociados del alumno.</p>
+                <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Gestionar alumnos</button>
+              </article>
+              <article class="quick-card">
+                <span class="quick-kicker">Profesores</span>
+                <h2>Equipo y permisos</h2>
+                <p>Profesores con PIN, rol y control de accesos guardado.</p>
+                <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
+              </article>
+              <article class="quick-card">
+                <span class="quick-kicker">Jornadas</span>
+                <h2>Registro y resumen</h2>
+                <p>Crea jornadas, asigna responsable y consulta el resumen después.</p>
+                <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Registrar jornada</button>
+              </article>
+              <article class="quick-card">
+                <span class="quick-kicker">Nube</span>
+                <h2>Sincronización</h2>
+                <p>Prepara la app para varios equipos con copia remota opcional.</p>
+                <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Abrir nube</button>
+              </article>
+            </div>
+          </section>
+
+          <section class="preview-card section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Estado del sistema</h2>
+                <p>Resumen del guardado local, la sincronización y la última actividad.</p>
+              </div>
+            </div>
+            <div class="summary-box" id="systemStatusBox"></div>
+          </section>
+        </section>
+
+        <section class="page-grid">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Acciones rápidas</h2>
+                <p>Tareas habituales agrupadas para trabajar más rápido.</p>
+              </div>
+            </div>
+            <div class="action-grid">
+              <button type="button" class="btn-primary" onclick="openPage('form.alumno.html')">Nuevo alumno</button>
+              <button type="button" class="btn-secondary" onclick="openPage('Consultar_Alumno.html')">Buscar alumno</button>
+              <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Resúmenes</button>
+              <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
+              <button type="button" class="btn-secondary" onclick="exportBackup()">Exportar copia</button>
+              <button type="button" class="btn-secondary" onclick="importBackup()">Importar copia</button>
+              <button type="button" class="btn-secondary" onclick="syncBackend()">Sincronizar servidor</button>
+              <button type="button" class="btn-secondary" onclick="syncCloud()">Sincronizar nube</button>
+            </div>
+            <input id="backupInput" type="file" accept=".json,application/json" class="hidden">
+          </section>
+
+          <section class="preview-card section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Últimos accesos</h2>
+                <p>Histórico reciente de entradas y salidas registradas.</p>
+              </div>
+            </div>
+            <div id="recentAccessList" class="compact-list"></div>
+          </section>
+        </section>
+
+        <section class="page-grid">
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Últimos alumnos</h2>
+                <p>Los registros más recientes para retomar trabajo rápido.</p>
+              </div>
+            </div>
+            <div id="recentStudentsList" class="compact-list"></div>
+          </section>
+
+          <section class="panel section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Próximas jornadas</h2>
+                <p>Jornadas ordenadas por fecha para tener la agenda más a mano.</p>
+              </div>
+            </div>
+            <div id="nextSessionsList" class="compact-list"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/abaniko-app.js"></script>
+  <script>
+    const authGate = document.getElementById("authGate");
+    const appShell = document.getElementById("appShell");
+    const loginForm = document.getElementById("loginForm");
+    const loginTeacher = document.getElementById("loginTeacher");
+    const loginPin = document.getElementById("loginPin");
+    const authMessage = document.getElementById("authMessage");
+    const currentTeacherName = document.getElementById("currentTeacherName");
+    const currentTeacherMeta = document.getElementById("currentTeacherMeta");
+    const recentAccessList = document.getElementById("recentAccessList");
+    const recentStudentsList = document.getElementById("recentStudentsList");
+    const nextSessionsList = document.getElementById("nextSessionsList");
+    const systemStatusBox = document.getElementById("systemStatusBox");
+    const backupInput = document.getElementById("backupInput");
+
+    function openPage(page) {
+      window.open(page, "_self");
+    }
+
+    function renderTeacherOptions() {
+      const teachers = AbanikoStore.load().teachers;
+      if (teachers.length === 0) {
+        loginTeacher.innerHTML = '<option value="">No hay profesores registrados</option>';
+        loginTeacher.disabled = true;
+        loginPin.disabled = true;
+        return;
+      }
+
+      loginTeacher.disabled = false;
+      loginPin.disabled = false;
+      loginTeacher.innerHTML = teachers.map((teacher) => `
+        <option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)} - ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(teacher.role))}</option>
+      `).join("");
+    }
+
+    function renderDashboard() {
+      const data = AbanikoStore.load();
+      document.getElementById("studentCount").textContent = data.students.length;
+      document.getElementById("teacherCount").textContent = data.teachers.length;
+      document.getElementById("sessionCount").textContent = data.sessions.length;
+      document.getElementById("accessCount").textContent = data.accessLogs.length;
+    }
+
+    function renderCurrentTeacher() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (!teacher) {
+        currentTeacherName.textContent = "Profesor desconectado";
+        currentTeacherMeta.textContent = "Sin sesión activa";
+        return;
+      }
+
+      const log = AbanikoStore.getAccessLogs().find((item) => String(item.id) === String(sessionStorage.getItem("programaAbanikoCurrentAccessLogId")));
+      currentTeacherName.textContent = `${teacher.name} - ${AbanikoStore.formatRole(teacher.role)}`;
+      currentTeacherMeta.textContent = `Entrada: ${AbanikoStore.formatDateTime(log?.loginAt || "")}`;
+    }
+
+    function renderAccessLogs() {
+      const logs = AbanikoStore.getAccessLogs().slice(0, 6);
+      if (logs.length === 0) {
+        recentAccessList.innerHTML = '<p class="empty-state">Todavía no hay accesos registrados.</p>';
+        return;
+      }
+
+      recentAccessList.innerHTML = logs.map((log) => `
+        <div class="compact-item">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+            <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
+            <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderRecentStudents() {
+      const students = [...AbanikoStore.load().students]
+        .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))
+        .slice(0, 5);
+
+      if (students.length === 0) {
+        recentStudentsList.innerHTML = '<p class="empty-state">Todavía no hay alumnos registrados.</p>';
+        return;
+      }
+
+      recentStudentsList.innerHTML = students.map((student) => `
+        <div class="compact-item">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(`${student.nombre || ""} ${student.apellidos || ""}`.trim() || "Alumno")}</strong>
+            <span>DNI: ${AbanikoStore.escapeHtml(student.dni || "Sin DNI")}</span>
+            <span>Actualizado: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(student.updatedAt))}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderNextSessions() {
+      const sessions = [...AbanikoStore.load().sessions]
+        .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")))
+        .slice(0, 5);
+
+      if (sessions.length === 0) {
+        nextSessionsList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
+        return;
+      }
+
+      nextSessionsList.innerHTML = sessions.map((session) => `
+        <div class="compact-item">
+          <div>
+            <strong>${AbanikoStore.escapeHtml(session.title || "Jornada")}</strong>
+            <span>Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+            <span>Profesor: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderSystemStatus() {
+      const data = AbanikoStore.load();
+      const backend = AbanikoStore.getBackendStatus();
+      const cloud = AbanikoStore.getCloudStatus();
+      const teacher = AbanikoStore.getCurrentTeacher();
+      systemStatusBox.innerHTML = `
+        <div class="summary-row"><strong>Profesor activo</strong><span>${AbanikoStore.escapeHtml(teacher ? `${teacher.name} (${AbanikoStore.formatRole(teacher.role)})` : "Ninguno")}</span></div>
+        <div class="summary-row"><strong>Última actualización local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
+        <div class="summary-row"><strong>Servidor local</strong><span>${backend.configured ? "Conectado" : "No disponible"}</span></div>
+        <div class="summary-row"><strong>Última escritura en JSON</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(backend.lastSyncAt))}</span></div>
+        <div class="summary-row"><strong>Nube</strong><span>${cloud.configured ? "Configurada" : "No configurada"}</span></div>
+        <div class="summary-row"><strong>Última sincronización</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(cloud.lastSyncAt))}</span></div>
+        <div class="summary-row"><strong>Incidencia del servidor</strong><span>${AbanikoStore.escapeHtml(backend.lastError || "Sin incidencias")}</span></div>
+        <div class="summary-row"><strong>Incidencia de la nube</strong><span>${AbanikoStore.escapeHtml(cloud.lastError || "Sin incidencias")}</span></div>
+      `;
+    }
+
+    function renderAuthenticatedArea() {
+      renderDashboard();
+      renderCurrentTeacher();
+      renderAccessLogs();
+      renderRecentStudents();
+      renderNextSessions();
+      renderSystemStatus();
+    }
+
+    function renderMode() {
+      const teacher = AbanikoStore.getCurrentTeacher();
+      if (teacher) {
+        authGate.classList.add("hidden");
+        appShell.classList.remove("hidden");
+        renderAuthenticatedArea();
+      } else {
+        appShell.classList.add("hidden");
+        authGate.classList.remove("hidden");
+        renderTeacherOptions();
+      }
+    }
+
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const result = AbanikoStore.loginTeacher(loginTeacher.value, loginPin.value.trim());
+      if (!result.ok) {
+        authMessage.textContent = result.message;
+        return;
+      }
+      authMessage.textContent = "Sesión iniciada correctamente.";
+      loginPin.value = "";
+      renderMode();
+    });
+
+    function logoutTeacher() {
+      const teacher = AbanikoStore.logoutCurrentTeacher();
+      authMessage.textContent = teacher ? `Sesión cerrada de ${teacher.name}.` : "Sesión cerrada.";
+      renderMode();
+    }
+
+    function exportBackup() {
+      AbanikoStore.exportBackup();
+    }
+
+    function importBackup() {
+      backupInput.click();
+    }
+
+    backupInput.addEventListener("change", async () => {
+      const file = backupInput.files[0];
+      if (!file) {
+        return;
+      }
+      try {
+        await AbanikoStore.importBackupFromFile(file);
+        authMessage.textContent = "Copia importada correctamente.";
+        renderMode();
+      } catch (error) {
+        authMessage.textContent = error.message || "No se pudo importar la copia.";
+      } finally {
+        backupInput.value = "";
+      }
+    });
+
+    async function syncCloud() {
+      const result = await AbanikoStore.syncCloudNow();
+      authMessage.textContent = result.ok ? "Nube sincronizada correctamente." : (result.message || "No se pudo sincronizar la nube.");
+      renderMode();
+    }
+
+    async function syncBackend() {
+      const result = await AbanikoStore.syncBackendNow();
+      authMessage.textContent = result.ok ? "Servidor sincronizado correctamente." : (result.message || "No se pudo sincronizar el servidor.");
+      renderMode();
+    }
+
+    function toPdfSafeText(value) {
+      return String(value ?? "")
+        .normalize("NFKD")
+        .replace(/[^\x20-\x7E]/g, "");
+    }
+
+    function splitLine(text, maxLength) {
+      const words = toPdfSafeText(text).split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = "";
+      for (const word of words) {
+        const next = current ? `${current} ${word}` : word;
+        if (next.length > maxLength) {
+          if (current) lines.push(current);
+          current = word;
+        } else {
+          current = next;
+        }
+      }
+      if (current) lines.push(current);
+      return lines.length ? lines : [""];
+    }
+
+    function escapePdfText(text) {
+      return text.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    }
+
+    function makePdfBytes(pdfString) {
+      const bytes = new Uint8Array(pdfString.length);
+      for (let index = 0; index < pdfString.length; index += 1) {
+        bytes[index] = pdfString.charCodeAt(index) & 255;
+      }
+      return bytes;
+    }
+
+    function buildPdf(lines) {
+      const pageSize = 42;
+      const pages = [];
+      for (let index = 0; index < lines.length; index += pageSize) {
+        pages.push(lines.slice(index, index + pageSize));
+      }
+      const objects = [];
+      objects.push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+      const pageObjectNumbers = [];
+      const contentObjectNumbers = [];
+      let nextObjectNumber = 3;
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) pageObjectNumbers.push(nextObjectNumber++);
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) contentObjectNumbers.push(nextObjectNumber++);
+      const fontObjectNumber = nextObjectNumber;
+      const kids = pageObjectNumbers.map((number) => `${number} 0 R`).join(" ");
+      objects.push(`2 0 obj\n<< /Type /Pages /Count ${pages.length} /Kids [ ${kids} ] >>\nendobj\n`);
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
+        objects.push(`${pageObjectNumbers[pageIndex]} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontObjectNumber} 0 R >> >> /Contents ${contentObjectNumbers[pageIndex]} 0 R >>\nendobj\n`);
+      }
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
+        const contentLines = pages[pageIndex].map((line) => `(${escapePdfText(line)}) Tj`).join("\nT*\n");
+        const stream = `BT\n/F1 10 Tf\n40 800 Td\n14 TL\n${contentLines}\nET`;
+        objects.push(`${contentObjectNumbers[pageIndex]} 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj\n`);
+      }
+      objects.push(`${fontObjectNumber} 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`);
+      let pdf = "%PDF-1.4\n";
+      const offsets = [0];
+      for (const object of objects) {
+        offsets.push(pdf.length);
+        pdf += object;
+      }
+      const xrefOffset = pdf.length;
+      pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+      for (let index = 1; index < offsets.length; index += 1) {
+        pdf += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
+      }
+      pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+      return makePdfBytes(pdf);
+    }
+
+    function pushField(lines, label, value) {
+      lines.push(...splitLine(`${label}: ${value || "No indicado"}`, 90));
+    }
+
+    function buildStudentLines(lines, student, index) {
+      lines.push(...splitLine(`${index + 1}. ${student.nombre || ""} ${student.apellidos || ""}`.trim(), 90));
+      pushField(lines, "DNI", student.dni || "No indicado");
+      pushField(lines, "Fecha de nacimiento", student.fecha_nacimiento || "No indicada");
+      pushField(lines, "Edad", student.edad || "No indicada");
+      pushField(lines, "Sexo", student.sexo || "No indicado");
+      pushField(lines, "Localidad", student.localidad || "No indicada");
+      pushField(lines, "Actividad deseada", student.actividad_deseada || "No indicada");
+      lines.push("");
+    }
+
+    function buildTeacherLines(lines, teacher, index) {
+      lines.push(...splitLine(`${index + 1}. ${teacher.name || "Profesor"}`, 90));
+      pushField(lines, "Rol", AbanikoStore.formatRole(teacher.role));
+      pushField(lines, "Asignatura", teacher.subject || "No indicada");
+      pushField(lines, "Correo electrónico", teacher.email || "No indicado");
+      pushField(lines, "Teléfono", teacher.phone || "No indicado");
+      lines.push("");
+    }
+
+    function buildSessionLines(lines, session, index) {
+      lines.push(...splitLine(`${index + 1}. ${session.title || "Jornada"}`, 90));
+      pushField(lines, "Fecha", AbanikoStore.formatDate(session.date));
+      pushField(lines, "Lugar", session.place || "No indicado");
+      pushField(lines, "Profesor", session.teacherNameSnapshot || "Sin profesor asignado");
+      pushField(lines, "Resumen", session.summary || "Sin resumen");
+      lines.push("");
+    }
+
+    function buildAccessLines(lines, log, index) {
+      lines.push(...splitLine(`${index + 1}. ${log.teacherName || "Profesor"}`, 90));
+      pushField(lines, "Rol", AbanikoStore.formatRole(log.teacherRole || "profesor"));
+      pushField(lines, "Entrada", AbanikoStore.formatDateTime(log.loginAt));
+      pushField(lines, "Salida", AbanikoStore.formatDateTime(log.logoutAt));
+      lines.push("");
+    }
+
+    function buildReportLines(data) {
+      const lines = [];
+      lines.push("Programa Abaniko - Resumen general");
+      lines.push(`Fecha de exportación: ${toPdfSafeText(new Date().toLocaleString("es-ES"))}`);
+      lines.push("");
+      lines.push(`Alumnos registrados: ${data.students.length}`);
+      lines.push(`Profesores registrados: ${data.teachers.length}`);
+      lines.push(`Jornadas registradas: ${data.sessions.length}`);
+      lines.push(`Accesos registrados: ${data.accessLogs.length}`);
+      lines.push("");
+      lines.push("ALUMNOS");
+      lines.push("----------------------------------------");
+      if (data.students.length === 0) {
+        lines.push("Sin alumnos registrados.");
+      } else {
+        data.students.forEach((student, index) => buildStudentLines(lines, student, index));
+      }
+      lines.push("PROFESORES");
+      lines.push("----------------------------------------");
+      if (data.teachers.length === 0) {
+        lines.push("Sin profesores registrados.");
+      } else {
+        data.teachers.forEach((teacher, index) => buildTeacherLines(lines, teacher, index));
+      }
+      lines.push("JORNADAS");
+      lines.push("----------------------------------------");
+      if (data.sessions.length === 0) {
+        lines.push("Sin jornadas registradas.");
+      } else {
+        data.sessions.forEach((session, index) => buildSessionLines(lines, session, index));
+      }
+      lines.push("ACCESOS");
+      lines.push("----------------------------------------");
+      if (data.accessLogs.length === 0) {
+        lines.push("Sin accesos registrados.");
+      } else {
+        data.accessLogs.forEach((log, index) => buildAccessLines(lines, log, index));
+      }
+      return lines;
+    }
+
+    function exportPdf() {
+      const data = AbanikoStore.load();
+      const pdfBytes = buildPdf(buildReportLines(data));
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "programa-abaniko.pdf";
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+    }
+
+    AbanikoStore.startBackendAutoSync(() => {
+      renderMode();
+    });
+
+    AbanikoStore.startCloudAutoSync(() => {
+      renderMode();
+    });
+
+    renderMode();
+
+    window.logoutTeacher = logoutTeacher;
+    window.exportBackup = exportBackup;
+    window.importBackup = importBackup;
+    window.syncBackend = syncBackend;
+    window.syncCloud = syncCloud;
+  </script>
+</body>
+</html>

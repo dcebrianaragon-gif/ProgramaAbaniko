@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Programa de ocio</title>
-  <link rel="stylesheet" href="abaniko-styles.css">
+  <title>Programa de inserción</title>
+  <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
       <section class="hero">
         <span class="hero-badge">Programa del alumno</span>
-        <h1>Programa de ocio</h1>
-        <p>Recoge aficiones, preferencias y propuestas de ocio en una pantalla más agradable, útil y coherente con el resto de la gestión.</p>
+        <h1>Programa de inserción</h1>
+        <p>Recoge la situación actual del alumno, su objetivo de inserción y el seguimiento necesario con una presentación más cuidada.</p>
       </section>
 
       <section class="program-grid">
         <section class="panel section-shell program-shell">
           <div class="section-head">
             <div>
-              <h2>Perfil de ocio</h2>
-              <p>Este apartado ayuda a entender qué le gusta al alumno y qué tipo de propuestas pueden encajar mejor.</p>
+              <h2>Seguimiento de inserción</h2>
+              <p>Un mismo apartado para revisar contexto, meta principal y observaciones de evolución.</p>
             </div>
             <div class="button-row">
               <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
@@ -30,26 +30,26 @@
 
           <div class="program-card-grid">
             <article class="program-note">
-              <strong>Aficiones</strong>
-              <span>Intereses espontáneos, hobbies o actividades que ya disfruta.</span>
+              <strong>Situación actual</strong>
+              <span>Describe brevemente el punto de partida del alumno.</span>
             </article>
             <article class="program-note">
-              <strong>Preferencias</strong>
-              <span>Cómo prefiere participar: en grupo, tranquilo, al aire libre, creativo, etc.</span>
+              <strong>Objetivo</strong>
+              <span>Resume la meta de inserción social, formativa o laboral que se quiere trabajar.</span>
             </article>
             <article class="program-note">
-              <strong>Propuesta de ocio</strong>
-              <span>Sugerencias concretas adaptadas al alumno para futuros pasos.</span>
+              <strong>Seguimiento</strong>
+              <span>Incluye avances, barreras detectadas o próximos pasos.</span>
             </article>
           </div>
 
-          <form id="leisureForm" class="program-form">
+          <form id="insertionForm" class="program-form">
             <section class="panel-soft section-shell program-section">
               <div class="form-grid two-columns">
                 <div class="field">
                   <label for="studentSelect">Alumno</label>
                   <select id="studentSelect" required></select>
-                  <p class="field-hint">Selecciona al alumno por nombre para recuperar su perfil de ocio.</p>
+                  <p class="field-hint">Selecciona al alumno por nombre para cargar su seguimiento de inserción.</p>
                 </div>
                 <div class="selection-card">
                   <strong>Estado del apartado</strong>
@@ -60,21 +60,21 @@
 
             <section class="panel-soft section-shell program-section">
               <div class="field">
-                <label for="aficiones">Aficiones</label>
-                <textarea id="aficiones" class="large-textarea" placeholder="Describe aficiones, gustos o intereses que ya se conocen"></textarea>
+                <label for="situacion">Situación actual</label>
+                <input id="situacion" placeholder="Ej. buscando formación, en prácticas, pendiente de entrevistas...">
               </div>
               <div class="field">
-                <label for="preferencias">Preferencias</label>
-                <textarea id="preferencias" class="large-textarea" placeholder="Añade cómo prefiere disfrutar su tiempo de ocio"></textarea>
+                <label for="objetivo">Objetivo de inserción</label>
+                <textarea id="objetivo" class="large-textarea" placeholder="Describe la meta principal que se quiere alcanzar"></textarea>
               </div>
               <div class="field">
-                <label for="propuesta">Propuesta de ocio</label>
-                <textarea id="propuesta" class="large-textarea" placeholder="Escribe propuestas adaptadas al alumno y sus intereses"></textarea>
+                <label for="seguimiento">Seguimiento</label>
+                <textarea id="seguimiento" class="large-textarea" placeholder="Escribe el seguimiento, acuerdos o próximos pasos"></textarea>
               </div>
             </section>
 
             <div class="button-row">
-              <button type="submit" class="btn-primary">Guardar programa de ocio</button>
+              <button type="submit" class="btn-primary">Guardar programa de inserción</button>
             </div>
           </form>
           <p id="message" class="message"></p>
@@ -85,7 +85,7 @@
             <div class="section-head">
               <div>
                 <h2>Alumno cargado</h2>
-                <p>Pequeño resumen para mantener el contexto mientras rellenas el apartado.</p>
+                <p>Datos rápidos para mantener el contexto mientras trabajas.</p>
               </div>
             </div>
             <div id="studentSummary" class="summary-box"></div>
@@ -94,20 +94,20 @@
       </section>
     </main>
   </div>
-  <script src="firebase-config.js"></script>
-  <script src="abaniko-app.js"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
     function go(page) { window.open(page, "_self"); }
-    const form = document.getElementById("leisureForm");
+    const form = document.getElementById("insertionForm");
     const message = document.getElementById("message");
     const statusText = document.getElementById("statusText");
     const summary = document.getElementById("studentSummary");
     const studentSelect = document.getElementById("studentSelect");
-    const aficionesInput = document.getElementById("aficiones");
-    const preferenciasInput = document.getElementById("preferencias");
-    const propuestaInput = document.getElementById("propuesta");
+    const situacionInput = document.getElementById("situacion");
+    const objetivoInput = document.getElementById("objetivo");
+    const seguimientoInput = document.getElementById("seguimiento");
 
     function populateStudentSelect(selectedDni = "") {
       const students = AbanikoStore.getStudentsSortedByName();
@@ -133,27 +133,27 @@
       }
       summary.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
-        <div class="summary-row"><strong>Participa en</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_actual) ? student.actividad_actual.join(" · ") : (student.actividad_actual || "No indicada"))}</span></div>
         <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span></div>
+        <div class="summary-row"><strong>Trabajo</strong><span>${AbanikoStore.escapeHtml(student.trabajo || "No indicado")}</span></div>
       `;
     }
 
     function loadStudentSection(dni) {
       const student = AbanikoStore.getStudent(dni);
       if (!student) {
-        aficionesInput.value = "";
-        preferenciasInput.value = "";
-        propuestaInput.value = "";
+        situacionInput.value = "";
+        objetivoInput.value = "";
+        seguimientoInput.value = "";
         statusText.textContent = "Selecciona un alumno para empezar.";
         renderStudentSummary(null);
         return;
       }
 
-      const leisure = student.leisure || {};
-      aficionesInput.value = leisure.aficiones || "";
-      preferenciasInput.value = leisure.preferencias || "";
-      propuestaInput.value = leisure.propuesta || "";
-      statusText.textContent = "Alumno cargado correctamente. Puedes completar su perfil de ocio.";
+      const insertion = student.insertion || {};
+      situacionInput.value = insertion.situacion || "";
+      objetivoInput.value = insertion.objetivo || "";
+      seguimientoInput.value = insertion.seguimiento || "";
+      statusText.textContent = "Alumno cargado correctamente. Puedes actualizar el seguimiento.";
       renderStudentSummary(student);
     }
 
@@ -166,13 +166,13 @@
         statusText.textContent = "Selecciona un alumno válido.";
         return;
       }
-      AbanikoStore.patchStudentSection(dni, "leisure", {
-        aficiones: aficionesInput.value.trim(),
-        preferencias: preferenciasInput.value.trim(),
-        propuesta: propuestaInput.value.trim()
+      AbanikoStore.patchStudentSection(dni, "insertion", {
+        situacion: situacionInput.value.trim(),
+        objetivo: objetivoInput.value.trim(),
+        seguimiento: seguimientoInput.value.trim()
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Programa de ocio guardado.";
+      message.textContent = "Programa de inserción guardado.";
       message.className = "message is-success";
       loadStudentSection(dni);
     });

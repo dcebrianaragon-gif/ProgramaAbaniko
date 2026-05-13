@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Datos de interés</title>
-  <link rel="stylesheet" href="abaniko-styles.css">
+  <title>Programa de deportes</title>
+  <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
       <section class="hero">
         <span class="hero-badge">Programa del alumno</span>
-        <h1>Datos de interés</h1>
-        <p>Guarda objetivos, observaciones y la persona referente del alumno en una ficha más clara y fácil de revisar.</p>
+        <h1>Programa de deportes</h1>
+        <p>Registra de forma visual si el alumno practica deporte, disfruta de la actividad física y cómo se relaciona en dinámicas de grupo.</p>
       </section>
 
       <section class="program-grid">
         <section class="panel section-shell program-shell">
           <div class="section-head">
             <div>
-              <h2>Información complementaria</h2>
-              <p>Elige al alumno por su nombre y actualiza este apartado tantas veces como necesites.</p>
+              <h2>Perfil deportivo</h2>
+              <p>Marca las opciones que describen mejor al alumno en este programa.</p>
             </div>
             <div class="button-row">
               <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Volver</button>
@@ -30,26 +30,26 @@
 
           <div class="program-card-grid">
             <article class="program-note">
-              <strong>Objetivos</strong>
-              <span>Objetivos que se quieren trabajar con el alumno a corto o medio plazo.</span>
+              <strong>Práctica real</strong>
+              <span>Indica si el alumno ya participa en alguna actividad deportiva.</span>
             </article>
             <article class="program-note">
-              <strong>Observaciones</strong>
-              <span>Detalles de acompañamiento, contexto o incidencias relevantes.</span>
+              <strong>Interés y motivación</strong>
+              <span>Valora si disfruta del movimiento y si responde bien en dinámicas activas.</span>
             </article>
             <article class="program-note">
-              <strong>Persona referente</strong>
-              <span>Figura de apoyo principal para mantener el seguimiento coordinado.</span>
+              <strong>Grupo y normas</strong>
+              <span>Ayuda a saber si puede encajar en actividades compartidas o regladas.</span>
             </article>
           </div>
 
-          <form id="interestForm" class="program-form">
+          <form id="sportsForm" class="program-form">
             <section class="panel-soft section-shell program-section">
               <div class="form-grid two-columns">
                 <div class="field">
                   <label for="studentSelect">Alumno</label>
                   <select id="studentSelect" required></select>
-                  <p class="field-hint">Selecciona al alumno por nombre. La localidad ayuda a distinguir si hay nombres parecidos.</p>
+                  <p class="field-hint">Selecciona al alumno por nombre para cargar su perfil deportivo.</p>
                 </div>
                 <div class="selection-card">
                   <strong>Estado del apartado</strong>
@@ -59,22 +59,38 @@
             </section>
 
             <section class="panel-soft section-shell program-section">
-              <div class="field">
-                <label for="objetivos">Objetivos</label>
-                <textarea id="objetivos" class="large-textarea" placeholder="Escribe los objetivos principales que se quieren trabajar con el alumno"></textarea>
-              </div>
-              <div class="field">
-                <label for="observaciones">Observaciones</label>
-                <textarea id="observaciones" class="large-textarea" placeholder="Añade notas útiles para el seguimiento"></textarea>
-              </div>
-              <div class="field">
-                <label for="referente">Persona referente</label>
-                <input id="referente" placeholder="Nombre o cargo de referencia">
-              </div>
+              <label class="checkbox-card" for="practica_deporte">
+                <input id="practica_deporte" type="checkbox">
+                <span>
+                  <strong>Practica deporte</strong>
+                  <span>Actualmente participa en actividades deportivas o físicas.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="gusto_actividad_fisica">
+                <input id="gusto_actividad_fisica" type="checkbox">
+                <span>
+                  <strong>Le gusta la actividad física</strong>
+                  <span>Muestra interés o motivación por juegos activos, movimiento o ejercicio.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="gusto_jugar_grupo">
+                <input id="gusto_jugar_grupo" type="checkbox">
+                <span>
+                  <strong>Le gusta jugar en grupo</strong>
+                  <span>Se siente cómodo en actividades compartidas o cooperativas.</span>
+                </span>
+              </label>
+              <label class="checkbox-card" for="entender_seguir_normas">
+                <input id="entender_seguir_normas" type="checkbox">
+                <span>
+                  <strong>Entiende y sigue normas</strong>
+                  <span>Puede comprender y respetar reglas básicas durante la actividad.</span>
+                </span>
+              </label>
             </section>
 
             <div class="button-row">
-              <button type="submit" class="btn-primary">Guardar datos de interés</button>
+              <button type="submit" class="btn-primary">Guardar programa de deportes</button>
             </div>
           </form>
           <p id="message" class="message"></p>
@@ -85,7 +101,7 @@
             <div class="section-head">
               <div>
                 <h2>Alumno cargado</h2>
-                <p>Resumen rápido del alumno para no perder el contexto.</p>
+                <p>Resumen básico para revisar antes de guardar.</p>
               </div>
             </div>
             <div id="studentSummary" class="summary-box"></div>
@@ -94,20 +110,21 @@
       </section>
     </main>
   </div>
-  <script src="firebase-config.js"></script>
-  <script src="abaniko-app.js"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/abaniko-app.js"></script>
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
     function go(page) { window.open(page, "_self"); }
-    const form = document.getElementById("interestForm");
+    const form = document.getElementById("sportsForm");
     const message = document.getElementById("message");
     const statusText = document.getElementById("statusText");
     const summary = document.getElementById("studentSummary");
     const studentSelect = document.getElementById("studentSelect");
-    const objetivosInput = document.getElementById("objetivos");
-    const observacionesInput = document.getElementById("observaciones");
-    const referenteInput = document.getElementById("referente");
+    const practicaInput = document.getElementById("practica_deporte");
+    const actividadInput = document.getElementById("gusto_actividad_fisica");
+    const grupoInput = document.getElementById("gusto_jugar_grupo");
+    const normasInput = document.getElementById("entender_seguir_normas");
 
     function populateStudentSelect(selectedDni = "") {
       const students = AbanikoStore.getStudentsSortedByName();
@@ -134,26 +151,28 @@
       summary.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
         <div class="summary-row"><strong>Localidad</strong><span>${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span></div>
-        <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span></div>
+        <div class="summary-row"><strong>Participa en</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_actual) ? student.actividad_actual.join(" · ") : (student.actividad_actual || "No indicada"))}</span></div>
       `;
     }
 
     function loadStudentSection(dni) {
       const student = AbanikoStore.getStudent(dni);
       if (!student) {
-        objetivosInput.value = "";
-        observacionesInput.value = "";
-        referenteInput.value = "";
+        practicaInput.checked = false;
+        actividadInput.checked = false;
+        grupoInput.checked = false;
+        normasInput.checked = false;
         statusText.textContent = "Selecciona un alumno para empezar.";
         renderStudentSummary(null);
         return;
       }
 
-      const interest = student.interest || {};
-      objetivosInput.value = interest.objetivos || "";
-      observacionesInput.value = interest.observaciones || "";
-      referenteInput.value = interest.referente || "";
-      statusText.textContent = "Alumno cargado correctamente. Puedes editar y guardar.";
+      const sports = student.sports || {};
+      practicaInput.checked = Boolean(sports.practica_deporte);
+      actividadInput.checked = Boolean(sports.gusto_actividad_fisica);
+      grupoInput.checked = Boolean(sports.gusto_jugar_grupo);
+      normasInput.checked = Boolean(sports.entender_seguir_normas);
+      statusText.textContent = "Alumno cargado correctamente. Puedes actualizar su perfil deportivo.";
       renderStudentSummary(student);
     }
 
@@ -166,13 +185,14 @@
         statusText.textContent = "Selecciona un alumno válido.";
         return;
       }
-      AbanikoStore.patchStudentSection(dni, "interest", {
-        objetivos: objetivosInput.value.trim(),
-        observaciones: observacionesInput.value.trim(),
-        referente: referenteInput.value.trim()
+      AbanikoStore.patchStudentSection(dni, "sports", {
+        practica_deporte: practicaInput.checked,
+        gusto_actividad_fisica: actividadInput.checked,
+        gusto_jugar_grupo: grupoInput.checked,
+        entender_seguir_normas: normasInput.checked
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Datos de interés guardados correctamente.";
+      message.textContent = "Programa de deportes guardado.";
       message.className = "message is-success";
       loadStudentSection(dni);
     });

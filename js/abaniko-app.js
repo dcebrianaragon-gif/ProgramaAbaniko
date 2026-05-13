@@ -12,11 +12,14 @@ const AbanikoStore = (() => {
   const BACKEND_LAST_SYNC_KEY = "programaAbanikoBackendLastSync";
   const BACKEND_LAST_ERROR_KEY = "programaAbanikoBackendLastError";
   const BACKEND_MODE_KEY = "programaAbanikoBackendMode";
+  const SUPABASE_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
   let cloudPullPromise = null;
   let cloudPushPromise = null;
   let backendPullPromise = null;
   let backendPushPromise = null;
+  let supabaseSdkPromise = null;
+  let supabaseClientPromise = null;
 
   function createId() {
     return Date.now() + Math.floor(Math.random() * 100000);
@@ -231,37 +234,33 @@ const AbanikoStore = (() => {
     const config = window.AbanikoCloudConfig || {};
     const defaultCloudConfig = {
       enabled: true,
-      provider: "firebase",
-      apiKey: "AIzaSyAX92rdtH30eXT2ZEzDFCd3NInqLNwoB5c",
-      authDomain: "programaabaniko.firebaseapp.com",
-      projectId: "programaabaniko",
-      storageBucket: "programaabaniko.firebasestorage.app",
-      messagingSenderId: "181721941176",
-      firebaseAppId: "1:181721941176:web:06ce9ec85a0c281dd4204d",
-      measurementId: "G-0H5R2P7LC0",
-      collectionName: "app_state",
+      provider: "supabase",
+      supabaseUrl: "https://hmgripzugbzhxkrlfhrx.supabase.co",
+      projectRef: "hmgripzugbzhxkrlfhrx",
+      apiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZ3JpcHp1Z2J6aHhrcmxmaHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNTM5NDEsImV4cCI6MjA5MzYyOTk0MX0.2W_hI3opO4rCOUCoAiWf5jrdMuSbtLr8Y-gmLa29-V4",
+      tableName: "app_state",
       appId: "programa-abaniko",
+      realtime: true,
       pollIntervalMs: 30000
     };
+    const tableName = String(config.tableName || config.collectionName || defaultCloudConfig.tableName).trim();
     return {
       enabled: Boolean(config.enabled ?? defaultCloudConfig.enabled),
-      provider: String(config.provider || defaultCloudConfig.provider).trim(),
+      provider: String(config.provider || defaultCloudConfig.provider).trim().toLowerCase(),
+      supabaseUrl: String(config.supabaseUrl || config.url || defaultCloudConfig.supabaseUrl).trim().replace(/\/+$/, ""),
+      projectRef: String(config.projectRef || defaultCloudConfig.projectRef).trim(),
       apiKey: String(config.apiKey || defaultCloudConfig.apiKey).trim(),
-      authDomain: String(config.authDomain || defaultCloudConfig.authDomain).trim(),
-      projectId: String(config.projectId || defaultCloudConfig.projectId).trim(),
-      storageBucket: String(config.storageBucket || defaultCloudConfig.storageBucket).trim(),
-      messagingSenderId: String(config.messagingSenderId || defaultCloudConfig.messagingSenderId).trim(),
-      firebaseAppId: String(config.firebaseAppId || config.firebaseWebAppId || defaultCloudConfig.firebaseAppId).trim(),
-      measurementId: String(config.measurementId || defaultCloudConfig.measurementId).trim(),
-      collectionName: String(config.collectionName || defaultCloudConfig.collectionName).trim(),
+      tableName,
+      collectionName: tableName,
       appId: String(config.appId || defaultCloudConfig.appId).trim(),
+      realtime: Boolean(config.realtime ?? defaultCloudConfig.realtime),
       pollIntervalMs: Number(config.pollIntervalMs || defaultCloudConfig.pollIntervalMs)
     };
   }
 
   function isCloudConfigured() {
     const config = getCloudConfig();
-    return Boolean(config.enabled && config.provider === "firebase" && config.apiKey && config.projectId && config.collectionName && config.appId);
+    return Boolean(config.enabled && config.provider === "supabase" && config.supabaseUrl && config.apiKey && config.tableName && config.appId);
   }
 
   function getCloudStatus() {
@@ -279,49 +278,62 @@ const AbanikoStore = (() => {
     localStorage.setItem(CLOUD_MODE_KEY, mode);
   }
 
-  function getFirebaseDocumentUrl() {
+  function getSupabaseTableUrl(queryParams = null) {
     const config = getCloudConfig();
-    const collection = encodeURIComponent(config.collectionName);
-    const documentId = encodeURIComponent(config.appId);
-    return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(config.projectId)}/databases/(default)/documents/${collection}/${documentId}?key=${encodeURIComponent(config.apiKey)}`;
+    const url = new URL(`${config.supabaseUrl}/rest/v1/${encodeURIComponent(config.tableName)}`);
+    if (queryParams) {
+      Object.entries(queryParams).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+      });
+    }
+    return url.toString();
   }
 
-  function serializeFirestoreData(data) {
+  function getSupabaseHeaders(prefer = "") {
+    const config = getCloudConfig();
+    const headers = {
+      apikey: config.apiKey,
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json"
+    };
+    if (prefer) {
+      headers.Prefer = prefer;
+    }
+    return headers;
+  }
+
+  function serializeSupabaseData(data) {
     const normalized = normalize(data);
     return {
-      fields: {
-        payloadJson: { stringValue: JSON.stringify(normalized) },
-        updatedAt: { stringValue: normalized.updatedAt || new Date().toISOString() }
-      }
+      app_id: getCloudConfig().appId,
+      payload: normalized
     };
   }
 
-  function parseFirestoreDocument(document) {
-    const payloadJson = document?.fields?.payloadJson?.stringValue;
-    if (!payloadJson) {
+  function parseSupabaseRows(rows) {
+    if (!Array.isArray(rows) || !rows[0]?.payload) {
       return null;
     }
-    return normalize(JSON.parse(payloadJson));
+    return normalize(rows[0].payload);
   }
 
-  async function firebaseRequest(method, body) {
-    const response = await fetch(getFirebaseDocumentUrl(), {
+  async function supabaseRequest(method, body) {
+    const config = getCloudConfig();
+    const query = method === "GET"
+      ? { app_id: `eq.${config.appId}`, select: "payload", limit: "1" }
+      : { on_conflict: "app_id", select: "payload" };
+    const response = await fetch(getSupabaseTableUrl(query), {
       method,
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: getSupabaseHeaders(method === "GET" ? "" : "resolution=merge-duplicates,return=representation"),
       body: body ? JSON.stringify(body) : undefined
     });
 
     if (!response.ok) {
       const text = await response.text();
-      if (response.status === 404) {
-        return null;
-      }
       if (response.status === 401 || response.status === 403) {
-        throw new Error("Firebase ha rechazado la conexión. Activa Firestore y revisa sus reglas de lectura/escritura.");
+        throw new Error("Supabase ha rechazado la conexión. Revisa la clave anon, la tabla app_state y sus políticas RLS.");
       }
-      throw new Error(text || `Error ${response.status} al contactar con Firebase.`);
+      throw new Error(text || `Error ${response.status} al contactar con Supabase.`);
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -329,6 +341,46 @@ const AbanikoStore = (() => {
       return response.json();
     }
     return null;
+  }
+
+  function loadSupabaseSdk() {
+    if (window.supabase && typeof window.supabase.createClient === "function") {
+      return Promise.resolve(window.supabase);
+    }
+    if (supabaseSdkPromise) {
+      return supabaseSdkPromise;
+    }
+    supabaseSdkPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = SUPABASE_SDK_URL;
+      script.async = true;
+      script.onload = () => {
+        if (window.supabase && typeof window.supabase.createClient === "function") {
+          resolve(window.supabase);
+        } else {
+          reject(new Error("El SDK de Supabase se ha cargado, pero no está disponible."));
+        }
+      };
+      script.onerror = () => reject(new Error("No se pudo cargar Supabase Realtime. Se usará la sincronización periódica."));
+      document.head.appendChild(script);
+    });
+    return supabaseSdkPromise;
+  }
+
+  function getSupabaseClient() {
+    if (supabaseClientPromise) {
+      return supabaseClientPromise;
+    }
+    supabaseClientPromise = loadSupabaseSdk().then((sdk) => {
+      const config = getCloudConfig();
+      return sdk.createClient(config.supabaseUrl, config.apiKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      });
+    });
+    return supabaseClientPromise;
   }
 
   async function backendRequest(method, body) {
@@ -964,8 +1016,8 @@ const AbanikoStore = (() => {
 
     cloudPullPromise = (async () => {
       try {
-        const document = await firebaseRequest("GET");
-        const remoteDocument = parseFirestoreDocument(document);
+        const rows = await supabaseRequest("GET");
+        const remoteDocument = parseSupabaseRows(rows);
         if (!remoteDocument) {
           notifyCloudMode("cloud");
           rememberCloudSync();
@@ -1004,10 +1056,10 @@ const AbanikoStore = (() => {
     }
 
     try {
-      await firebaseRequest("GET");
+      await supabaseRequest("GET");
       notifyCloudMode("cloud");
       rememberCloudSync();
-      return { ok: true, connected: true, message: "Firebase disponible. Firestore responde correctamente." };
+      return { ok: true, connected: true, message: "Supabase disponible. La tabla app_state responde correctamente." };
     } catch (error) {
       const message = error.message || "No se pudo comprobar la conexión con la nube.";
       rememberCloudError(message);
@@ -1120,7 +1172,7 @@ const AbanikoStore = (() => {
     cloudPushPromise = (async () => {
       try {
         const data = load();
-        const document = await firebaseRequest("PATCH", serializeFirestoreData(data));
+        const document = await supabaseRequest("POST", serializeSupabaseData(data));
         notifyCloudMode("cloud");
         rememberCloudSync();
         return { ok: true, document };
@@ -1153,6 +1205,51 @@ const AbanikoStore = (() => {
     return { ok: true, message: "Sincronización completada." };
   }
 
+  function startSupabaseRealtimeSync(onUpdate) {
+    const config = getCloudConfig();
+    if (!config.realtime || config.provider !== "supabase") {
+      return;
+    }
+
+    getSupabaseClient()
+      .then((client) => {
+        client
+          .channel(`abaniko-${config.appId}-${Date.now()}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: config.tableName,
+              filter: `app_id=eq.${config.appId}`
+            },
+            async () => {
+              await pullFromCloud();
+              if (typeof onUpdate === "function") {
+                onUpdate(getCloudStatus());
+              }
+            }
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              rememberCloudError("");
+            }
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              rememberCloudError("Supabase Realtime no respondió. Se mantiene la sincronización periódica.");
+            }
+            if (typeof onUpdate === "function") {
+              onUpdate(getCloudStatus());
+            }
+          });
+      })
+      .catch((error) => {
+        rememberCloudError(error.message || "No se pudo iniciar Supabase Realtime.");
+        if (typeof onUpdate === "function") {
+          onUpdate(getCloudStatus());
+        }
+      });
+  }
+
   function startCloudAutoSync(onUpdate) {
     if (!isCloudConfigured()) {
       return null;
@@ -1163,6 +1260,7 @@ const AbanikoStore = (() => {
         onUpdate(getCloudStatus());
       }
     });
+    startSupabaseRealtimeSync(onUpdate);
     return window.setInterval(async () => {
       await pullFromCloud();
       if (typeof onUpdate === "function") {
