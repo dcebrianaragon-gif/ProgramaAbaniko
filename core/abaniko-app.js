@@ -12,11 +12,14 @@ const AbanikoStore = (() => {
   const BACKEND_LAST_SYNC_KEY = "programaAbanikoBackendLastSync";
   const BACKEND_LAST_ERROR_KEY = "programaAbanikoBackendLastError";
   const BACKEND_MODE_KEY = "programaAbanikoBackendMode";
+  const SUPABASE_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
   let cloudPullPromise = null;
   let cloudPushPromise = null;
   let backendPullPromise = null;
   let backendPushPromise = null;
+  let supabaseSdkPromise = null;
+  let supabaseClientPromise = null;
 
   function createId() {
     return Date.now() + Math.floor(Math.random() * 100000);
@@ -37,10 +40,61 @@ const AbanikoStore = (() => {
     };
   }
 
+  function normalizeInterviewRevision(revision) {
+    return {
+      id: revision?.id || createId(),
+      createdAt: revision?.createdAt || new Date().toISOString(),
+      updatedAt: revision?.updatedAt || new Date().toISOString(),
+      schoolYear: String(revision?.schoolYear || "").trim(),
+      repeatYear: Boolean(revision?.repeatYear),
+      interviewDate: String(revision?.interviewDate || "").trim(),
+      interviewer: String(revision?.interviewer || "").trim(),
+      courseStage: String(revision?.courseStage || "").trim(),
+      center: String(revision?.center || "").trim(),
+      currentSituation: String(revision?.currentSituation || "").trim(),
+      changesSinceLastYear: String(revision?.changesSinceLastYear || "").trim(),
+      supportNeeds: String(revision?.supportNeeds || "").trim(),
+      goals: String(revision?.goals || "").trim(),
+      agreements: String(revision?.agreements || "").trim(),
+      notes: String(revision?.notes || "").trim()
+    };
+  }
+
+  function normalizeInterviewRecord(record, studentDni = "") {
+    const sourceRevisions = Array.isArray(record?.revisions)
+      ? record.revisions
+      : Array.isArray(record?.history)
+        ? record.history
+        : record?.data
+          ? [record.data]
+          : [];
+    const revisions = sourceRevisions.map((revision) => normalizeInterviewRevision(revision));
+    revisions.sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+    return {
+      id: record?.id || createId(),
+      studentDni: String(record?.studentDni || studentDni || "").trim(),
+      createdAt: record?.createdAt || revisions[0]?.createdAt || new Date().toISOString(),
+      updatedAt: record?.updatedAt || revisions[revisions.length - 1]?.updatedAt || new Date().toISOString(),
+      revisions
+    };
+  }
+
+  function normalizeStudent(student) {
+    const interviewSource = Array.isArray(student?.interviewRecords)
+      ? student.interviewRecords
+      : Array.isArray(student?.interviews)
+        ? student.interviews
+        : [];
+    return {
+      ...student,
+      interviewRecords: interviewSource.map((record) => normalizeInterviewRecord(record, student?.dni || ""))
+    };
+  }
+
   function normalize(data) {
     const teachers = Array.isArray(data?.teachers) ? data.teachers : [];
     return {
-      students: Array.isArray(data?.students) ? data.students : [],
+      students: Array.isArray(data?.students) ? data.students.map((student) => normalizeStudent(student)) : [],
       teachers: teachers.map((teacher, index) => normalizeTeacher(teacher, index)),
       sessions: Array.isArray(data?.sessions) ? data.sessions : [],
       accessLogs: Array.isArray(data?.accessLogs) ? data.accessLogs : [],
@@ -59,12 +113,26 @@ const AbanikoStore = (() => {
   }
 
   function getBackendConfig() {
-    const protocol = typeof window !== "undefined" ? window.location.protocol : "";
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const useLocalServer = /^file:$/i.test(protocol);
-    const baseUrl = useLocalServer ? "http://127.0.0.1:3000" : origin;
+    if (typeof window === "undefined") {
+      return {
+        enabled: false,
+        dataUrl: "",
+        healthUrl: ""
+      };
+    }
+
+    const protocol = window.location.protocol || "";
+    const origin = window.location.origin || "";
+    const hostname = window.location.hostname || "";
+    const useFileServer = /^file:$/i.test(protocol);
+    const useLocalHttpServer = /^https?:$/i.test(protocol)
+      && ["localhost", "127.0.0.1", "::1"].includes(hostname);
+    const baseUrl = useFileServer
+      ? "http://127.0.0.1:3000"
+      : (useLocalHttpServer ? origin : "");
+
     return {
-      enabled: typeof window !== "undefined" && (/^https?:$/i.test(protocol) || useLocalServer),
+      enabled: Boolean(baseUrl),
       dataUrl: baseUrl ? `${baseUrl}/api/data` : "",
       healthUrl: baseUrl ? `${baseUrl}/api/health` : ""
     };
@@ -132,6 +200,17 @@ const AbanikoStore = (() => {
     return String(secondary.updatedAt || "") > String(primary.updatedAt || "") ? secondary : primary;
   }
 
+  function hasMeaningfulData(data) {
+    const normalized = normalize(data);
+    return [
+      normalized.students,
+      normalized.teachers,
+      normalized.sessions,
+      normalized.accessLogs,
+      normalized.absences
+    ].some((items) => items.length > 0);
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -166,37 +245,33 @@ const AbanikoStore = (() => {
     const config = window.AbanikoCloudConfig || {};
     const defaultCloudConfig = {
       enabled: true,
-      provider: "firebase",
-      apiKey: "AIzaSyAX92rdtH30eXT2ZEzDFCd3NInqLNwoB5c",
-      authDomain: "programaabaniko.firebaseapp.com",
-      projectId: "programaabaniko",
-      storageBucket: "programaabaniko.firebasestorage.app",
-      messagingSenderId: "181721941176",
-      firebaseAppId: "1:181721941176:web:06ce9ec85a0c281dd4204d",
-      measurementId: "G-0H5R2P7LC0",
-      collectionName: "app_state",
+      provider: "supabase",
+      supabaseUrl: "https://hmgripzugbzhxkrlfhrx.supabase.co",
+      projectRef: "hmgripzugbzhxkrlfhrx",
+      apiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZ3JpcHp1Z2J6aHhrcmxmaHJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNTM5NDEsImV4cCI6MjA5MzYyOTk0MX0.2W_hI3opO4rCOUCoAiWf5jrdMuSbtLr8Y-gmLa29-V4",
+      tableName: "app_state",
       appId: "programa-abaniko",
+      realtime: true,
       pollIntervalMs: 30000
     };
+    const tableName = String(config.tableName || config.collectionName || defaultCloudConfig.tableName).trim();
     return {
       enabled: Boolean(config.enabled ?? defaultCloudConfig.enabled),
-      provider: String(config.provider || defaultCloudConfig.provider).trim(),
+      provider: String(config.provider || defaultCloudConfig.provider).trim().toLowerCase(),
+      supabaseUrl: String(config.supabaseUrl || config.url || defaultCloudConfig.supabaseUrl).trim().replace(/\/+$/, ""),
+      projectRef: String(config.projectRef || defaultCloudConfig.projectRef).trim(),
       apiKey: String(config.apiKey || defaultCloudConfig.apiKey).trim(),
-      authDomain: String(config.authDomain || defaultCloudConfig.authDomain).trim(),
-      projectId: String(config.projectId || defaultCloudConfig.projectId).trim(),
-      storageBucket: String(config.storageBucket || defaultCloudConfig.storageBucket).trim(),
-      messagingSenderId: String(config.messagingSenderId || defaultCloudConfig.messagingSenderId).trim(),
-      firebaseAppId: String(config.firebaseAppId || config.firebaseWebAppId || defaultCloudConfig.firebaseAppId).trim(),
-      measurementId: String(config.measurementId || defaultCloudConfig.measurementId).trim(),
-      collectionName: String(config.collectionName || defaultCloudConfig.collectionName).trim(),
+      tableName,
+      collectionName: tableName,
       appId: String(config.appId || defaultCloudConfig.appId).trim(),
+      realtime: Boolean(config.realtime ?? defaultCloudConfig.realtime),
       pollIntervalMs: Number(config.pollIntervalMs || defaultCloudConfig.pollIntervalMs)
     };
   }
 
   function isCloudConfigured() {
     const config = getCloudConfig();
-    return Boolean(config.enabled && config.provider === "firebase" && config.apiKey && config.projectId && config.collectionName && config.appId);
+    return Boolean(config.enabled && config.provider === "supabase" && config.supabaseUrl && config.apiKey && config.tableName && config.appId);
   }
 
   function getCloudStatus() {
@@ -214,49 +289,62 @@ const AbanikoStore = (() => {
     localStorage.setItem(CLOUD_MODE_KEY, mode);
   }
 
-  function getFirebaseDocumentUrl() {
+  function getSupabaseTableUrl(queryParams = null) {
     const config = getCloudConfig();
-    const collection = encodeURIComponent(config.collectionName);
-    const documentId = encodeURIComponent(config.appId);
-    return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(config.projectId)}/databases/(default)/documents/${collection}/${documentId}?key=${encodeURIComponent(config.apiKey)}`;
+    const url = new URL(`${config.supabaseUrl}/rest/v1/${encodeURIComponent(config.tableName)}`);
+    if (queryParams) {
+      Object.entries(queryParams).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+      });
+    }
+    return url.toString();
   }
 
-  function serializeFirestoreData(data) {
+  function getSupabaseHeaders(prefer = "") {
+    const config = getCloudConfig();
+    const headers = {
+      apikey: config.apiKey,
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json"
+    };
+    if (prefer) {
+      headers.Prefer = prefer;
+    }
+    return headers;
+  }
+
+  function serializeSupabaseData(data) {
     const normalized = normalize(data);
     return {
-      fields: {
-        payloadJson: { stringValue: JSON.stringify(normalized) },
-        updatedAt: { stringValue: normalized.updatedAt || new Date().toISOString() }
-      }
+      app_id: getCloudConfig().appId,
+      payload: normalized
     };
   }
 
-  function parseFirestoreDocument(document) {
-    const payloadJson = document?.fields?.payloadJson?.stringValue;
-    if (!payloadJson) {
+  function parseSupabaseRows(rows) {
+    if (!Array.isArray(rows) || !rows[0]?.payload) {
       return null;
     }
-    return normalize(JSON.parse(payloadJson));
+    return normalize(rows[0].payload);
   }
 
-  async function firebaseRequest(method, body) {
-    const response = await fetch(getFirebaseDocumentUrl(), {
+  async function supabaseRequest(method, body) {
+    const config = getCloudConfig();
+    const query = method === "GET"
+      ? { app_id: `eq.${config.appId}`, select: "payload", limit: "1" }
+      : { on_conflict: "app_id", select: "payload" };
+    const response = await fetch(getSupabaseTableUrl(query), {
       method,
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: getSupabaseHeaders(method === "GET" ? "" : "resolution=merge-duplicates,return=representation"),
       body: body ? JSON.stringify(body) : undefined
     });
 
     if (!response.ok) {
       const text = await response.text();
-      if (response.status === 404) {
-        return null;
-      }
       if (response.status === 401 || response.status === 403) {
-        throw new Error("Firebase ha rechazado la conexión. Activa Firestore y revisa sus reglas de lectura/escritura.");
+        throw new Error("Supabase ha rechazado la conexión. Revisa la clave anon, la tabla app_state y sus políticas RLS.");
       }
-      throw new Error(text || `Error ${response.status} al contactar con Firebase.`);
+      throw new Error(text || `Error ${response.status} al contactar con Supabase.`);
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -264,6 +352,46 @@ const AbanikoStore = (() => {
       return response.json();
     }
     return null;
+  }
+
+  function loadSupabaseSdk() {
+    if (window.supabase && typeof window.supabase.createClient === "function") {
+      return Promise.resolve(window.supabase);
+    }
+    if (supabaseSdkPromise) {
+      return supabaseSdkPromise;
+    }
+    supabaseSdkPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = SUPABASE_SDK_URL;
+      script.async = true;
+      script.onload = () => {
+        if (window.supabase && typeof window.supabase.createClient === "function") {
+          resolve(window.supabase);
+        } else {
+          reject(new Error("El SDK de Supabase se ha cargado, pero no está disponible."));
+        }
+      };
+      script.onerror = () => reject(new Error("No se pudo cargar Supabase Realtime. Se usará la sincronización periódica."));
+      document.head.appendChild(script);
+    });
+    return supabaseSdkPromise;
+  }
+
+  function getSupabaseClient() {
+    if (supabaseClientPromise) {
+      return supabaseClientPromise;
+    }
+    supabaseClientPromise = loadSupabaseSdk().then((sdk) => {
+      const config = getCloudConfig();
+      return sdk.createClient(config.supabaseUrl, config.apiKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      });
+    });
+    return supabaseClientPromise;
   }
 
   async function backendRequest(method, body) {
@@ -345,7 +473,8 @@ const AbanikoStore = (() => {
       interest: payload.interest || payload.interest === null ? payload.interest : (index >= 0 ? data.students[index].interest || {} : {}),
       sports: payload.sports || payload.sports === null ? payload.sports : (index >= 0 ? data.students[index].sports || {} : {}),
       insertion: payload.insertion || payload.insertion === null ? payload.insertion : (index >= 0 ? data.students[index].insertion || {} : {}),
-      leisure: payload.leisure || payload.leisure === null ? payload.leisure : (index >= 0 ? data.students[index].leisure || {} : {})
+      leisure: payload.leisure || payload.leisure === null ? payload.leisure : (index >= 0 ? data.students[index].leisure || {} : {}),
+      interviewRecords: payload.interviewRecords || payload.interviewRecords === null ? payload.interviewRecords : (index >= 0 ? data.students[index].interviewRecords || [] : [])
     };
 
     if (index >= 0) {
@@ -380,6 +509,100 @@ const AbanikoStore = (() => {
 
   function getStudent(dni) {
     return load().students.find((student) => String(student.dni) === String(dni)) || null;
+  }
+
+  function getStudentFullName(student) {
+    return `${student?.nombre || ""} ${student?.apellidos || ""}`.trim() || "Alumno";
+  }
+
+  function getStudentDisplayName(student) {
+    const fullName = getStudentFullName(student);
+    const locality = String(student?.localidad || "").trim();
+    return locality ? `${fullName} - ${locality}` : fullName;
+  }
+
+  function getStudentsSortedByName() {
+    return load().students
+      .slice()
+      .sort((a, b) => getStudentDisplayName(a).localeCompare(getStudentDisplayName(b), "es", { sensitivity: "base" }));
+  }
+
+  function getLatestInterviewRevision(record) {
+    if (!record || !Array.isArray(record.revisions) || record.revisions.length === 0) {
+      return null;
+    }
+    return record.revisions[record.revisions.length - 1];
+  }
+
+  function getStudentInterviewRecords(dni) {
+    const student = getStudent(dni);
+    if (!student) {
+      return [];
+    }
+    return [...(student.interviewRecords || [])]
+      .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+  }
+
+  function getStudentInterviewRecord(dni, recordId) {
+    return getStudentInterviewRecords(dni).find((record) => String(record.id) === String(recordId)) || null;
+  }
+
+  function createStudentInterview(dni, payload) {
+    const data = load();
+    const index = findStudentIndex(data, dni);
+    if (index === -1) {
+      return { ok: false, message: "Alumno no encontrado." };
+    }
+
+    const revision = normalizeInterviewRevision(payload);
+    const record = normalizeInterviewRecord({
+      studentDni: dni,
+      createdAt: revision.createdAt,
+      updatedAt: revision.updatedAt,
+      revisions: [revision]
+    }, dni);
+
+    const currentRecords = Array.isArray(data.students[index].interviewRecords)
+      ? data.students[index].interviewRecords
+      : [];
+    data.students[index] = {
+      ...data.students[index],
+      interviewRecords: [...currentRecords, record],
+      updatedAt: new Date().toISOString()
+    };
+    save(data);
+    return { ok: true, record, revision };
+  }
+
+  function reviseStudentInterview(dni, recordId, payload) {
+    const data = load();
+    const studentIndex = findStudentIndex(data, dni);
+    if (studentIndex === -1) {
+      return { ok: false, message: "Alumno no encontrado." };
+    }
+
+    const records = Array.isArray(data.students[studentIndex].interviewRecords)
+      ? data.students[studentIndex].interviewRecords
+      : [];
+    const recordIndex = records.findIndex((record) => String(record.id) === String(recordId));
+    if (recordIndex === -1) {
+      return { ok: false, message: "Ficha de entrevista no encontrada." };
+    }
+
+    const revision = normalizeInterviewRevision(payload);
+    const record = normalizeInterviewRecord(records[recordIndex], dni);
+    record.revisions.push(revision);
+    record.updatedAt = revision.updatedAt;
+
+    const nextRecords = [...records];
+    nextRecords[recordIndex] = record;
+    data.students[studentIndex] = {
+      ...data.students[studentIndex],
+      interviewRecords: nextRecords,
+      updatedAt: new Date().toISOString()
+    };
+    save(data);
+    return { ok: true, record, revision };
   }
 
   function removeStudent(dni) {
@@ -804,8 +1027,8 @@ const AbanikoStore = (() => {
 
     cloudPullPromise = (async () => {
       try {
-        const document = await firebaseRequest("GET");
-        const remoteDocument = parseFirestoreDocument(document);
+        const rows = await supabaseRequest("GET");
+        const remoteDocument = parseSupabaseRows(rows);
         if (!remoteDocument) {
           notifyCloudMode("cloud");
           rememberCloudSync();
@@ -814,7 +1037,9 @@ const AbanikoStore = (() => {
 
         const remote = normalize(remoteDocument);
         const local = load();
-        if (String(remote.updatedAt || "") > String(local.updatedAt || "")) {
+        const shouldUseRemote = String(remote.updatedAt || "") > String(local.updatedAt || "")
+          || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
+        if (shouldUseRemote) {
           persistLocal(remote);
           if (isBackendConfigured()) {
             queueBackendPush();
@@ -844,10 +1069,10 @@ const AbanikoStore = (() => {
     }
 
     try {
-      await firebaseRequest("GET");
+      await supabaseRequest("GET");
       notifyCloudMode("cloud");
       rememberCloudSync();
-      return { ok: true, connected: true, message: "Firebase disponible. Firestore responde correctamente." };
+      return { ok: true, connected: true, message: "Supabase disponible. La tabla app_state responde correctamente." };
     } catch (error) {
       const message = error.message || "No se pudo comprobar la conexión con la nube.";
       rememberCloudError(message);
@@ -867,7 +1092,9 @@ const AbanikoStore = (() => {
       try {
         const remote = normalize(await backendRequest("GET"));
         const local = load();
-        if (String(remote.updatedAt || "") >= String(local.updatedAt || "")) {
+        const shouldUseRemote = String(remote.updatedAt || "") >= String(local.updatedAt || "")
+          || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
+        if (shouldUseRemote) {
           persistLocal(remote, { preserveUpdatedAt: true });
           if (isCloudConfigured() && String(remote.updatedAt || "") > String(local.updatedAt || "")) {
             queueCloudPush();
@@ -960,7 +1187,7 @@ const AbanikoStore = (() => {
     cloudPushPromise = (async () => {
       try {
         const data = load();
-        const document = await firebaseRequest("PATCH", serializeFirestoreData(data));
+        const document = await supabaseRequest("POST", serializeSupabaseData(data));
         notifyCloudMode("cloud");
         rememberCloudSync();
         return { ok: true, document };
@@ -993,6 +1220,51 @@ const AbanikoStore = (() => {
     return { ok: true, message: "Sincronización completada." };
   }
 
+  function startSupabaseRealtimeSync(onUpdate) {
+    const config = getCloudConfig();
+    if (!config.realtime || config.provider !== "supabase") {
+      return;
+    }
+
+    getSupabaseClient()
+      .then((client) => {
+        client
+          .channel(`abaniko-${config.appId}-${Date.now()}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: config.tableName,
+              filter: `app_id=eq.${config.appId}`
+            },
+            async () => {
+              await pullFromCloud();
+              if (typeof onUpdate === "function") {
+                onUpdate(getCloudStatus());
+              }
+            }
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              rememberCloudError("");
+            }
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              rememberCloudError("Supabase Realtime no respondió. Se mantiene la sincronización periódica.");
+            }
+            if (typeof onUpdate === "function") {
+              onUpdate(getCloudStatus());
+            }
+          });
+      })
+      .catch((error) => {
+        rememberCloudError(error.message || "No se pudo iniciar Supabase Realtime.");
+        if (typeof onUpdate === "function") {
+          onUpdate(getCloudStatus());
+        }
+      });
+  }
+
   function startCloudAutoSync(onUpdate) {
     if (!isCloudConfigured()) {
       return null;
@@ -1003,6 +1275,7 @@ const AbanikoStore = (() => {
         onUpdate(getCloudStatus());
       }
     });
+    startSupabaseRealtimeSync(onUpdate);
     return window.setInterval(async () => {
       await pullFromCloud();
       if (typeof onUpdate === "function") {
@@ -1045,6 +1318,14 @@ const AbanikoStore = (() => {
     upsertStudent,
     patchStudentSection,
     getStudent,
+    getStudentFullName,
+    getStudentDisplayName,
+    getStudentsSortedByName,
+    getStudentInterviewRecords,
+    getStudentInterviewRecord,
+    getLatestInterviewRevision,
+    createStudentInterview,
+    reviseStudentInterview,
     removeStudent,
     setSelectedStudent,
     getSelectedStudent,

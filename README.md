@@ -1,76 +1,96 @@
 # Programa Abaniko
 
-Programa Abaniko es una aplicación web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociación. Funciona en local desde el ordenador y también está preparada para publicarse en Firebase Hosting.
+Programa Abaniko es una aplicacion web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociacion. Funciona en local desde este ordenador y tambien puede publicarse online con Netlify.
 
-## En Qué Consiste
+## En Que Consiste
 
-La página centraliza la información diaria del programa:
+La pagina centraliza la informacion diaria del programa:
 
-- Registro, edición, consulta y eliminación de alumnos.
-- Gestión de profesores con PIN de acceso.
+- Registro, edicion, consulta y eliminacion de alumnos.
+- Gestion de profesores con PIN de acceso.
 - Control de entradas y salidas de profesores.
-- Registro de jornadas y consulta de sus resúmenes.
-- Programas específicos del alumno: ocio, deportes, inserción y datos de interés.
+- Registro de jornadas y consulta de sus resumenes.
+- Programas especificos del alumno: ocio, deportes, insercion y datos de interes.
 - Fichas de entrevista con historial de versiones para conservar cambios anteriores.
-- Sincronización opcional con Firebase para compartir datos entre varios equipos.
+- Sincronizacion con Supabase para compartir datos entre varios equipos en tiempo real.
 
-## Cómo Funciona
+## Como Funciona
 
-La entrada principal es `Index.html`. Ese archivo redirige a `html/Index.html`, donde está la portada real de la aplicación.
+La entrada principal es `Index.html`. Ese archivo redirige a `html/Index.html`, donde esta la portada real de la aplicacion.
 
-Cuando un profesor inicia sesión con su PIN, puede acceder al panel principal. Desde ahí se entra a alumnos, profesores, jornadas, historial y nube. Los datos se guardan en el navegador y, si Firebase está configurado, también se sincronizan con Firestore.
+Cuando un profesor inicia sesion con su PIN, puede acceder al panel principal. Desde ahi se entra a alumnos, profesores, jornadas, historial y nube. Los datos se guardan en el navegador y tambien se sincronizan con Supabase en la tabla `app_state`.
 
-La gestión de alumnos se hace desde `html/menu_anadir_alumno.html`. Desde esa pantalla se puede abrir la ficha principal, consultar alumnos, eliminar registros, completar programas y crear fichas de entrevista.
+La gestion de alumnos se hace desde `html/menu_anadir_alumno.html`. Desde esa pantalla se puede abrir la ficha principal, consultar alumnos, eliminar registros, completar programas y crear fichas de entrevista.
 
-## Organización De Carpetas
+## Organizacion De Carpetas
 
-- `html/`: páginas de la aplicación.
-- `js/`: lógica principal y configuración de Firebase.
+- `html/`: paginas de la aplicacion.
+- `js/`: logica principal y configuracion publica de Supabase.
 - `css/`: estilos visuales.
-- `assets/`: imágenes e iconos.
+- `assets/`: imagenes e iconos.
 - `backend/`: servidor local de Node.js.
 - `data/`: datos locales en JSON.
-- `config/`, `core/` y `supabase/`: archivos auxiliares o históricos de configuración.
-- `README.md`: explicación general del proyecto.
+- `supabase/`: configuracion y migraciones de la base de datos.
+- `config/` y `core/`: archivos auxiliares o historicos de configuracion.
+- `tools/`: scripts de preparacion para publicar.
+- `README.md`: explicacion general del proyecto.
 
-Se mantienen en la raíz archivos como `package.json`, `firebase.json`, `firebase-firestore.rules` y los `.bat` porque son necesarios para arrancar, publicar o configurar la app sin romper accesos directos.
+Para Netlify se genera una carpeta `dist/` con solo los archivos publicos necesarios: `Index.html`, `html/`, `css/`, `js/` y `assets/`.
 
 ## Uso Local
 
-Para abrir la aplicación en este ordenador, usa:
+Para abrir la aplicacion en este ordenador, usa:
 
 ```bat
 Abrir Programa Abaniko.bat
 ```
 
-Ese archivo arranca el servidor local si hace falta y abre la página principal.
+Ese archivo arranca el servidor local si hace falta y abre la pagina principal.
 
-También se puede iniciar desde terminal:
+Tambien se puede iniciar desde terminal:
 
 ```bash
 npm start
 ```
 
-Después se accede a:
+Despues se accede a:
 
 ```text
 http://127.0.0.1:3000/Index.html
 ```
 
-## Uso Online
+## Uso Online Con Netlify
 
-La versión pública se publica con Firebase Hosting. Para subir cambios:
+Antes de publicar, genera la version publica:
+
+```bash
+npm run build
+```
+
+Si PowerShell bloquea `npm.ps1`, usa:
 
 ```bat
-Publicar Programa Abaniko Online.bat
+cmd /c npm run build
 ```
 
-La web pública queda en:
+Netlify debe publicar la carpeta:
 
 ```text
-https://programaabaniko.web.app/
+dist
 ```
+
+La app online se conecta a Supabase usando `js/supabase-config.js`. La tabla principal es `app_state` y guarda una copia completa del estado de la aplicacion en formato JSON.
+
+## Supabase
+
+El proyecto conectado es:
+
+```text
+hmgripzugbzhxkrlfhrx
+```
+
+La tabla necesaria es `public.app_state`, con permisos RLS para la clave `anon` y Realtime activado. La app lee al abrir, guarda cuando hay cambios y escucha cambios externos con Supabase Realtime. Si Realtime no responde, mantiene una sincronizacion periodica como respaldo.
 
 ## Nota Importante De Seguridad
 
-Si se van a guardar datos reales de alumnos, conviene proteger Firebase con usuarios y permisos. Las reglas actuales permiten que la aplicación funcione online, pero antes de usar datos sensibles en producción debería añadirse autenticación.
+La clave `anon` es publica por diseno, pero las politicas RLS actuales permiten leer y escribir el estado de la app. Antes de guardar datos reales sensibles de alumnos en produccion conviene anadir autenticacion y permisos por usuario.

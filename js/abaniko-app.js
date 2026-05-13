@@ -200,6 +200,17 @@ const AbanikoStore = (() => {
     return String(secondary.updatedAt || "") > String(primary.updatedAt || "") ? secondary : primary;
   }
 
+  function hasMeaningfulData(data) {
+    const normalized = normalize(data);
+    return [
+      normalized.students,
+      normalized.teachers,
+      normalized.sessions,
+      normalized.accessLogs,
+      normalized.absences
+    ].some((items) => items.length > 0);
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1026,7 +1037,9 @@ const AbanikoStore = (() => {
 
         const remote = normalize(remoteDocument);
         const local = load();
-        if (String(remote.updatedAt || "") > String(local.updatedAt || "")) {
+        const shouldUseRemote = String(remote.updatedAt || "") > String(local.updatedAt || "")
+          || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
+        if (shouldUseRemote) {
           persistLocal(remote);
           if (isBackendConfigured()) {
             queueBackendPush();
@@ -1079,7 +1092,9 @@ const AbanikoStore = (() => {
       try {
         const remote = normalize(await backendRequest("GET"));
         const local = load();
-        if (String(remote.updatedAt || "") >= String(local.updatedAt || "")) {
+        const shouldUseRemote = String(remote.updatedAt || "") >= String(local.updatedAt || "")
+          || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
+        if (shouldUseRemote) {
           persistLocal(remote, { preserveUpdatedAt: true });
           if (isCloudConfigured() && String(remote.updatedAt || "") > String(local.updatedAt || "")) {
             queueCloudPush();
