@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ficha de Alumno</title>
+  <title>Ficha del alumno</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
@@ -81,23 +81,23 @@
         row("Domicilio", student.domicilio),
         row("Localidad", student.localidad),
         row("Provincia", student.provincia),
-        row("Teléfono casa", student.telefono_casa),
-        row("Móvil alumno", student.movil_alumno),
-        row("Móvil padre", student.movil_padre),
-        row("Móvil madre", student.movil_madre),
+        row("Teléfono de casa", student.telefono_casa),
+        row("Móvil del alumno", student.movil_alumno),
+        row("Móvil del padre", student.movil_padre),
+        row("Móvil de la madre", student.movil_madre),
         row("Discapacidad", student.discapacidad),
         row("Estudios", student.estudios),
         row("Cursos", student.cursos),
         row("Trabajo", student.trabajo),
         row("Actividad en la que participa", student.actividad_actual),
         row("Actividad deseada", student.actividad_deseada),
-        row("Notas técnico", student.notas_tecnico),
+        row("Notas del técnico", student.notas_tecnico),
         row("Fichas de entrevista guardadas", interviewRecords.length),
         row("Última entrevista", latestInterview ? `${latestInterview.schoolYear || "Sin curso"} - ${AbanikoStore.formatDate(latestInterview.interviewDate || "")}` : "Sin entrevistas"),
         row("Datos de interés", student.interest || {}),
-        row("Programa deportes", student.sports || {}),
-        row("Programa inserción", student.insertion || {}),
-        row("Programa ocio", student.leisure || {})
+        row("Programa de deportes", student.sports || {}),
+        row("Programa de inserción", student.insertion || {}),
+        row("Programa de ocio", student.leisure || {})
       ].join("");
     }
   </script>

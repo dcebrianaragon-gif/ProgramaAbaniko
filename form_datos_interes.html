@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Datos de Interés</title>
+  <title>Datos de interés</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
@@ -31,7 +31,7 @@
           <div class="program-card-grid">
             <article class="program-note">
               <strong>Objetivos</strong>
-              <span>Qué se quiere trabajar con el alumno a corto o medio plazo.</span>
+              <span>Objetivos que se quieren trabajar con el alumno a corto o medio plazo.</span>
             </article>
             <article class="program-note">
               <strong>Observaciones</strong>
@@ -74,7 +74,7 @@
             </section>
 
             <div class="button-row">
-              <button type="submit" class="btn-primary">Guardar datos</button>
+              <button type="submit" class="btn-primary">Guardar datos de interés</button>
             </div>
           </form>
           <p id="message" class="message"></p>
@@ -172,7 +172,7 @@
         referente: referenteInput.value.trim()
       });
       AbanikoStore.setSelectedStudent(dni);
-      message.textContent = "Datos de interés guardados.";
+      message.textContent = "Datos de interés guardados correctamente.";
       message.className = "message is-success";
       loadStudentSection(dni);
     });

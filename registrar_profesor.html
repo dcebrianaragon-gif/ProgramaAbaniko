@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar Profesor</title>
+  <title>Registrar profesor</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
@@ -33,7 +33,7 @@
               <h2 id="formTitle">Nuevo profesor</h2>
               <p>Cada profesor necesita un PIN para poder entrar en la aplicación.</p>
             </div>
-            <span id="roleHelp" class="inline-badge">Puedes elegir si el alta sera administrador o profesor</span>
+            <span id="roleHelp" class="inline-badge">Puedes elegir si el alta será como administrador o profesor</span>
           </div>
 
           <form id="teacherForm" class="panel-soft section-shell">
@@ -47,7 +47,7 @@
                 <input id="teacherSubject" name="teacherSubject" type="text" autocomplete="organization-title" required>
               </div>
               <div class="field">
-                <label for="teacherEmail">Email</label>
+                <label for="teacherEmail">Correo electrónico</label>
                 <input id="teacherEmail" name="teacherEmail" type="email" autocomplete="email" placeholder="ejemplo@centro.es">
               </div>
               <div class="field">
@@ -87,7 +87,7 @@
       <section class="panel section-shell">
         <div class="section-head">
           <div>
-            <h2>�altimos accesos</h2>
+            <h2>Últimos accesos</h2>
             <p>Entradas y salidas guardadas con su hora exacta.</p>
           </div>
         </div>
@@ -265,7 +265,7 @@
             <div class="card-lines">
               <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(teacher.role))}</span>
               <span>Área: ${AbanikoStore.escapeHtml(teacher.subject || "Sin área")}</span>
-              <span>Email: ${AbanikoStore.escapeHtml(teacher.email || "No indicado")}</span>
+              <span>Correo electrónico: ${AbanikoStore.escapeHtml(teacher.email || "No indicado")}</span>
               <span>Teléfono: ${AbanikoStore.escapeHtml(teacher.phone || "No indicado")}</span>
               <span>PIN configurado: ${teacher.pin ? "Sí" : "No"}</span>
             </div>
@@ -301,7 +301,7 @@
     function renderAbsenceTargets() {
       const currentTeacher = AbanikoStore.getCurrentTeacher();
       if (!currentTeacher) {
-        absenceTeacher.innerHTML = '<option value="">Debes iniciar sesiÒ³n</option>';
+        absenceTeacher.innerHTML = '<option value="">Debes iniciar sesión</option>';
         absenceTeacher.disabled = true;
         return;
       }
@@ -328,7 +328,7 @@
       const absences = AbanikoStore.getAbsences().slice(0, 20);
       absenceCount.textContent = `${absences.length} registradas`;
       if (absences.length === 0) {
-        absenceList.innerHTML = '<p class="empty-state">TodavÒ­a no hay faltas registradas.</p>';
+        absenceList.innerHTML = '<p class="empty-state">Todavía no hay faltas registradas.</p>';
         return;
       }
       absenceList.innerHTML = absences.map((absence) => `

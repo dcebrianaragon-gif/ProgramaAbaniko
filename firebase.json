@@ -1,5 +1,45 @@
 {
   "firestore": {
     "rules": "firebase-firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firebase-firestore.rules",
+      ".firebaseignore",
+      ".firebaserc",
+      ".firebase",
+      ".firebase/**",
+      ".gitignore",
+      ".git",
+      ".git/**",
+      ".vscode",
+      ".vscode/**",
+      "**/.git/**",
+      "**/.vscode/**",
+      "**/node_modules/**",
+      "node_modules",
+      "node_modules/**",
+      "backend/**",
+      "config/**",
+      "core/**",
+      "data/**",
+      "supabase/**",
+      "*.bat",
+      "*.sql",
+      "package.json",
+      "package-lock.json",
+      "server.js",
+      "README.md"
+    ],
+    "cleanUrls": false,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/",
+        "destination": "/Index.html"
+      }
+    ]
   }
 }

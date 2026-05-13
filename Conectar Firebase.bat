@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
 
@@ -21,7 +22,7 @@ echo.
 cmd /c npx firebase-tools login
 if errorlevel 1 (
   echo.
-  echo No se pudo iniciar sesion en Firebase.
+  echo No se pudo iniciar sesión en Firebase.
   echo Vuelve a intentarlo y acepta el acceso con tu cuenta de Google.
   echo.
   pause

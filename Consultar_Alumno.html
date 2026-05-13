@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consultar Alumnos</title>
+  <title>Consulta de alumnos</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <section class="hero">
-      <h1>Consultar alumnos</h1>
+      <h1>Consulta de alumnos</h1>
       <p>Busca por texto general o usa filtros separados por fecha de nacimiento, edad, sexo y localidad.</p>
     </section>
 
     <section class="panel section-shell">
       <div class="button-row">
         <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
-        <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Menú alumno</button>
+        <button type="button" class="btn-secondary" onclick="go('menu_anadir_alumno.html')">Menú del alumno</button>
       </div>
 
       <div class="filter-grid">
         <div class="field">
           <label for="searchInput">Texto general</label>
-          <input id="searchInput" placeholder="Nombre, apellidos, DNI o actividad">
+          <input id="searchInput" placeholder="Nombre, apellidos, localidad o actividad">
         </div>
         <div class="field">
           <label for="birthInput">Fecha de nacimiento</label>
@@ -85,7 +85,7 @@
 
     function matchesText(student, term) {
       if (!term) return true;
-      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${toActivityText(student.actividad_actual)} ${toActivityText(student.actividad_deseada)} ${student.localidad || ""}`.toLowerCase();
+      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${toActivityText(student.actividad_actual)} ${toActivityText(student.actividad_deseada)} ${student.localidad || ""}`.toLowerCase();
       return bag.includes(term);
     }
 

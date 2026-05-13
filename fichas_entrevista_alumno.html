@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fichas de Entrevista</title>
+  <title>Fichas de entrevista</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
@@ -31,7 +31,7 @@
 
           <div class="program-card-grid">
             <article class="program-note">
-              <strong>Histórico real</strong>
+              <strong>Historial completo</strong>
               <span>Si un alumno repite curso o cambia su situación, guardas una nueva versión sin perder las anteriores.</span>
             </article>
             <article class="program-note">
@@ -79,7 +79,7 @@
                 <label class="checkbox-card" for="repeatYear">
                   <input id="repeatYear" type="checkbox">
                   <span>
-                    <strong>Repite año o etapa</strong>
+                    <strong>Repite curso o etapa</strong>
                     <span>Marca esta opción si el alumno continúa o repite y necesitas reflejar los cambios de este nuevo ciclo.</span>
                   </span>
                 </label>
@@ -244,13 +244,13 @@
 
     function renderSelectedRecord(record) {
       if (!record) {
-        selectedRecordBox.innerHTML = '<p class="empty-state">No estás editando ninguna ficha anterior. Si guardas ahora, se creará una ficha nueva.</p>';
+        selectedRecordBox.innerHTML = '<p class="empty-state">No estás usando ninguna ficha anterior como base. Si guardas ahora, se creará una ficha nueva.</p>';
         return;
       }
       const latest = AbanikoStore.getLatestInterviewRevision(record);
       selectedRecordBox.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(latest?.schoolYear || "Sin curso")}</strong><span>Última versión: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(latest?.updatedAt || ""))}</span></div>
-        <div class="summary-row"><strong>Fecha entrevista</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDate(latest?.interviewDate || ""))}</span></div>
+        <div class="summary-row"><strong>Fecha de entrevista</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDate(latest?.interviewDate || ""))}</span></div>
         <div class="summary-row"><strong>Versiones</strong><span>${AbanikoStore.escapeHtml(String(record.revisions?.length || 0))}</span></div>
       `;
     }

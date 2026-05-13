@@ -501,7 +501,7 @@ const AbanikoStore = (() => {
 
     save(data);
     if (target.role === "admin" && data.teachers.length > 0) {
-      return { ok: true, message: `Administrador eliminado. ${data.teachers[0].name} pasa a ser el nuevo admin.` };
+      return { ok: true, message: `Administrador eliminado. ${data.teachers[0].name} pasa a ser el nuevo administrador.` };
     }
     return { ok: true, message: "Profesor eliminado correctamente." };
   }

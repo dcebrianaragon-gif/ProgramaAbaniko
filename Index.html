@@ -547,7 +547,7 @@
       lines.push(...splitLine(`${index + 1}. ${teacher.name || "Profesor"}`, 90));
       pushField(lines, "Rol", AbanikoStore.formatRole(teacher.role));
       pushField(lines, "Asignatura", teacher.subject || "No indicada");
-      pushField(lines, "Email", teacher.email || "No indicado");
+      pushField(lines, "Correo electrónico", teacher.email || "No indicado");
       pushField(lines, "Teléfono", teacher.phone || "No indicado");
       lines.push("");
     }
@@ -572,7 +572,7 @@
     function buildReportLines(data) {
       const lines = [];
       lines.push("Programa Abaniko - Resumen general");
-      lines.push(`Fecha de exportacion: ${toPdfSafeText(new Date().toLocaleString("es-ES"))}`);
+      lines.push(`Fecha de exportación: ${toPdfSafeText(new Date().toLocaleString("es-ES"))}`);
       lines.push("");
       lines.push(`Alumnos registrados: ${data.students.length}`);
       lines.push(`Profesores registrados: ${data.teachers.length}`);
@@ -640,4 +640,3 @@
   </script>
 </body>
 </html>
-

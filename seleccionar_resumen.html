@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seleccionar Resumen</title>
+  <title>Seleccionar resumen de jornada</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Seleccionar resumen</h1><p>Busca entre las jornadas guardadas y deja una activa para verla en detalle.</p></section>
+    <section class="hero"><h1>Seleccionar resumen de jornada</h1><p>Busca una jornada guardada para ver su resumen o editarla.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;">
         <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
@@ -53,7 +53,7 @@
       .sort((a, b) => String(b.date || b.updatedAt || "").localeCompare(String(a.date || a.updatedAt || "")));
       resultInfo.textContent = `${sessions.length} jornadas`;
       if (sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la búsqueda. Prueba con el nombre, la fecha, el lugar o el profesor.</p>';
+        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la búsqueda. Prueba con el nombre, la fecha, el lugar o el profesor responsable.</p>';
         return;
       }
       sessionList.innerHTML = sessions.map((session) => `

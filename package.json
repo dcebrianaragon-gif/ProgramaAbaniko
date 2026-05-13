@@ -5,6 +5,8 @@
   "description": "Programa Abaniko con backend local y guardado inmediato en JSON.",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "deploy": "npx firebase-tools deploy --only hosting,firestore:rules --project programaabaniko",
+    "deploy:hosting": "npx firebase-tools deploy --only hosting --project programaabaniko"
   }
 }

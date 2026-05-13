@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eliminar Alumnos</title>
+  <title>Eliminar alumnos</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Eliminar alumnos</h1><p>Selecciona un alumno y elimínalo del almacenamiento local.</p></section>
+    <section class="hero"><h1>Eliminar alumnos</h1><p>Selecciona un alumno y elimínalo del programa.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;"><button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button></div>
       <div id="studentList" class="list"></div>
@@ -38,7 +38,10 @@
         <article class="card">
           <div>
             <strong>${AbanikoStore.escapeHtml(student.nombre || "")} ${AbanikoStore.escapeHtml(student.apellidos || "")}</strong>
-            <div class="card-lines"><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+            <div class="card-lines">
+              <span>Localidad: ${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span>
+              <span>Actividad deseada: ${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span>
+            </div>
           </div>
           <div class="actions"><button type="button" class="btn-danger" onclick="deleteStudent('${student.dni}')">Eliminar</button></div>
         </article>

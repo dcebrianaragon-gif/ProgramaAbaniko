@@ -110,12 +110,26 @@ const AbanikoStore = (() => {
   }
 
   function getBackendConfig() {
-    const protocol = typeof window !== "undefined" ? window.location.protocol : "";
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const useLocalServer = /^file:$/i.test(protocol);
-    const baseUrl = useLocalServer ? "http://127.0.0.1:3000" : origin;
+    if (typeof window === "undefined") {
+      return {
+        enabled: false,
+        dataUrl: "",
+        healthUrl: ""
+      };
+    }
+
+    const protocol = window.location.protocol || "";
+    const origin = window.location.origin || "";
+    const hostname = window.location.hostname || "";
+    const useFileServer = /^file:$/i.test(protocol);
+    const useLocalHttpServer = /^https?:$/i.test(protocol)
+      && ["localhost", "127.0.0.1", "::1"].includes(hostname);
+    const baseUrl = useFileServer
+      ? "http://127.0.0.1:3000"
+      : (useLocalHttpServer ? origin : "");
+
     return {
-      enabled: typeof window !== "undefined" && (/^https?:$/i.test(protocol) || useLocalServer),
+      enabled: Boolean(baseUrl),
       dataUrl: baseUrl ? `${baseUrl}/api/data` : "",
       healthUrl: baseUrl ? `${baseUrl}/api/health` : ""
     };
@@ -647,7 +661,7 @@ const AbanikoStore = (() => {
 
     save(data);
     if (target.role === "admin" && data.teachers.length > 0) {
-      return { ok: true, message: `Administrador eliminado. ${data.teachers[0].name} pasa a ser el nuevo admin.` };
+      return { ok: true, message: `Administrador eliminado. ${data.teachers[0].name} pasa a ser el nuevo administrador.` };
     }
     return { ok: true, message: "Profesor eliminado correctamente." };
   }

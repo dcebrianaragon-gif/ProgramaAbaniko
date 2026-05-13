@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resumen Actual</title>
+  <title>Resumen de jornada</title>
   <link rel="stylesheet" href="abaniko-styles.css">
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Resumen actual</h1><p>Detalle completo de la jornada seleccionada.</p></section>
+    <section class="hero"><h1>Resumen de jornada</h1><p>Detalle completo de la jornada seleccionada.</p></section>
     <section class="panel">
       <div class="button-row" style="margin-bottom: 16px;">
         <button type="button" class="btn-secondary" onclick="go('seleccionar_resumen.html')">Volver</button>
@@ -29,7 +29,7 @@
     const content = document.getElementById("content");
     const session = AbanikoStore.getSelectedSession();
     if (!session) {
-      content.innerHTML = '<p class="empty-state">No hay jornadas seleccionadas.</p>';
+      content.innerHTML = '<p class="empty-state">No hay ninguna jornada seleccionada.</p>';
     } else {
       content.innerHTML = [
         row("Jornada", session.title),
