@@ -179,6 +179,13 @@
       return AbanikoStore.isCurrentTeacherAdmin() || AbanikoStore.load().teachers.length === 0;
     }
 
+    function canCreateTeacher() {
+      if (editingId) {
+        return canManageTeachers();
+      }
+      return !hasSession() || canManageTeachers();
+    }
+
     function canManageTeachers() {
       return AbanikoStore.isCurrentTeacherAdmin() || AbanikoStore.load().teachers.length === 0;
     }
@@ -187,7 +194,7 @@
       const teacher = AbanikoStore.getCurrentTeacher();
       if (!teacher) {
         currentTeacherName.textContent = "Registro previo al acceso";
-        currentTeacherMeta.textContent = "Puedes crear un profesor y luego volver al inicio para iniciar sesión";
+        currentTeacherMeta.textContent = "Puedes crear un profesor nuevo y luego volver al inicio para iniciar sesión";
         topActions.innerHTML = '<button type="button" class="btn-secondary" onclick="openPage(\'Index.html\')">Volver al inicio</button>';
         return;
       }
@@ -219,13 +226,16 @@
     }
 
     function updateFormAvailability() {
-      const allowed = canManageTeachers();
+      const allowed = canCreateTeacher();
       form.querySelectorAll("input, select, textarea, button").forEach((control) => {
+        if (control === form.teacherRole) {
+          return;
+        }
         control.disabled = !allowed;
       });
       roleHelp.textContent = allowed
         ? roleHelp.textContent
-        : "Solo un administrador puede crear o editar profesores";
+        : "Solo un administrador puede editar profesores";
     }
 
     function renderRoleField() {
@@ -241,7 +251,9 @@
       if (!canManageRoles()) {
         roleField.value = "profesor";
         roleField.disabled = true;
-        roleHelp.textContent = "Solo un administrador puede cambiar roles";
+        roleHelp.textContent = hasSession()
+          ? "Solo un administrador puede cambiar roles"
+          : "El profesor se creará con rol de profesor. Un administrador podrá cambiarlo después.";
         updateFormAvailability();
         return;
       }
@@ -357,8 +369,8 @@
         pin: form.teacherPin.value.trim(),
         role: canManageRoles() ? form.teacherRole.value : "profesor"
       };
-      if (!canManageTeachers()) {
-        showMessage("Solo un administrador puede crear o editar profesores.");
+      if (!canCreateTeacher()) {
+        showMessage("Solo un administrador puede editar profesores.");
         return;
       }
       if (!payload.name || !payload.subject || (!editingId && !payload.pin)) {

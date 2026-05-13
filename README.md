@@ -94,3 +94,6 @@ La tabla necesaria es `public.app_state`, con permisos RLS para la clave `anon` 
 ## Nota Importante De Seguridad
 
 La clave `anon` es publica por diseno, pero las politicas RLS actuales permiten leer y escribir el estado de la app. Antes de guardar datos reales sensibles de alumnos en produccion conviene anadir autenticacion y permisos por usuario.
+
+Copiar esto en google para acceder:
+"agent-6a043f79d63c432ad72b666f--programaa.netlify.app"
