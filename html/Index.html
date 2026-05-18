@@ -23,6 +23,7 @@
         <div class="button-row hero-actions">
           <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Ir al programa</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
+          <button type="button" class="btn-secondary" onclick="openVercelSite()">Abrir web en Vercel</button>
         </div>
       </section>
 
@@ -149,7 +150,10 @@
                 <span class="quick-kicker">Nube</span>
                 <h2>Estado online</h2>
                 <p>Comprueba que Supabase está conectado y actualizado.</p>
-                <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver estado</button>
+                <div class="button-row">
+                  <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver estado</button>
+                  <button type="button" class="btn-secondary" onclick="openVercelSite()">Abrir Vercel</button>
+                </div>
               </article>
             </div>
           </section>
@@ -237,9 +241,14 @@
     const nextSessionsList = document.getElementById("nextSessionsList");
     const systemStatusBox = document.getElementById("systemStatusBox");
     const backupInput = document.getElementById("backupInput");
+    const VERCEL_URL = "https://programa-abaniko-xib9.vercel.app";
 
     function openPage(page) {
       window.open(page, "_self");
+    }
+
+    function openVercelSite() {
+      window.open(VERCEL_URL, "_blank", "noopener");
     }
 
     function renderTeacherOptions() {
@@ -601,6 +610,7 @@
     window.exportBackup = exportBackup;
     window.importBackup = importBackup;
     window.syncCloud = syncCloud;
+    window.openVercelSite = openVercelSite;
   </script>
 </body>
 </html>
