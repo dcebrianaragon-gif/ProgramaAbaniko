@@ -1,6 +1,6 @@
 # Programa Abaniko
 
-Programa Abaniko es una aplicacion web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociacion. Funciona en local desde este ordenador y tambien puede publicarse online con Netlify.
+Programa Abaniko es una aplicacion web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociacion. Funciona en local desde este ordenador y tambien puede publicarse online con Netlify o Vercel.
 
 ## En Que Consiste
 
@@ -35,7 +35,7 @@ La gestion de alumnos se hace desde `html/menu_anadir_alumno.html`. Desde esa pa
 - `tools/`: scripts de preparacion para publicar.
 - `README.md`: explicacion general del proyecto.
 
-Para Netlify se genera una carpeta `dist/` con solo los archivos publicos necesarios: `Index.html`, `html/`, `css/`, `js/` y `assets/`.
+Para Netlify y Vercel se genera una carpeta `dist/` con solo los archivos publicos necesarios: `Index.html`, `html/`, `css/`, `js/` y `assets/`.
 
 ## Uso Local
 
@@ -80,6 +80,29 @@ dist
 ```
 
 La app online se conecta a Supabase usando `js/supabase-config.js`. La tabla principal es `app_state` y guarda una copia completa del estado de la aplicacion en formato JSON.
+
+## Uso Online Con Vercel
+
+Vercel puede usar la misma compilacion estatica:
+
+```bash
+npm run build
+```
+
+La configuracion ya incluida en `vercel.json` indica:
+
+```text
+Build Command: npm run build
+Output Directory: dist
+```
+
+Si quieres publicar desde terminal:
+
+```bash
+cmd /c npm run deploy:vercel
+```
+
+La app en Vercel tambien trabajara contra Supabase cuando se abra desde una URL publica, igual que en Netlify.
 
 ## Supabase
 

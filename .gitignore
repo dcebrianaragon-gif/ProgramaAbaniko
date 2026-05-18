@@ -1,8 +1,10 @@
 node_modules/
 .firebase/
+.vercel/
 dist/
 .env
 .env.local
+.vercel/.env*.local
 npm-debug.log*
 *.log
 *.tmp

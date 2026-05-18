@@ -1,0 +1,10 @@
+.git/
+.gitignore
+.vscode/
+.firebase/
+.vercel/
+backend/
+data/
+server.js
+*.bat
+netlify.toml
