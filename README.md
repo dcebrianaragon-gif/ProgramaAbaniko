@@ -1,6 +1,6 @@
 # Programa Abaniko
 
-Programa Abaniko es una aplicacion web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociacion. Funciona en local desde este ordenador y tambien puede publicarse online con Netlify o Vercel.
+Programa Abaniko es una aplicacion web para gestionar alumnos, profesores, accesos, jornadas y fichas de seguimiento de la asociacion. Funciona en local desde este ordenador y tambien puede publicarse online con Cloudflare Pages, Netlify o Vercel.
 
 ## En Que Consiste
 
@@ -35,7 +35,7 @@ La gestion de alumnos se hace desde `html/menu_anadir_alumno.html`. Desde esa pa
 - `tools/`: scripts de preparacion para publicar.
 - `README.md`: explicacion general del proyecto.
 
-Para Netlify y Vercel se genera una carpeta `dist/` con solo los archivos publicos necesarios: `Index.html`, `html/`, `css/`, `js/` y `assets/`.
+Para Cloudflare Pages, Netlify y Vercel se genera una carpeta `dist/` con solo los archivos publicos necesarios: `index.html`, `html/`, `css/`, `js/` y `assets/`.
 
 ## Uso Local
 
@@ -80,6 +80,26 @@ dist
 ```
 
 La app online se conecta a Supabase usando `js/supabase-config.js`. La tabla principal es `app_state` y guarda una copia completa del estado de la aplicacion en formato JSON.
+
+## Uso Online Con Cloudflare Pages
+
+Cloudflare Pages puede usar exactamente la misma compilacion estatica:
+
+```bash
+npm run build
+```
+
+En Cloudflare Pages configura:
+
+```text
+Framework preset: None
+Build command: npm run build
+Build output directory: dist
+```
+
+Si quieres publicar con Wrangler desde terminal, la configuracion base ya esta en `wrangler.toml`.
+
+La app en Cloudflare Pages trabaja contra Supabase cuando se abre desde una URL publica, igual que en Netlify y Vercel.
 
 ## Uso Online Con Vercel
 

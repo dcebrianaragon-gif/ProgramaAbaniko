@@ -3,7 +3,14 @@ const path = require("path");
 
 const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
-const publicEntries = ["Index.html", "html", "css", "js", "assets"];
+const publicEntries = [
+  { source: "index.html", target: "index.html" },
+  { source: "index.html", target: "Index.html" },
+  { source: "html", target: "html" },
+  { source: "css", target: "css" },
+  { source: "js", target: "js" },
+  { source: "assets", target: "assets" }
+];
 
 async function copyRecursive(source, target) {
   const info = await fs.stat(source);
@@ -24,10 +31,13 @@ async function main() {
   await fs.mkdir(distDir, { recursive: true });
 
   for (const entry of publicEntries) {
-    await copyRecursive(path.join(rootDir, entry), path.join(distDir, entry));
+    await copyRecursive(
+      path.join(rootDir, entry.source),
+      path.join(distDir, entry.target)
+    );
   }
 
-  console.log(`Netlify listo: ${distDir}`);
+  console.log(`Build estatico listo: ${distDir}`);
 }
 
 main().catch((error) => {

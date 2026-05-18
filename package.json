@@ -1,0 +1,11 @@
+{
+  "name": "programa-abaniko",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicacion web estatica de Programa Abaniko con despliegue en Cloudflare Pages, Netlify y Vercel.",
+  "scripts": {
+    "start": "node app.js",
+    "build": "node tools/build-netlify.js",
+    "deploy:vercel": "vercel --prod"
+  }
+}
