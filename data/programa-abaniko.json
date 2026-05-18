@@ -65,8 +65,18 @@
       "updatedAt": "2026-05-13T09:25:08.255Z",
       "teacherName": "Mª Angeles Aparicio",
       "teacherRole": "admin"
+    },
+    {
+      "id": 1778667845999,
+      "teacherId": 1778661416260,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-13T10:22:48.859Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-13T10:22:48.859Z",
+      "updatedAt": "2026-05-13T10:22:48.859Z"
     }
   ],
   "absences": [],
-  "updatedAt": "2026-05-13T09:35:52.757Z"
+  "updatedAt": "2026-05-13T10:22:48.862Z"
 }

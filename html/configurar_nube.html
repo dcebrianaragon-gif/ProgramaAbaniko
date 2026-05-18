@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configurar nube</title>
+  <title>Estado de sincronización</title>
   <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
       <section class="hero">
-        <h1>Nube compartida</h1>
-        <p>Esta pantalla deja preparada la aplicación para varios ordenadores usando Supabase como copia central compartida y sincronización en tiempo real.</p>
+        <h1>Sincronización online</h1>
+        <p>Comprueba que Supabase está conectado y que los datos se comparten correctamente entre equipos.</p>
       </section>
 
       <section class="page-grid">
@@ -19,30 +19,13 @@
           <div class="section-head">
             <div>
               <h2>Estado actual</h2>
-              <p>La nube es opcional. Si no la configuras, la app sigue funcionando en local.</p>
+              <p>La app guarda localmente y sincroniza online cuando hay conexión.</p>
             </div>
           </div>
           <div id="cloudStatusBox" class="summary-box"></div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('Index.html')">Volver al inicio</button>
-            <button type="button" class="btn-secondary" onclick="openSupabase()">Abrir Supabase</button>
-            <button type="button" class="btn-secondary" onclick="openTable()">Ver tabla</button>
-            <button type="button" class="btn-secondary" onclick="syncBackend()">Sincronizar servidor</button>
             <button type="button" class="btn-success" onclick="syncCloud()">Sincronizar ahora</button>
-          </div>
-        </section>
-
-        <section class="panel section-shell">
-          <div class="section-head">
-            <div>
-              <h2>Configuración preparada</h2>
-              <p>La conexión con Supabase ya está lista y aquí puedes comprobar su estado.</p>
-            </div>
-          </div>
-          <div class="summary-box">
-            <div class="summary-row"><strong>1. Archivo</strong><span>La app ya trae la configuración pública de Supabase lista para usarse.</span></div>
-            <div class="summary-row"><strong>2. Base de datos</strong><span>Este panel comprueba si la tabla app_state responde y si la app puede leer y escribir.</span></div>
-            <div class="summary-row"><strong>3. Sincronización</strong><span>Usa este panel para probar la subida, la descarga y los avisos en tiempo real.</span></div>
           </div>
         </section>
       </section>
@@ -55,11 +38,10 @@
           </div>
         </div>
         <div class="summary-box">
-          <div class="summary-row"><strong>Guardado local</strong><span>La app sigue guardando en el navegador para que no se rompa nada ni dependa siempre de internet.</span></div>
-          <div class="summary-row"><strong>Copia central</strong><span>Cuando activas Supabase, la app sube una copia completa del estado a la tabla app_state.</span></div>
-          <div class="summary-row"><strong>Lectura desde otros equipos</strong><span>Los demás ordenadores pueden descargar esa copia al abrir la app o al sincronizar.</span></div>
-          <div class="summary-row"><strong>Trabajo en varios equipos</strong><span>Sirve para compartir profesores, alumnos, jornadas y accesos sin depender de un solo navegador.</span></div>
-          <div class="summary-row"><strong>Importante</strong><span>La sincronización está pensada para una app ligera. Si dos equipos editan exactamente lo mismo a la vez, puede prevalecer la última sincronización.</span></div>
+          <div class="summary-row"><strong>Guardado local</strong><span>El navegador conserva una copia para evitar pérdidas.</span></div>
+          <div class="summary-row"><strong>Copia online</strong><span>Supabase guarda una copia compartida y actualizada.</span></div>
+          <div class="summary-row"><strong>Varios equipos</strong><span>Los cambios se descargan al abrir la app y también se revisan de forma periódica.</span></div>
+          <div class="summary-row"><strong>Importante</strong><span>Si dos equipos editan exactamente lo mismo a la vez, puede prevalecer la última sincronización.</span></div>
         </div>
       </section>
     </main>
@@ -72,7 +54,6 @@
 
     function renderStatus(connection) {
       const status = AbanikoStore.getCloudStatus();
-      const backend = AbanikoStore.getBackendStatus();
       const config = AbanikoStore.getCloudConfig();
       const cloudState = !config.enabled
         ? "Desactivada"
@@ -80,13 +61,7 @@
       const cloudMessage = connection ? connection.message : "Comprobando el acceso a Supabase.";
 
       cloudStatusBox.innerHTML = `
-        <div class="summary-row"><strong>Servidor local</strong><span>${backend.configured ? "Conectado" : "No disponible"}</span></div>
-        <div class="summary-row"><strong>Última escritura en JSON</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(backend.lastSyncAt))}</span></div>
-        <div class="summary-row"><strong>Error del servidor</strong><span>${AbanikoStore.escapeHtml(backend.lastError || "Sin errores")}</span></div>
-        <div class="summary-row"><strong>Modo</strong><span>${status.mode === "cloud" ? "Con nube activa" : "Solo local"}</span></div>
         <div class="summary-row"><strong>Configurada</strong><span>${status.configured ? "Sí" : "No"}</span></div>
-        <div class="summary-row"><strong>Proyecto Supabase</strong><span>${AbanikoStore.escapeHtml(config.projectRef || config.supabaseUrl || "No indicado")}</span></div>
-        <div class="summary-row"><strong>Tabla</strong><span>${AbanikoStore.escapeHtml(config.tableName || "app_state")}</span></div>
         <div class="summary-row"><strong>Tiempo real</strong><span>${config.realtime ? "Activado" : "Desactivado"}</span></div>
         <div class="summary-row"><strong>Estado Supabase</strong><span>${AbanikoStore.escapeHtml(cloudState)}</span></div>
         <div class="summary-row"><strong>Comprobación</strong><span>${AbanikoStore.escapeHtml(cloudMessage)}</span></div>
@@ -107,27 +82,9 @@
       await refreshCloudStatus();
     }
 
-    async function syncBackend() {
-      const result = await AbanikoStore.syncBackendNow();
-      alert(result.ok ? "Servidor sincronizado correctamente." : (result.message || "No se pudo sincronizar el servidor."));
-      await refreshCloudStatus();
-    }
-
-    function openSupabase() {
-      window.open("https://supabase.com/dashboard/project/hmgripzugbzhxkrlfhrx", "_blank", "noopener");
-    }
-
-    function openTable() {
-      window.open("https://supabase.com/dashboard/project/hmgripzugbzhxkrlfhrx/editor", "_blank", "noopener");
-    }
-
-    AbanikoStore.startBackendAutoSync(refreshCloudStatus);
     AbanikoStore.startCloudAutoSync(refreshCloudStatus);
     refreshCloudStatus();
-    window.syncBackend = syncBackend;
     window.syncCloud = syncCloud;
-    window.openSupabase = openSupabase;
-    window.openTable = openTable;
   </script>
 </body>
 </html>
