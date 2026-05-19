@@ -3,45 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Base local</title>
+  <title>Bases de datos</title>
   <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
       <section class="hero">
-        <h1>Base de datos local</h1>
-        <p>La informacion queda guardada en este equipo. Si abres la app con el servidor local, se conserva tambien en el archivo JSON del proyecto.</p>
+        <h1>Bases de datos</h1>
+        <p>La app puede guardar en este equipo y tambien sincronizar con Google Sheets para compartir la informacion entre dispositivos.</p>
       </section>
 
       <section class="page-grid">
         <section class="panel section-shell">
           <div class="section-head">
             <div>
-              <h2>Estado actual</h2>
-              <p>Comprueba si el servidor local esta activo y cuando se guardo la ultima copia.</p>
+              <h2>Base local</h2>
+              <p>Guarda en el navegador y, si abres el servidor local, tambien en data/programa-abaniko.json.</p>
             </div>
           </div>
           <div id="localStatusBox" class="summary-box"></div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('Index.html')">Volver al inicio</button>
-            <button type="button" class="btn-success" onclick="syncLocal()">Guardar ahora</button>
+            <button type="button" class="btn-success" onclick="syncLocal()">Guardar local</button>
           </div>
+        </section>
+
+        <section class="panel section-shell">
+          <div class="section-head">
+            <div>
+              <h2>Google Sheets</h2>
+              <p>Pega aqui la URL del Web App de Google Apps Script para usar una hoja como backend.</p>
+            </div>
+          </div>
+          <form id="sheetsForm" class="panel-soft section-shell">
+            <div class="field">
+              <label for="sheetsUrl">URL del Web App</label>
+              <input id="sheetsUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+              <p class="field-hint">Se guarda en este navegador. Tambien puedes dejarla fija en js/supabase-config.js.</p>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Guardar conexion</button>
+              <button type="button" class="btn-secondary" onclick="testSheets()">Probar</button>
+              <button type="button" class="btn-success" onclick="syncSheets()">Sincronizar Sheets</button>
+              <button type="button" class="btn-danger" onclick="disableSheets()">Desactivar</button>
+            </div>
+          </form>
+          <div id="sheetsStatusBox" class="summary-box"></div>
         </section>
       </section>
 
       <section class="panel section-shell">
         <div class="section-head">
           <div>
-            <h2>Como funciona</h2>
-            <p>Resumen sencillo del guardado local para trabajar sin depender de servicios externos.</p>
+            <h2>Como activar Google Sheets</h2>
+            <p>Pasos rapidos para crear el backend compartido.</p>
           </div>
         </div>
         <div class="summary-box">
-          <div class="summary-row"><strong>Copia del navegador</strong><span>La app mantiene una copia inmediata en este equipo.</span></div>
-          <div class="summary-row"><strong>Archivo local</strong><span>Con el servidor abierto, los datos se guardan en data/programa-abaniko.json.</span></div>
-          <div class="summary-row"><strong>Copias manuales</strong><span>Puedes exportar e importar copias JSON desde la pantalla principal.</span></div>
-          <div class="summary-row"><strong>Importante</strong><span>Para que el archivo local se actualice, abre la app con Abrir Programa Abaniko.bat o npm start.</span></div>
+          <div class="summary-row"><strong>1. Crea una hoja</strong><span>Abre Google Sheets y crea una hoja nueva para Programa Abaniko.</span></div>
+          <div class="summary-row"><strong>2. Apps Script</strong><span>Extensiones > Apps Script, pega tools/google-sheets-backend.gs y guarda.</span></div>
+          <div class="summary-row"><strong>3. Despliega</strong><span>Implementar > Nueva implementacion > Aplicacion web. Ejecutar como tu usuario y acceso para cualquiera con el enlace.</span></div>
+          <div class="summary-row"><strong>4. Copia la URL</strong><span>Pega aqui la URL que acaba en /exec y pulsa Guardar conexion.</span></div>
         </div>
       </section>
     </main>
@@ -50,9 +73,13 @@
   <script src="../js/abaniko-app.js"></script>
   <script>
     function go(page) { window.open(page, "_self"); }
-    const localStatusBox = document.getElementById("localStatusBox");
 
-    function renderStatus(result = null) {
+    const localStatusBox = document.getElementById("localStatusBox");
+    const sheetsStatusBox = document.getElementById("sheetsStatusBox");
+    const sheetsForm = document.getElementById("sheetsForm");
+    const sheetsUrl = document.getElementById("sheetsUrl");
+
+    function renderLocalStatus(result = null) {
       const data = AbanikoStore.load();
       const status = AbanikoStore.getBackendStatus();
       const config = AbanikoStore.getBackendConfig();
@@ -73,25 +100,88 @@
       `;
     }
 
+    function renderSheetsStatus(result = null) {
+      const status = AbanikoStore.getSheetsStatus();
+      const state = status.configured
+        ? (result === null ? "Configurado" : (result.ok ? "Conectado" : "Pendiente"))
+        : "No configurado";
+      const message = result?.message || (status.configured
+        ? "Google Sheets esta listo para sincronizar."
+        : "Pega la URL del Web App para activar Google Sheets.");
+
+      sheetsUrl.value = status.webAppUrl || "";
+      sheetsStatusBox.innerHTML = `
+        <div class="summary-row"><strong>Estado</strong><span>${AbanikoStore.escapeHtml(state)}</span></div>
+        <div class="summary-row"><strong>App ID</strong><span>${AbanikoStore.escapeHtml(status.appId)}</span></div>
+        <div class="summary-row"><strong>URL</strong><span>${AbanikoStore.escapeHtml(status.webAppUrl || "No configurada")}</span></div>
+        <div class="summary-row"><strong>Ultima sincronizacion</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(status.lastSyncAt || ""))}</span></div>
+        <div class="summary-row"><strong>Mensaje</strong><span>${AbanikoStore.escapeHtml(message)}</span></div>
+        <div class="summary-row"><strong>Ultima incidencia</strong><span>${AbanikoStore.escapeHtml(status.lastError || "Sin incidencias")}</span></div>
+      `;
+    }
+
     async function refreshLocalStatus() {
-      renderStatus(null);
+      renderLocalStatus(null);
       if (!AbanikoStore.isBackendConfigured()) {
-        renderStatus({ ok: false, message: "Servidor local no disponible desde esta URL." });
+        renderLocalStatus({ ok: false, message: "Servidor local no disponible desde esta URL." });
         return;
       }
       const result = await AbanikoStore.pullFromBackend();
-      renderStatus(result);
+      renderLocalStatus(result);
+    }
+
+    async function refreshSheetsStatus() {
+      renderSheetsStatus(null);
+      if (!AbanikoStore.isSheetsConfigured()) {
+        renderSheetsStatus({ ok: false, message: "Google Sheets no esta configurado." });
+        return;
+      }
+      const result = await AbanikoStore.testSheetsConnection();
+      renderSheetsStatus(result);
     }
 
     async function syncLocal() {
       const result = await AbanikoStore.syncBackendNow();
-      alert(result.ok ? "Base local guardada correctamente." : (result.message || "No se pudo guardar la base local."));
+      alert(result.ok ? "Backend sincronizado correctamente." : (result.message || "No se pudo sincronizar."));
       await refreshLocalStatus();
+      await refreshSheetsStatus();
     }
 
-    AbanikoStore.startBackendAutoSync(() => refreshLocalStatus());
+    async function syncSheets() {
+      const result = await AbanikoStore.syncSheetsNow();
+      alert(result.ok ? "Google Sheets sincronizado correctamente." : (result.message || "No se pudo sincronizar Google Sheets."));
+      await refreshSheetsStatus();
+    }
+
+    async function testSheets() {
+      const result = await AbanikoStore.testSheetsConnection();
+      alert(result.ok ? result.message : (result.message || "No se pudo conectar con Google Sheets."));
+      renderSheetsStatus(result);
+    }
+
+    function disableSheets() {
+      AbanikoStore.clearSheetsConnection();
+      renderSheetsStatus({ ok: false, message: "Google Sheets desactivado en este navegador." });
+    }
+
+    sheetsForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      AbanikoStore.setSheetsConnection(sheetsUrl.value, true);
+      const result = await AbanikoStore.syncSheetsNow();
+      renderSheetsStatus(result);
+    });
+
+    AbanikoStore.startBackendAutoSync(() => {
+      renderLocalStatus();
+      renderSheetsStatus();
+    });
     refreshLocalStatus();
+    refreshSheetsStatus();
+
     window.syncLocal = syncLocal;
+    window.syncSheets = syncSheets;
+    window.testSheets = testSheets;
+    window.disableSheets = disableSheets;
   </script>
 </body>
 </html>

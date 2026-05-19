@@ -12,12 +12,18 @@ const AbanikoStore = (() => {
   const BACKEND_LAST_SYNC_KEY = "programaAbanikoBackendLastSync";
   const BACKEND_LAST_ERROR_KEY = "programaAbanikoBackendLastError";
   const BACKEND_MODE_KEY = "programaAbanikoBackendMode";
+  const SHEETS_LAST_SYNC_KEY = "programaAbanikoSheetsLastSync";
+  const SHEETS_LAST_ERROR_KEY = "programaAbanikoSheetsLastError";
+  const SHEETS_WEB_APP_URL_KEY = "programaAbanikoSheetsWebAppUrl";
+  const SHEETS_ENABLED_KEY = "programaAbanikoSheetsEnabled";
   const SUPABASE_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
   let cloudPullPromise = null;
   let cloudPushPromise = null;
   let backendPullPromise = null;
   let backendPushPromise = null;
+  let sheetsPullPromise = null;
+  let sheetsPushPromise = null;
   let supabaseSdkPromise = null;
   let supabaseClientPromise = null;
 
@@ -168,6 +174,71 @@ const AbanikoStore = (() => {
       lastSyncAt: localStorage.getItem(BACKEND_LAST_SYNC_KEY) || "",
       lastError: localStorage.getItem(BACKEND_LAST_ERROR_KEY) || "",
       mode: localStorage.getItem(BACKEND_MODE_KEY) || "desconectado"
+    };
+  }
+
+  function getSheetsConfig() {
+    const config = window.AbanikoSheetsConfig || {};
+    const storedUrl = localStorage.getItem(SHEETS_WEB_APP_URL_KEY) || "";
+    const storedEnabled = localStorage.getItem(SHEETS_ENABLED_KEY);
+    const webAppUrl = String(storedUrl || config.webAppUrl || "").trim();
+    const configuredEnabled = storedEnabled === null
+      ? Boolean(config.enabled)
+      : storedEnabled === "true";
+    return {
+      enabled: Boolean(configuredEnabled && webAppUrl),
+      webAppUrl,
+      appId: String(config.appId || "programa-abaniko").trim(),
+      pollIntervalMs: Number(config.pollIntervalMs || 30000)
+    };
+  }
+
+  function setSheetsConnection(webAppUrl, enabled = true) {
+    const cleanUrl = String(webAppUrl || "").trim();
+    if (cleanUrl) {
+      localStorage.setItem(SHEETS_WEB_APP_URL_KEY, cleanUrl);
+    } else {
+      localStorage.removeItem(SHEETS_WEB_APP_URL_KEY);
+    }
+    localStorage.setItem(SHEETS_ENABLED_KEY, enabled && cleanUrl ? "true" : "false");
+    rememberSheetsError("");
+    return getSheetsConfig();
+  }
+
+  function clearSheetsConnection() {
+    localStorage.removeItem(SHEETS_WEB_APP_URL_KEY);
+    localStorage.setItem(SHEETS_ENABLED_KEY, "false");
+    rememberSheetsError("");
+    return getSheetsConfig();
+  }
+
+  function isSheetsConfigured() {
+    const config = getSheetsConfig();
+    return Boolean(config.enabled && config.webAppUrl && config.appId);
+  }
+
+  function rememberSheetsError(message) {
+    if (message) {
+      localStorage.setItem(SHEETS_LAST_ERROR_KEY, String(message));
+    } else {
+      localStorage.removeItem(SHEETS_LAST_ERROR_KEY);
+    }
+  }
+
+  function rememberSheetsSync() {
+    localStorage.setItem(SHEETS_LAST_SYNC_KEY, new Date().toISOString());
+    rememberSheetsError("");
+  }
+
+  function getSheetsStatus() {
+    const config = getSheetsConfig();
+    return {
+      enabled: config.enabled,
+      configured: isSheetsConfigured(),
+      webAppUrl: config.webAppUrl,
+      appId: config.appId,
+      lastSyncAt: localStorage.getItem(SHEETS_LAST_SYNC_KEY) || "",
+      lastError: localStorage.getItem(SHEETS_LAST_ERROR_KEY) || ""
     };
   }
 
@@ -412,10 +483,89 @@ const AbanikoStore = (() => {
     return response.json();
   }
 
+  function makeSheetsUrl(action, extraParams = {}) {
+    const config = getSheetsConfig();
+    const url = new URL(config.webAppUrl);
+    url.searchParams.set("action", action);
+    url.searchParams.set("appId", config.appId);
+    Object.entries(extraParams).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+    return url.toString();
+  }
+
+  function sheetsJsonp(action, extraParams = {}) {
+    if (!isSheetsConfigured()) {
+      return Promise.resolve({ ok: false, message: "Google Sheets no esta configurado." });
+    }
+    return new Promise((resolve, reject) => {
+      const callbackName = `__abanikoSheets${Date.now()}${Math.floor(Math.random() * 100000)}`;
+      const script = document.createElement("script");
+      let settled = false;
+
+      function cleanup() {
+        settled = true;
+        delete window[callbackName];
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }
+
+      const timeout = window.setTimeout(() => {
+        if (!settled) {
+          cleanup();
+          reject(new Error("Google Sheets no respondio a tiempo."));
+        }
+      }, 12000);
+
+      window[callbackName] = (payload) => {
+        window.clearTimeout(timeout);
+        cleanup();
+        if (!payload || payload.ok === false) {
+          reject(new Error(payload?.message || "Google Sheets devolvio una respuesta no valida."));
+          return;
+        }
+        resolve(payload);
+      };
+
+      script.onerror = () => {
+        window.clearTimeout(timeout);
+        cleanup();
+        reject(new Error("No se pudo conectar con Google Sheets."));
+      };
+
+      try {
+        script.src = makeSheetsUrl(action, { ...extraParams, callback: callbackName });
+        document.head.appendChild(script);
+      } catch (error) {
+        window.clearTimeout(timeout);
+        cleanup();
+        reject(error);
+      }
+    });
+  }
+
+  async function sheetsWriteRequest(data) {
+    const config = getSheetsConfig();
+    await fetch(config.webAppUrl, {
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify({
+        action: "write",
+        appId: config.appId,
+        payload: normalize(data)
+      })
+    });
+    return normalize(data);
+  }
+
   function save(data, options = {}) {
     const normalized = persistLocal(data);
     if (!options.skipBackend && isBackendConfigured()) {
       queueBackendPush();
+    }
+    if (!options.skipSheets && isSheetsConfigured()) {
+      queueSheetsPush();
     }
     notifyCloudMode("local");
     if (!options.skipCloud && isCloudConfigured()) {
@@ -1137,6 +1287,9 @@ const AbanikoStore = (() => {
           if (isCloudConfigured() && String(remote.updatedAt || "") > String(local.updatedAt || "")) {
             queueCloudPush();
           }
+          if (isSheetsConfigured() && String(remote.updatedAt || "") > String(local.updatedAt || "")) {
+            queueSheetsPush();
+          }
         }
         notifyBackendMode("node");
         rememberBackendSync();
@@ -1150,6 +1303,111 @@ const AbanikoStore = (() => {
     })();
 
     return backendPullPromise;
+  }
+
+  async function testSheetsConnection() {
+    if (!isSheetsConfigured()) {
+      return { ok: false, connected: false, message: "Google Sheets no esta configurado." };
+    }
+    try {
+      const response = await sheetsJsonp("health");
+      rememberSheetsSync();
+      return {
+        ok: true,
+        connected: true,
+        message: response.message || "Google Sheets disponible."
+      };
+    } catch (error) {
+      const message = error.message || "No se pudo comprobar Google Sheets.";
+      rememberSheetsError(message);
+      return { ok: false, connected: false, message };
+    }
+  }
+
+  async function pullFromSheets() {
+    if (!isSheetsConfigured()) {
+      return { ok: false, message: "Google Sheets no esta configurado." };
+    }
+    if (sheetsPullPromise) {
+      return sheetsPullPromise;
+    }
+
+    sheetsPullPromise = (async () => {
+      try {
+        const response = await sheetsJsonp("read");
+        const remoteDocument = response.payload || response.data || null;
+        if (!remoteDocument) {
+          rememberSheetsSync();
+          return { ok: true, updated: false, data: load() };
+        }
+
+        const remote = normalize(remoteDocument);
+        const local = load();
+        const shouldUseRemote = String(remote.updatedAt || "") > String(local.updatedAt || "")
+          || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
+        if (shouldUseRemote) {
+          persistLocal(remote, { preserveUpdatedAt: true });
+          if (isBackendConfigured()) {
+            queueBackendPush();
+          }
+          rememberSheetsSync();
+          return { ok: true, updated: true, data: remote };
+        }
+
+        rememberSheetsSync();
+        return { ok: true, updated: false, data: local };
+      } catch (error) {
+        rememberSheetsError(error.message || "No se pudo descargar la informacion de Google Sheets.");
+        return { ok: false, message: error.message || "No se pudo descargar la informacion de Google Sheets." };
+      } finally {
+        sheetsPullPromise = null;
+      }
+    })();
+
+    return sheetsPullPromise;
+  }
+
+  async function pushToSheets() {
+    if (!isSheetsConfigured()) {
+      return { ok: false, message: "Google Sheets no esta configurado." };
+    }
+    if (sheetsPushPromise) {
+      return sheetsPushPromise;
+    }
+
+    sheetsPushPromise = (async () => {
+      try {
+        const data = load();
+        await sheetsWriteRequest(data);
+        rememberSheetsSync();
+        return { ok: true, data };
+      } catch (error) {
+        rememberSheetsError(error.message || "No se pudo guardar la informacion en Google Sheets.");
+        return { ok: false, message: error.message || "No se pudo guardar la informacion en Google Sheets." };
+      } finally {
+        sheetsPushPromise = null;
+      }
+    })();
+
+    return sheetsPushPromise;
+  }
+
+  function queueSheetsPush() {
+    pushToSheets().catch((error) => {
+      rememberSheetsError(error.message || "No se pudo sincronizar Google Sheets.");
+    });
+  }
+
+  async function syncSheetsNow() {
+    const pulled = await pullFromSheets();
+    if (!pulled.ok) {
+      return pulled;
+    }
+    const pushed = await pushToSheets();
+    if (!pushed.ok) {
+      return pushed;
+    }
+    return { ok: true, message: "Google Sheets sincronizado correctamente." };
   }
 
   async function pushToBackend() {
@@ -1186,32 +1444,61 @@ const AbanikoStore = (() => {
   }
 
   async function syncBackendNow() {
-    const pulled = await pullFromBackend();
-    if (!pulled.ok) {
-      return pulled;
+    const targets = [];
+    if (isBackendConfigured()) {
+      targets.push("node");
     }
-    const pushed = await pushToBackend();
-    if (!pushed.ok) {
-      return pushed;
+    if (isSheetsConfigured()) {
+      targets.push("sheets");
     }
+    if (targets.length === 0) {
+      return { ok: false, message: "No hay ningun backend configurado." };
+    }
+
+    if (isBackendConfigured()) {
+      const pulled = await pullFromBackend();
+      if (!pulled.ok) return pulled;
+      const pushed = await pushToBackend();
+      if (!pushed.ok) return pushed;
+    }
+
+    if (isSheetsConfigured()) {
+      const sheets = await syncSheetsNow();
+      if (!sheets.ok) return sheets;
+    }
+
     return { ok: true, message: "Backend sincronizado correctamente." };
   }
 
   function startBackendAutoSync(onUpdate) {
-    if (!isBackendConfigured()) {
-      return null;
+    const intervals = [];
+    if (isBackendConfigured()) {
+      pullFromBackend().finally(() => {
+        if (typeof onUpdate === "function") {
+          onUpdate(getBackendStatus());
+        }
+      });
+      intervals.push(window.setInterval(async () => {
+        await pullFromBackend();
+        if (typeof onUpdate === "function") {
+          onUpdate(getBackendStatus());
+        }
+      }, 15000));
     }
-    pullFromBackend().finally(() => {
-      if (typeof onUpdate === "function") {
-        onUpdate(getBackendStatus());
-      }
-    });
-    return window.setInterval(async () => {
-      await pullFromBackend();
-      if (typeof onUpdate === "function") {
-        onUpdate(getBackendStatus());
-      }
-    }, 15000);
+    if (isSheetsConfigured()) {
+      pullFromSheets().finally(() => {
+        if (typeof onUpdate === "function") {
+          onUpdate(getSheetsStatus());
+        }
+      });
+      intervals.push(window.setInterval(async () => {
+        await pullFromSheets();
+        if (typeof onUpdate === "function") {
+          onUpdate(getSheetsStatus());
+        }
+      }, Math.max(15000, getSheetsConfig().pollIntervalMs)));
+    }
+    return intervals.length ? intervals : null;
   }
 
   async function pushToCloud() {
@@ -1335,6 +1622,15 @@ const AbanikoStore = (() => {
     pushToBackend,
     syncBackendNow,
     startBackendAutoSync,
+    getSheetsConfig,
+    getSheetsStatus,
+    setSheetsConnection,
+    clearSheetsConnection,
+    isSheetsConfigured,
+    testSheetsConnection,
+    pullFromSheets,
+    pushToSheets,
+    syncSheetsNow,
     getCloudConfig,
     getCloudStatus,
     isCloudConfigured,

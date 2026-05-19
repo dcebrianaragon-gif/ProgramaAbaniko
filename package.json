@@ -2,7 +2,7 @@
   "name": "programa-abaniko",
   "version": "1.0.0",
   "private": true,
-  "description": "Aplicacion local de Programa Abaniko con base de datos JSON en el equipo.",
+  "description": "Aplicacion Programa Abaniko con base local y backend opcional en Google Sheets.",
   "scripts": {
     "start": "node app.js",
     "build": "node tools/build-netlify.js"

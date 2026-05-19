@@ -9,3 +9,10 @@ window.AbanikoCloudConfig = {
   realtime: true,
   pollIntervalMs: 30000
 };
+
+window.AbanikoSheetsConfig = {
+  enabled: false,
+  webAppUrl: "",
+  appId: "programa-abaniko",
+  pollIntervalMs: 30000
+};
