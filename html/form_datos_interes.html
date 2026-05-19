@@ -47,9 +47,18 @@
             <section class="panel-soft section-shell program-section">
               <div class="form-grid two-columns">
                 <div class="field">
+                  <label for="studentSearch">Buscar alumno</label>
+                  <input id="studentSearch" type="search" placeholder="Nombre, fecha, discapacidad o DNI">
+                  <p class="field-hint">Busca por nombre, fecha de nacimiento o discapacidad.</p>
+                </div>
+                <div class="field">
                   <label for="studentSelect">Alumno</label>
                   <select id="studentSelect" required></select>
-                  <p class="field-hint">Selecciona al alumno por nombre. La localidad ayuda a distinguir si hay nombres parecidos.</p>
+                  <p class="field-hint">La lista muestra nombre, fecha, discapacidad y DNI.</p>
+                </div>
+                <div class="field">
+                  <label for="programDate">Fecha del programa</label>
+                  <input id="programDate" type="date">
                 </div>
                 <div class="selection-card">
                   <strong>Estado del apartado</strong>
@@ -66,6 +75,18 @@
               <div class="field">
                 <label for="observaciones">Observaciones</label>
                 <textarea id="observaciones" class="large-textarea" placeholder="Añade notas útiles para el seguimiento"></textarea>
+              </div>
+              <div class="field">
+                <label for="necesidades_apoyo">Necesidades de apoyo</label>
+                <textarea id="necesidades_apoyo" class="large-textarea" placeholder="Apoyos, adaptaciones o necesidades importantes para acompanar al alumno"></textarea>
+              </div>
+              <div class="field">
+                <label for="acuerdos">Acuerdos y proximos pasos</label>
+                <textarea id="acuerdos" class="large-textarea" placeholder="Acuerdos con familia, alumno, equipo o entidad"></textarea>
+              </div>
+              <div class="field">
+                <label for="proxima_revision">Proxima revision</label>
+                <input id="proxima_revision" type="date">
               </div>
               <div class="field">
                 <label for="referente">Persona referente</label>
@@ -104,15 +125,21 @@
     const message = document.getElementById("message");
     const statusText = document.getElementById("statusText");
     const summary = document.getElementById("studentSummary");
+    const studentSearch = document.getElementById("studentSearch");
     const studentSelect = document.getElementById("studentSelect");
+    const programDate = document.getElementById("programDate");
     const objetivosInput = document.getElementById("objetivos");
     const observacionesInput = document.getElementById("observaciones");
+    const necesidadesApoyoInput = document.getElementById("necesidades_apoyo");
+    const acuerdosInput = document.getElementById("acuerdos");
+    const proximaRevisionInput = document.getElementById("proxima_revision");
     const referenteInput = document.getElementById("referente");
 
     function populateStudentSelect(selectedDni = "") {
-      const students = AbanikoStore.getStudentsSortedByName();
+      const students = AbanikoStore.getStudentsForProgramFilter(studentSearch.value);
       if (students.length === 0) {
-        studentSelect.innerHTML = '<option value="">No hay alumnos guardados</option>';
+        const emptyText = studentSearch.value.trim() ? "No hay alumnos con ese filtro" : "No hay alumnos guardados";
+        studentSelect.innerHTML = `<option value="">${emptyText}</option>`;
         studentSelect.disabled = true;
         return;
       }
@@ -120,7 +147,7 @@
       studentSelect.innerHTML = ['<option value="">Selecciona un alumno</option>']
         .concat(students.map((student) => `
           <option value="${student.dni}" ${String(student.dni) === String(selectedDni) ? "selected" : ""}>
-            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentDisplayName(student))}
+            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentProgramLabel(student))}
           </option>
         `))
         .join("");
@@ -133,6 +160,8 @@
       }
       summary.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+        <div class="summary-row"><strong>Fecha de nacimiento</strong><span>${AbanikoStore.escapeHtml(student.fecha_nacimiento || "No indicada")}</span></div>
+        <div class="summary-row"><strong>Discapacidad</strong><span>${AbanikoStore.escapeHtml(student.discapacidad || "No indicada")}</span></div>
         <div class="summary-row"><strong>Localidad</strong><span>${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span></div>
         <div class="summary-row"><strong>Actividad deseada</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span></div>
       `;
@@ -143,7 +172,11 @@
       if (!student) {
         objetivosInput.value = "";
         observacionesInput.value = "";
+        necesidadesApoyoInput.value = "";
+        acuerdosInput.value = "";
+        proximaRevisionInput.value = "";
         referenteInput.value = "";
+        programDate.value = new Date().toISOString().slice(0, 10);
         statusText.textContent = "Selecciona un alumno para empezar.";
         renderStudentSummary(null);
         return;
@@ -152,7 +185,11 @@
       const interest = student.interest || {};
       objetivosInput.value = interest.objetivos || "";
       observacionesInput.value = interest.observaciones || "";
+      necesidadesApoyoInput.value = interest.necesidades_apoyo || "";
+      acuerdosInput.value = interest.acuerdos || "";
+      proximaRevisionInput.value = interest.proxima_revision || "";
       referenteInput.value = interest.referente || "";
+      programDate.value = interest.fecha || new Date().toISOString().slice(0, 10);
       statusText.textContent = "Alumno cargado correctamente. Puedes editar y guardar.";
       renderStudentSummary(student);
     }
@@ -169,7 +206,11 @@
       AbanikoStore.patchStudentSection(dni, "interest", {
         objetivos: objetivosInput.value.trim(),
         observaciones: observacionesInput.value.trim(),
-        referente: referenteInput.value.trim()
+        necesidades_apoyo: necesidadesApoyoInput.value.trim(),
+        acuerdos: acuerdosInput.value.trim(),
+        proxima_revision: proximaRevisionInput.value,
+        referente: referenteInput.value.trim(),
+        fecha: programDate.value
       });
       AbanikoStore.setSelectedStudent(dni);
       message.textContent = "Datos de interés guardados correctamente.";
@@ -185,12 +226,19 @@
       loadStudentSection(dni);
     });
 
+    studentSearch.addEventListener("input", () => {
+      populateStudentSelect(studentSelect.value);
+      if (!studentSelect.value) {
+        loadStudentSection("");
+      }
+    });
+
     const selectedStudent = AbanikoStore.getSelectedStudent();
     populateStudentSelect(selectedStudent?.dni || "");
     if (selectedStudent) {
       loadStudentSection(selectedStudent.dni || "");
     } else {
-      renderStudentSummary(null);
+      loadStudentSection("");
     }
   </script>
 </body>

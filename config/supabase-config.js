@@ -1,5 +1,5 @@
 window.AbanikoCloudConfig = {
-  enabled: true,
+  enabled: false,
   provider: "supabase",
   supabaseUrl: "https://hmgripzugbzhxkrlfhrx.supabase.co",
   projectRef: "hmgripzugbzhxkrlfhrx",

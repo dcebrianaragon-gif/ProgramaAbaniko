@@ -47,9 +47,18 @@
             <section class="panel-soft section-shell program-section">
               <div class="form-grid two-columns">
                 <div class="field">
+                  <label for="studentSearch">Buscar alumno</label>
+                  <input id="studentSearch" type="search" placeholder="Nombre, fecha, discapacidad o DNI">
+                  <p class="field-hint">Busca por nombre, fecha de nacimiento o discapacidad.</p>
+                </div>
+                <div class="field">
                   <label for="studentSelect">Alumno</label>
                   <select id="studentSelect" required></select>
-                  <p class="field-hint">Selecciona al alumno por nombre para cargar su perfil deportivo.</p>
+                  <p class="field-hint">La lista muestra nombre, fecha, discapacidad y DNI.</p>
+                </div>
+                <div class="field">
+                  <label for="programDate">Fecha del programa</label>
+                  <input id="programDate" type="date">
                 </div>
                 <div class="selection-card">
                   <strong>Estado del apartado</strong>
@@ -87,6 +96,28 @@
                   <span>Puede comprender y respetar reglas básicas durante la actividad.</span>
                 </span>
               </label>
+              <div class="form-grid two-columns">
+                <div class="field">
+                  <label for="deporte_principal">Actividad o deporte principal</label>
+                  <input id="deporte_principal" placeholder="Ej. natacion, futbol, caminar, baile...">
+                </div>
+                <div class="field">
+                  <label for="frecuencia">Frecuencia</label>
+                  <input id="frecuencia" placeholder="Ej. 2 dias por semana, ocasional, en talleres...">
+                </div>
+                <div class="field">
+                  <label for="apoyos_deporte">Apoyos necesarios</label>
+                  <input id="apoyos_deporte" placeholder="Ej. acompanamiento, pictogramas, descansos...">
+                </div>
+                <div class="field">
+                  <label for="proxima_revision_deporte">Proxima revision</label>
+                  <input id="proxima_revision_deporte" type="date">
+                </div>
+                <div class="field field-span-full">
+                  <label for="observaciones_deporte">Observaciones deportivas</label>
+                  <textarea id="observaciones_deporte" class="large-textarea" placeholder="Adaptaciones, motivadores, riesgos o pautas para el seguimiento"></textarea>
+                </div>
+              </div>
             </section>
 
             <div class="button-row">
@@ -120,16 +151,24 @@
     const message = document.getElementById("message");
     const statusText = document.getElementById("statusText");
     const summary = document.getElementById("studentSummary");
+    const studentSearch = document.getElementById("studentSearch");
     const studentSelect = document.getElementById("studentSelect");
+    const programDate = document.getElementById("programDate");
     const practicaInput = document.getElementById("practica_deporte");
     const actividadInput = document.getElementById("gusto_actividad_fisica");
     const grupoInput = document.getElementById("gusto_jugar_grupo");
     const normasInput = document.getElementById("entender_seguir_normas");
+    const deportePrincipalInput = document.getElementById("deporte_principal");
+    const frecuenciaInput = document.getElementById("frecuencia");
+    const apoyosDeporteInput = document.getElementById("apoyos_deporte");
+    const proximaRevisionDeporteInput = document.getElementById("proxima_revision_deporte");
+    const observacionesDeporteInput = document.getElementById("observaciones_deporte");
 
     function populateStudentSelect(selectedDni = "") {
-      const students = AbanikoStore.getStudentsSortedByName();
+      const students = AbanikoStore.getStudentsForProgramFilter(studentSearch.value);
       if (students.length === 0) {
-        studentSelect.innerHTML = '<option value="">No hay alumnos guardados</option>';
+        const emptyText = studentSearch.value.trim() ? "No hay alumnos con ese filtro" : "No hay alumnos guardados";
+        studentSelect.innerHTML = `<option value="">${emptyText}</option>`;
         studentSelect.disabled = true;
         return;
       }
@@ -137,7 +176,7 @@
       studentSelect.innerHTML = ['<option value="">Selecciona un alumno</option>']
         .concat(students.map((student) => `
           <option value="${student.dni}" ${String(student.dni) === String(selectedDni) ? "selected" : ""}>
-            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentDisplayName(student))}
+            ${AbanikoStore.escapeHtml(AbanikoStore.getStudentProgramLabel(student))}
           </option>
         `))
         .join("");
@@ -150,6 +189,8 @@
       }
       summary.innerHTML = `
         <div class="summary-row"><strong>${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}</strong><span>DNI: ${AbanikoStore.escapeHtml(student.dni || "")}</span></div>
+        <div class="summary-row"><strong>Fecha de nacimiento</strong><span>${AbanikoStore.escapeHtml(student.fecha_nacimiento || "No indicada")}</span></div>
+        <div class="summary-row"><strong>Discapacidad</strong><span>${AbanikoStore.escapeHtml(student.discapacidad || "No indicada")}</span></div>
         <div class="summary-row"><strong>Localidad</strong><span>${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span></div>
         <div class="summary-row"><strong>Participa en</strong><span>${AbanikoStore.escapeHtml(Array.isArray(student.actividad_actual) ? student.actividad_actual.join(" · ") : (student.actividad_actual || "No indicada"))}</span></div>
       `;
@@ -162,6 +203,12 @@
         actividadInput.checked = false;
         grupoInput.checked = false;
         normasInput.checked = false;
+        deportePrincipalInput.value = "";
+        frecuenciaInput.value = "";
+        apoyosDeporteInput.value = "";
+        proximaRevisionDeporteInput.value = "";
+        observacionesDeporteInput.value = "";
+        programDate.value = new Date().toISOString().slice(0, 10);
         statusText.textContent = "Selecciona un alumno para empezar.";
         renderStudentSummary(null);
         return;
@@ -172,6 +219,12 @@
       actividadInput.checked = Boolean(sports.gusto_actividad_fisica);
       grupoInput.checked = Boolean(sports.gusto_jugar_grupo);
       normasInput.checked = Boolean(sports.entender_seguir_normas);
+      deportePrincipalInput.value = sports.deporte_principal || "";
+      frecuenciaInput.value = sports.frecuencia || "";
+      apoyosDeporteInput.value = sports.apoyos || "";
+      proximaRevisionDeporteInput.value = sports.proxima_revision || "";
+      observacionesDeporteInput.value = sports.observaciones || "";
+      programDate.value = sports.fecha || new Date().toISOString().slice(0, 10);
       statusText.textContent = "Alumno cargado correctamente. Puedes actualizar su perfil deportivo.";
       renderStudentSummary(student);
     }
@@ -189,7 +242,13 @@
         practica_deporte: practicaInput.checked,
         gusto_actividad_fisica: actividadInput.checked,
         gusto_jugar_grupo: grupoInput.checked,
-        entender_seguir_normas: normasInput.checked
+        entender_seguir_normas: normasInput.checked,
+        deporte_principal: deportePrincipalInput.value.trim(),
+        frecuencia: frecuenciaInput.value.trim(),
+        apoyos: apoyosDeporteInput.value.trim(),
+        proxima_revision: proximaRevisionDeporteInput.value,
+        observaciones: observacionesDeporteInput.value.trim(),
+        fecha: programDate.value
       });
       AbanikoStore.setSelectedStudent(dni);
       message.textContent = "Programa de deportes guardado.";
@@ -205,12 +264,19 @@
       loadStudentSection(dni);
     });
 
+    studentSearch.addEventListener("input", () => {
+      populateStudentSelect(studentSelect.value);
+      if (!studentSelect.value) {
+        loadStudentSection("");
+      }
+    });
+
     const selectedStudent = AbanikoStore.getSelectedStudent();
     populateStudentSelect(selectedStudent?.dni || "");
     if (selectedStudent) {
       loadStudentSection(selectedStudent.dni || "");
     } else {
-      renderStudentSummary(null);
+      loadStudentSection("");
     }
   </script>
 </body>

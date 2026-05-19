@@ -49,14 +49,54 @@
       if (Array.isArray(value)) {
         return value.length ? value.join(" · ") : "No indicado";
       }
+      if (typeof value === "boolean") {
+        return value ? "Si" : "No";
+      }
       if (value && typeof value === "object") {
-        return JSON.stringify(value);
+        const values = Object.entries(value)
+          .filter(([, item]) => item !== "" && item !== null && item !== undefined)
+          .map(([key, item]) => `${key}: ${formatValue(item)}`);
+        return values.length ? values.join(" | ") : "No indicado";
       }
       return value || "No indicado";
     }
 
     function row(label, value) {
       return `<div class="summary-row"><strong>${label}</strong><span>${AbanikoStore.escapeHtml(formatValue(value))}</span></div>`;
+    }
+
+    function programField(label, value) {
+      return `
+        <div class="program-detail-item">
+          <strong>${AbanikoStore.escapeHtml(label)}</strong>
+          <span>${AbanikoStore.escapeHtml(formatValue(value))}</span>
+        </div>
+      `;
+    }
+
+    function hasProgramData(program) {
+      return Boolean(program && Object.values(program).some((value) => {
+        if (Array.isArray(value)) return value.length > 0;
+        if (typeof value === "boolean") return true;
+        return value !== "" && value !== null && value !== undefined;
+      }));
+    }
+
+    function programCard(title, program, fields) {
+      if (!hasProgramData(program)) {
+        return row(title, "Sin datos guardados");
+      }
+      return `
+        <section class="program-detail-card">
+          <div class="program-detail-head">
+            <h3>${AbanikoStore.escapeHtml(title)}</h3>
+            <span>${AbanikoStore.escapeHtml(program.fecha ? `Fecha: ${program.fecha}` : "Sin fecha")}</span>
+          </div>
+          <div class="program-detail-grid">
+            ${fields.map(([label, key]) => programField(label, program[key])).join("")}
+          </div>
+        </section>
+      `;
     }
 
     const student = AbanikoStore.getSelectedStudent();
@@ -72,7 +112,12 @@
           )
         : null;
 
+      const photoBlock = student.foto_alumno
+        ? `<div class="student-profile-photo"><img src="${AbanikoStore.escapeHtml(student.foto_alumno)}" alt="Imagen de ${AbanikoStore.escapeHtml(AbanikoStore.getStudentFullName(student))}"></div>`
+        : "";
+
       content.innerHTML = [
+        photoBlock,
         row("Nombre", `${student.nombre || ""} ${student.apellidos || ""}`.trim()),
         row("DNI", student.dni),
         row("Fecha de nacimiento", student.fecha_nacimiento),
@@ -94,10 +139,43 @@
         row("Notas del técnico", student.notas_tecnico),
         row("Fichas de entrevista guardadas", interviewRecords.length),
         row("Última entrevista", latestInterview ? `${latestInterview.schoolYear || "Sin curso"} - ${AbanikoStore.formatDate(latestInterview.interviewDate || "")}` : "Sin entrevistas"),
-        row("Datos de interés", student.interest || {}),
-        row("Programa de deportes", student.sports || {}),
-        row("Programa de inserción", student.insertion || {}),
-        row("Programa de ocio", student.leisure || {})
+        programCard("Datos de interes", student.interest || {}, [
+          ["Objetivos", "objetivos"],
+          ["Observaciones", "observaciones"],
+          ["Necesidades de apoyo", "necesidades_apoyo"],
+          ["Acuerdos", "acuerdos"],
+          ["Persona referente", "referente"],
+          ["Proxima revision", "proxima_revision"]
+        ]),
+        programCard("Programa de deportes", student.sports || {}, [
+          ["Practica deporte", "practica_deporte"],
+          ["Le gusta la actividad fisica", "gusto_actividad_fisica"],
+          ["Le gusta jugar en grupo", "gusto_jugar_grupo"],
+          ["Entiende y sigue normas", "entender_seguir_normas"],
+          ["Actividad principal", "deporte_principal"],
+          ["Frecuencia", "frecuencia"],
+          ["Apoyos", "apoyos"],
+          ["Observaciones", "observaciones"],
+          ["Proxima revision", "proxima_revision"]
+        ]),
+        programCard("Programa de insercion", student.insertion || {}, [
+          ["Situacion actual", "situacion"],
+          ["Objetivo", "objetivo"],
+          ["Seguimiento", "seguimiento"],
+          ["Recursos", "recursos"],
+          ["Barreras", "barreras"],
+          ["Responsable", "responsable"],
+          ["Proxima revision", "proxima_revision"]
+        ]),
+        programCard("Programa de ocio", student.leisure || {}, [
+          ["Aficiones", "aficiones"],
+          ["Preferencias", "preferencias"],
+          ["Propuesta", "propuesta"],
+          ["Entorno preferido", "entorno_preferido"],
+          ["Apoyos", "apoyos"],
+          ["Responsable", "responsable"],
+          ["Proxima revision", "proxima_revision"]
+        ])
       ].join("");
     }
   </script>

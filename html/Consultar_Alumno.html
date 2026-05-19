@@ -10,7 +10,7 @@
   <div class="container">
     <section class="hero">
       <h1>Consulta de alumnos</h1>
-      <p>Busca por texto general o usa filtros separados por fecha de nacimiento, edad, sexo y localidad.</p>
+      <p>Busca por nombre, DNI, discapacidad o usa filtros separados por fecha de nacimiento, edad, sexo y localidad.</p>
     </section>
 
     <section class="panel section-shell">
@@ -22,7 +22,7 @@
       <div class="filter-grid">
         <div class="field">
           <label for="searchInput">Texto general</label>
-          <input id="searchInput" placeholder="Nombre, apellidos, localidad o actividad">
+          <input id="searchInput" placeholder="Nombre, DNI, discapacidad, localidad o actividad">
         </div>
         <div class="field">
           <label for="birthInput">Fecha de nacimiento</label>
@@ -85,7 +85,7 @@
 
     function matchesText(student, term) {
       if (!term) return true;
-      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${toActivityText(student.actividad_actual)} ${toActivityText(student.actividad_deseada)} ${student.localidad || ""}`.toLowerCase();
+      const bag = `${student.nombre || ""} ${student.apellidos || ""} ${student.dni || ""} ${student.discapacidad || ""} ${toActivityText(student.actividad_actual)} ${toActivityText(student.actividad_deseada)} ${student.localidad || ""}`.toLowerCase();
       return bag.includes(term);
     }
 
@@ -128,6 +128,7 @@
               <span>Edad: ${AbanikoStore.escapeHtml(student.edad || "No indicada")}</span>
               <span>Sexo: ${AbanikoStore.escapeHtml(student.sexo || "No indicado")}</span>
               <span>Localidad: ${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span>
+              <span>Discapacidad: ${AbanikoStore.escapeHtml(student.discapacidad || "No indicada")}</span>
               <span>Participa en: ${AbanikoStore.escapeHtml(formatList(student.actividad_actual, "No indicada"))}</span>
               <span>Actividad deseada: ${AbanikoStore.escapeHtml(formatList(student.actividad_deseada, "No indicada"))}</span>
             </div>
@@ -147,7 +148,7 @@
       element.addEventListener("change", renderStudents);
     });
 
-    AbanikoStore.startCloudAutoSync(renderStudents);
+    AbanikoStore.startBackendAutoSync(renderStudents);
     renderStudents();
   </script>
 </body>

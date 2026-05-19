@@ -86,6 +86,17 @@
                   <label for="edad">Edad</label>
                   <input id="edad" name="edad" type="number" min="0" max="120" inputmode="numeric" required>
                 </div>
+                <div class="field field-span-full">
+                  <label for="foto_alumno">Imagen del alumno</label>
+                  <div class="image-upload-card">
+                    <div class="student-photo-preview" id="photoPreview">Sin imagen</div>
+                    <div class="image-upload-actions">
+                      <input id="foto_alumno" name="foto_alumno" type="file" accept="image/*">
+                      <p class="field-hint">Puedes añadir una foto o imagen de referencia. Se guarda localmente junto a la ficha.</p>
+                      <button type="button" class="btn-secondary" id="removePhotoButton">Quitar imagen</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -288,6 +299,9 @@
     const submitButton = document.getElementById("submitButton");
     const viewRecordButton = document.getElementById("viewRecordButton");
     const resetButton = document.getElementById("resetButton");
+    const photoInput = document.getElementById("foto_alumno");
+    const photoPreview = document.getElementById("photoPreview");
+    const removePhotoButton = document.getElementById("removePhotoButton");
     const summaryIntro = document.getElementById("summaryIntro");
     const summaryName = document.getElementById("summaryName");
     const summaryIdentity = document.getElementById("summaryIdentity");
@@ -304,6 +318,8 @@
     let currentEditDni = AbanikoStore.getStudentToEdit() || "";
     let editingStudent = null;
     let ageAutoFilled = false;
+    let currentPhotoData = "";
+    let currentPhotoName = "";
     let selectedActivities = {
       actividad_actual: [],
       actividad_deseada: []
@@ -352,6 +368,18 @@
 
     function formatActivityValues(values, emptyText) {
       return values.length ? values.join(" · ") : emptyText;
+    }
+
+    function renderPhotoPreview() {
+      if (!currentPhotoData) {
+        photoPreview.textContent = "Sin imagen";
+        photoPreview.style.backgroundImage = "";
+        removePhotoButton.disabled = true;
+        return;
+      }
+      photoPreview.textContent = "";
+      photoPreview.style.backgroundImage = `url("${currentPhotoData}")`;
+      removePhotoButton.disabled = false;
     }
 
     function renderActivityPreview(fieldName) {
@@ -475,6 +503,9 @@
         }
       });
       form.mueve_solo_ciudad.checked = Boolean(student.mueve_solo_ciudad);
+      currentPhotoData = student.foto_alumno || "";
+      currentPhotoName = student.foto_nombre || "";
+      renderPhotoPreview();
       loadActivitySelections(student);
       ageAutoFilled = true;
     }
@@ -513,6 +544,8 @@
         trabajo: form.trabajo.value.trim(),
         actividad_actual: [...selectedActivities.actividad_actual],
         actividad_deseada: [...selectedActivities.actividad_deseada],
+        foto_alumno: currentPhotoData,
+        foto_nombre: currentPhotoName,
         mueve_solo_ciudad: form.mueve_solo_ciudad.checked,
         notas_tecnico: form.notas_tecnico.value.trim()
       };
@@ -549,6 +582,42 @@
       updateSummary();
     });
 
+    photoInput.addEventListener("change", () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) {
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        showMessage("Selecciona un archivo de imagen valido.", "error");
+        photoInput.value = "";
+        return;
+      }
+      if (file.size > 1400 * 1024) {
+        showMessage("La imagen es demasiado grande. Usa una imagen de menos de 1,4 MB.", "error");
+        photoInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        currentPhotoData = String(reader.result || "");
+        currentPhotoName = file.name || "";
+        renderPhotoPreview();
+        updateSummary();
+      };
+      reader.onerror = () => {
+        showMessage("No se pudo cargar la imagen.", "error");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    removePhotoButton.addEventListener("click", () => {
+      currentPhotoData = "";
+      currentPhotoName = "";
+      photoInput.value = "";
+      renderPhotoPreview();
+      updateSummary();
+    });
+
     [actividadActualOptions, actividadDeseadaOptions].forEach((container) => {
       container.addEventListener("click", (event) => {
         const button = event.target.closest(".choice-button");
@@ -582,6 +651,10 @@
         if (editingStudent) {
           fillForm(editingStudent);
         } else {
+          currentPhotoData = "";
+          currentPhotoName = "";
+          photoInput.value = "";
+          renderPhotoPreview();
           loadActivitySelections(null);
         }
         updateSummary();
@@ -609,6 +682,7 @@
     });
 
     loadEditingData();
+    renderPhotoPreview();
     updateSummary();
   </script>
 </body>

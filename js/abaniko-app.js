@@ -244,7 +244,7 @@ const AbanikoStore = (() => {
   function getCloudConfig() {
     const config = window.AbanikoCloudConfig || {};
     const defaultCloudConfig = {
-      enabled: true,
+      enabled: false,
       provider: "supabase",
       supabaseUrl: "https://hmgripzugbzhxkrlfhrx.supabase.co",
       projectRef: "hmgripzugbzhxkrlfhrx",
@@ -519,6 +519,44 @@ const AbanikoStore = (() => {
     const fullName = getStudentFullName(student);
     const locality = String(student?.localidad || "").trim();
     return locality ? `${fullName} - ${locality}` : fullName;
+  }
+
+  function getStudentProgramLabel(student) {
+    const parts = [
+      getStudentFullName(student),
+      student?.fecha_nacimiento ? `Fecha: ${student.fecha_nacimiento}` : "",
+      student?.discapacidad ? `Discapacidad: ${student.discapacidad}` : "",
+      student?.dni ? `DNI: ${student.dni}` : ""
+    ].filter(Boolean);
+    return parts.join(" - ");
+  }
+
+  function normalizeSearchText(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  function getStudentsForProgramFilter(term = "") {
+    const normalizedTerm = normalizeSearchText(term);
+    return getStudentsSortedByName().filter((student) => {
+      if (!normalizedTerm) {
+        return true;
+      }
+      const searchableText = normalizeSearchText([
+        getStudentFullName(student),
+        student?.dni,
+        student?.fecha_nacimiento,
+        student?.discapacidad,
+        student?.localidad,
+        student?.interest?.fecha,
+        student?.sports?.fecha,
+        student?.insertion?.fecha,
+        student?.leisure?.fecha
+      ].filter(Boolean).join(" "));
+      return searchableText.includes(normalizedTerm);
+    });
   }
 
   function getStudentsSortedByName() {
@@ -1320,7 +1358,9 @@ const AbanikoStore = (() => {
     getStudent,
     getStudentFullName,
     getStudentDisplayName,
+    getStudentProgramLabel,
     getStudentsSortedByName,
+    getStudentsForProgramFilter,
     getStudentInterviewRecords,
     getStudentInterviewRecord,
     getLatestInterviewRevision,

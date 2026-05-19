@@ -106,7 +106,7 @@
       element.addEventListener("input", renderLogs);
     });
 
-    AbanikoStore.startCloudAutoSync(() => {
+    AbanikoStore.startBackendAutoSync(() => {
       renderTeacherOptions();
       renderLogs();
     });

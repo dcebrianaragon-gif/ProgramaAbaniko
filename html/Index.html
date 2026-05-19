@@ -19,11 +19,11 @@
             <h1>Programa Abaniko</h1>
           </div>
         </div>
-        <p>Gestión de alumnos, profesores, jornadas y accesos con sincronización online para trabajar desde varios equipos.</p>
+        <p>Gestion de alumnos, profesores, jornadas y accesos con base de datos local en este equipo.</p>
         <div class="button-row hero-actions">
           <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Ir al programa</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
-          <button type="button" class="btn-secondary" onclick="openVercelSite()">Abrir web en Vercel</button>
+          <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Base local</button>
         </div>
       </section>
 
@@ -84,8 +84,8 @@
               <span>Rol de administrador o profesor</span>
             </div>
             <div class="summary-row">
-              <strong>Nube</strong>
-              <span>Datos compartidos entre equipos</span>
+              <strong>Base local</strong>
+              <span>Datos guardados en este equipo</span>
             </div>
           </div>
         </section>
@@ -147,12 +147,11 @@
                 <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Registrar jornada</button>
               </article>
               <article class="quick-card">
-                <span class="quick-kicker">Nube</span>
-                <h2>Estado online</h2>
-                <p>Comprueba que Supabase está conectado y actualizado.</p>
+                <span class="quick-kicker">Base local</span>
+                <h2>Guardado local</h2>
+                <p>Comprueba el servidor local y la copia guardada en este equipo.</p>
                 <div class="button-row">
-                  <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver estado</button>
-                  <button type="button" class="btn-secondary" onclick="openVercelSite()">Abrir Vercel</button>
+                  <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver base local</button>
                 </div>
               </article>
             </div>
@@ -162,7 +161,7 @@
             <div class="section-head">
               <div>
                 <h2>Estado del sistema</h2>
-                <p>Resumen de la sesión activa y de la sincronización online.</p>
+                <p>Resumen de la sesion activa y del guardado local.</p>
               </div>
             </div>
             <div class="summary-box" id="systemStatusBox"></div>
@@ -184,7 +183,7 @@
               <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
               <button type="button" class="btn-secondary" onclick="exportBackup()">Exportar copia</button>
               <button type="button" class="btn-secondary" onclick="importBackup()">Importar copia</button>
-              <button type="button" class="btn-secondary" onclick="syncCloud()">Sincronizar nube</button>
+              <button type="button" class="btn-secondary" onclick="syncLocal()">Guardar en local</button>
             </div>
             <input id="backupInput" type="file" accept=".json,application/json" class="hidden">
           </section>
@@ -241,14 +240,8 @@
     const nextSessionsList = document.getElementById("nextSessionsList");
     const systemStatusBox = document.getElementById("systemStatusBox");
     const backupInput = document.getElementById("backupInput");
-    const VERCEL_URL = "https://programa-abaniko-xib9.vercel.app";
-
     function openPage(page) {
       window.open(page, "_self");
-    }
-
-    function openVercelSite() {
-      window.open(VERCEL_URL, "_blank", "noopener");
     }
 
     function renderTeacherOptions() {
@@ -350,14 +343,14 @@
 
     function renderSystemStatus() {
       const data = AbanikoStore.load();
-      const cloud = AbanikoStore.getCloudStatus();
+      const backend = AbanikoStore.getBackendStatus();
       const teacher = AbanikoStore.getCurrentTeacher();
       systemStatusBox.innerHTML = `
         <div class="summary-row"><strong>Profesor activo</strong><span>${AbanikoStore.escapeHtml(teacher ? `${teacher.name} (${AbanikoStore.formatRole(teacher.role)})` : "Ninguno")}</span></div>
-        <div class="summary-row"><strong>Última actualización local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
-        <div class="summary-row"><strong>Supabase</strong><span>${cloud.configured ? "Conectado" : "No configurado"}</span></div>
-        <div class="summary-row"><strong>Última sincronización</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(cloud.lastSyncAt))}</span></div>
-        <div class="summary-row"><strong>Incidencia</strong><span>${AbanikoStore.escapeHtml(cloud.lastError || "Sin incidencias")}</span></div>
+        <div class="summary-row"><strong>Ultima actualizacion local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
+        <div class="summary-row"><strong>Base local</strong><span>${backend.configured ? "Servidor local activo" : "Copia del navegador"}</span></div>
+        <div class="summary-row"><strong>Ultimo guardado local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(backend.lastSyncAt || data.updatedAt))}</span></div>
+        <div class="summary-row"><strong>Incidencia</strong><span>${AbanikoStore.escapeHtml(backend.lastError || "Sin incidencias")}</span></div>
       `;
     }
 
@@ -425,9 +418,11 @@
       }
     });
 
-    async function syncCloud() {
-      const result = await AbanikoStore.syncCloudNow();
-      authMessage.textContent = result.ok ? "Nube sincronizada correctamente." : (result.message || "No se pudo sincronizar la nube.");
+    async function syncLocal() {
+      const result = await AbanikoStore.syncBackendNow();
+      authMessage.textContent = result.ok
+        ? "Base local guardada correctamente."
+        : (result.message || "No se pudo guardar en la base local del servidor.");
       renderMode();
     }
 
@@ -600,7 +595,7 @@
       URL.revokeObjectURL(blobUrl);
     }
 
-    AbanikoStore.startCloudAutoSync(() => {
+    AbanikoStore.startBackendAutoSync(() => {
       renderMode();
     });
 
@@ -609,8 +604,7 @@
     window.logoutTeacher = logoutTeacher;
     window.exportBackup = exportBackup;
     window.importBackup = importBackup;
-    window.syncCloud = syncCloud;
-    window.openVercelSite = openVercelSite;
+    window.syncLocal = syncLocal;
   </script>
 </body>
 </html>

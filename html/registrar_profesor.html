@@ -461,7 +461,7 @@
     window.deleteTeacher = deleteTeacher;
     window.logoutTeacher = logoutTeacher;
 
-    AbanikoStore.startCloudAutoSync(() => {
+    AbanikoStore.startBackendAutoSync(() => {
       renderTeachers();
       renderAccessLogs();
       renderAbsenceTargets();
