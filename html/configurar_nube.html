@@ -33,14 +33,14 @@
           <div class="section-head">
             <div>
               <h2>Google Sheets</h2>
-              <p>Pega aqui la URL del Web App de Google Apps Script para usar una hoja como backend online.</p>
+              <p>La web ya se conecta sola a Google Sheets con la URL publicada. Este bloque solo hace falta si quieres cambiarla manualmente.</p>
             </div>
           </div>
           <form id="sheetsForm" class="panel-soft section-shell">
             <div class="field">
               <label for="sheetsUrl">URL del Web App</label>
               <input id="sheetsUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-              <p class="field-hint">Se guarda en este navegador. Para dejarla fija en la web publicada, usa la variable ABANIKO_SHEETS_WEB_APP_URL, js/supabase-config.js o un enlace con ?sheetsUrl=...</p>
+              <p class="field-hint">La URL actual ya queda fija en la web publicada. Solo cambia este campo si quieres sustituirla por otra implementacion /exec.</p>
             </div>
             <div class="button-row">
               <button type="submit" class="btn-primary">Guardar conexion</button>

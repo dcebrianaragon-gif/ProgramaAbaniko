@@ -76,21 +76,49 @@ const AbanikoStore = (() => {
 
   function bootstrapSheetsConnectionFromLocation() {
     if (typeof localStorage === "undefined") {
-      return;
+      return false;
     }
 
     const sheetsUrl = readBootstrapSheetsUrl();
     if (!sheetsUrl) {
-      return;
+      return false;
     }
 
     localStorage.setItem(SHEETS_WEB_APP_URL_KEY, sheetsUrl);
     localStorage.setItem(SHEETS_ENABLED_KEY, "true");
     localStorage.removeItem(SHEETS_LAST_ERROR_KEY);
     cleanBootstrapSheetsUrlFromLocation();
+    return true;
   }
 
-  bootstrapSheetsConnectionFromLocation();
+  function ensureDefaultSheetsConnection() {
+    if (typeof localStorage === "undefined") {
+      return;
+    }
+
+    const runtimeSheetsConfig = window.AbanikoSheetsConfig || {};
+    const runtimeUrl = String(runtimeSheetsConfig.webAppUrl || "").trim();
+    if (!runtimeUrl || !Boolean(runtimeSheetsConfig.enabled)) {
+      return;
+    }
+
+    const storedUrl = String(localStorage.getItem(SHEETS_WEB_APP_URL_KEY) || "").trim();
+    const storedEnabled = localStorage.getItem(SHEETS_ENABLED_KEY);
+    const shouldRefreshStoredConnection = storedUrl !== runtimeUrl || storedEnabled !== "true";
+
+    if (!shouldRefreshStoredConnection) {
+      return;
+    }
+
+    localStorage.setItem(SHEETS_WEB_APP_URL_KEY, runtimeUrl);
+    localStorage.setItem(SHEETS_ENABLED_KEY, "true");
+    localStorage.removeItem(SHEETS_LAST_ERROR_KEY);
+  }
+
+  const bootstrappedSheetsConnection = bootstrapSheetsConnectionFromLocation();
+  if (!bootstrappedSheetsConnection) {
+    ensureDefaultSheetsConnection();
+  }
 
   function createId() {
     return Date.now() + Math.floor(Math.random() * 100000);

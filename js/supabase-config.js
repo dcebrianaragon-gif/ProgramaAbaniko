@@ -1,6 +1,6 @@
 (() => {
   const runtimeConfig = window.AbanikoBuildConfig || {};
-  const DEFAULT_SHEETS_EXEC_URL = "https://script.google.com/macros/s/AKfycbzxZJcMnoYA8p6KwhdGA0tzQKhR2FD2SIVO_y1a_k2vmGR2_x8avxfXFz8D92Cj6CPO/exec";
+  const DEFAULT_SHEETS_EXEC_URL = "https://script.google.com/macros/s/AKfycbyYkSUjgeYu6E2zc1iSMh7ugSBaxAkhexahvOMFHEi6hlOLorDtEVkE35omuqX4YUVqbQ/exec";
   const sheetsWebAppUrl = String(runtimeConfig.sheetsWebAppUrl || DEFAULT_SHEETS_EXEC_URL).trim();
 
   window.AbanikoCloudConfig = {
