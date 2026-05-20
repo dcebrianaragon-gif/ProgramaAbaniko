@@ -579,7 +579,7 @@ const AbanikoStore = (() => {
       const timeout = window.setTimeout(() => {
         if (!settled) {
           cleanup();
-          reject(new Error("Google Sheets no respondio a tiempo."));
+          reject(new Error("Google Sheets no respondio a tiempo. Revisa que uses la URL /exec y que la implementacion publicada tenga doGet."));
         }
       }, 12000);
 
@@ -596,7 +596,7 @@ const AbanikoStore = (() => {
       script.onerror = () => {
         window.clearTimeout(timeout);
         cleanup();
-        reject(new Error("No se pudo conectar con Google Sheets."));
+        reject(new Error("No se pudo conectar con Google Sheets. Revisa la URL /exec y vuelve a desplegar Apps Script."));
       };
 
       try {

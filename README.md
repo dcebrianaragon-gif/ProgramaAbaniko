@@ -53,6 +53,13 @@ Tambien puedes abrir la web con un enlace como este para dejar Google Sheets con
 https://dcebrianaragon-gif.github.io/ProgramaAbaniko/?sheetsUrl=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FTU_ID%2Fexec
 ```
 
+Si al probar la URL `/exec` sale un error como `Funcion de script no encontrada: doGet` o `doPost`, la implementacion publicada de Apps Script no contiene todavia el codigo correcto. En ese caso:
+
+1. Pega `tools/google-sheets-backend.gs` completo en Apps Script.
+2. Guarda los cambios.
+3. Ve a `Implementar > Gestionar implementaciones`.
+4. Edita la aplicacion web y vuelve a desplegar una version nueva.
+
 ## Publicacion Online
 
 La web online se genera como sitio estatico de una sola pagina y queda lista en `dist/`.
