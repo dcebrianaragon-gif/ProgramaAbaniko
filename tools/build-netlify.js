@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const packageJson = require(path.join(__dirname, "..", "package.json"));
 
 const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
@@ -94,8 +95,20 @@ function serializeForScript(value) {
 }
 
 function getBuildConfig() {
+  const repositoryValue = typeof packageJson.repository === "string"
+    ? packageJson.repository
+    : (packageJson.repository?.url || "");
+  const githubRepoUrl = String(repositoryValue || "")
+    .trim()
+    .replace(/^git\+/, "")
+    .replace(/\.git$/i, "");
+  const githubPagesUrl = String(packageJson.homepage || "").trim().replace(/\/+$/, "/");
   return {
-    sheetsWebAppUrl: String(process.env.ABANIKO_SHEETS_WEB_APP_URL || "").trim()
+    sheetsWebAppUrl: String(process.env.ABANIKO_SHEETS_WEB_APP_URL || "").trim(),
+    githubRepoUrl,
+    githubPagesUrl,
+    githubPagesSettingsUrl: githubRepoUrl ? `${githubRepoUrl}/settings/pages` : "",
+    githubActionsSecretsUrl: githubRepoUrl ? `${githubRepoUrl}/settings/secrets/actions` : ""
   };
 }
 

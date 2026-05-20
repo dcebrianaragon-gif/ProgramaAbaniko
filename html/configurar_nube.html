@@ -40,7 +40,7 @@
             <div class="field">
               <label for="sheetsUrl">URL del Web App</label>
               <input id="sheetsUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-              <p class="field-hint">Se guarda en este navegador. Para dejarla fija en la web publicada, usa la variable ABANIKO_SHEETS_WEB_APP_URL o js/supabase-config.js.</p>
+              <p class="field-hint">Se guarda en este navegador. Para dejarla fija en la web publicada, usa la variable ABANIKO_SHEETS_WEB_APP_URL, js/supabase-config.js o un enlace con ?sheetsUrl=...</p>
             </div>
             <div class="button-row">
               <button type="submit" class="btn-primary">Guardar conexion</button>
@@ -67,6 +67,16 @@
           <div class="summary-row"><strong>4. Copia la URL</strong><span>Pega aqui la URL que acaba en /exec y pulsa Guardar conexion.</span></div>
         </div>
       </section>
+
+      <section class="panel section-shell">
+        <div class="section-head">
+          <div>
+            <h2>GitHub Pages</h2>
+            <p>Tu web publicada puede quedar enlazada a Apps Script sin tener que pegar la URL en cada navegador.</p>
+          </div>
+        </div>
+        <div id="githubStatusBox" class="summary-box"></div>
+      </section>
     </main>
   </div>
   <script src="../js/supabase-config.js"></script>
@@ -76,6 +86,7 @@
 
     const localStatusBox = document.getElementById("localStatusBox");
     const sheetsStatusBox = document.getElementById("sheetsStatusBox");
+    const githubStatusBox = document.getElementById("githubStatusBox");
     const sheetsForm = document.getElementById("sheetsForm");
     const sheetsUrl = document.getElementById("sheetsUrl");
 
@@ -120,6 +131,40 @@
       `;
     }
 
+    function buildActionLink(url, label) {
+      const safeUrl = AbanikoStore.escapeHtml(url || "");
+      const safeLabel = AbanikoStore.escapeHtml(label || url || "");
+      return url
+        ? `<a class="inline-link" href="${safeUrl}" target="_blank" rel="noreferrer">${safeLabel}</a>`
+        : "No disponible";
+    }
+
+    function renderGitHubStatus() {
+      const build = Object.assign({
+        githubRepoUrl: "https://github.com/dcebrianaragon-gif/ProgramaAbaniko",
+        githubPagesUrl: "https://dcebrianaragon-gif.github.io/ProgramaAbaniko/",
+        githubPagesSettingsUrl: "https://github.com/dcebrianaragon-gif/ProgramaAbaniko/settings/pages",
+        githubActionsSecretsUrl: "https://github.com/dcebrianaragon-gif/ProgramaAbaniko/settings/secrets/actions"
+      }, window.AbanikoBuildConfig || {});
+      const sheets = AbanikoStore.getSheetsStatus();
+      const githubPagesUrl = String(build.githubPagesUrl || "").trim();
+      const githubRepoUrl = String(build.githubRepoUrl || "").trim();
+      const githubPagesSettingsUrl = String(build.githubPagesSettingsUrl || "").trim();
+      const githubActionsSecretsUrl = String(build.githubActionsSecretsUrl || "").trim();
+      const quickConnectUrl = githubPagesUrl && sheets.webAppUrl
+        ? `${githubPagesUrl}${githubPagesUrl.includes("?") ? "&" : "?"}sheetsUrl=${encodeURIComponent(sheets.webAppUrl)}`
+        : "";
+
+      githubStatusBox.innerHTML = `
+        <div class="summary-row"><strong>Repositorio</strong><span>${buildActionLink(githubRepoUrl, githubRepoUrl)}</span></div>
+        <div class="summary-row"><strong>Web publicada</strong><span>${buildActionLink(githubPagesUrl, githubPagesUrl)}</span></div>
+        <div class="summary-row"><strong>Pages</strong><span>${buildActionLink(githubPagesSettingsUrl, "Abrir configuracion de GitHub Pages")}</span></div>
+        <div class="summary-row"><strong>Secreto recomendado</strong><span>${buildActionLink(githubActionsSecretsUrl, "ABANIKO_SHEETS_WEB_APP_URL en GitHub Actions")}</span></div>
+        <div class="summary-row"><strong>URL actual de Apps Script</strong><span>${AbanikoStore.escapeHtml(sheets.webAppUrl || "Aun no configurada")}</span></div>
+        <div class="summary-row"><strong>Enlace rapido</strong><span>${quickConnectUrl ? buildActionLink(quickConnectUrl, "Abrir GitHub Pages ya conectado a Google Sheets") : "Primero guarda la URL /exec para generar este enlace."}</span></div>
+      `;
+    }
+
     async function refreshLocalStatus() {
       renderLocalStatus(null);
       if (!AbanikoStore.isBackendConfigured()) {
@@ -128,6 +173,7 @@
       }
       const result = await AbanikoStore.pullFromBackend();
       renderLocalStatus(result);
+      renderGitHubStatus();
     }
 
     async function refreshSheetsStatus() {
@@ -138,6 +184,7 @@
       }
       const result = await AbanikoStore.testSheetsConnection();
       renderSheetsStatus(result);
+      renderGitHubStatus();
     }
 
     async function syncLocal() {
@@ -157,11 +204,13 @@
       const result = await AbanikoStore.testSheetsConnection();
       alert(result.ok ? result.message : (result.message || "No se pudo conectar con Google Sheets."));
       renderSheetsStatus(result);
+      renderGitHubStatus();
     }
 
     function disableSheets() {
       AbanikoStore.clearSheetsConnection();
       renderSheetsStatus({ ok: false, message: "Google Sheets desactivado en este navegador." });
+      renderGitHubStatus();
     }
 
     sheetsForm.addEventListener("submit", async (event) => {
@@ -169,14 +218,17 @@
       AbanikoStore.setSheetsConnection(sheetsUrl.value, true);
       const result = await AbanikoStore.syncSheetsNow();
       renderSheetsStatus(result);
+      renderGitHubStatus();
     });
 
     AbanikoStore.startBackendAutoSync(() => {
       renderLocalStatus();
       renderSheetsStatus();
+      renderGitHubStatus();
     });
     refreshLocalStatus();
     refreshSheetsStatus();
+    renderGitHubStatus();
 
     window.syncLocal = syncLocal;
     window.syncSheets = syncSheets;

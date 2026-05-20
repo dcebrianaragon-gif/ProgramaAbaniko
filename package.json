@@ -2,6 +2,11 @@
   "name": "programa-abaniko",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://dcebrianaragon-gif.github.io/ProgramaAbaniko/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dcebrianaragon-gif/ProgramaAbaniko.git"
+  },
   "description": "Aplicacion Programa Abaniko con despliegue estatico para GitHub Pages y backend opcional en Supabase o Google Sheets.",
   "scripts": {
     "start": "node app.js",

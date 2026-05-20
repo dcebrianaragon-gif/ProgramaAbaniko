@@ -47,6 +47,12 @@ La app guarda el estado completo en la pestaña `app_state` de la hoja.
 
 Importante: quien tenga la URL del Web App podria usar ese backend. Guarda ese enlace con cuidado si vas a meter datos reales.
 
+Tambien puedes abrir la web con un enlace como este para dejar Google Sheets configurado en ese navegador:
+
+```text
+https://dcebrianaragon-gif.github.io/ProgramaAbaniko/?sheetsUrl=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FTU_ID%2Fexec
+```
+
 ## Publicacion Online
 
 La web online se genera como sitio estatico de una sola pagina y queda lista en `dist/`.

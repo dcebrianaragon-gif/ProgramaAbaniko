@@ -27,6 +27,71 @@ const AbanikoStore = (() => {
   let supabaseSdkPromise = null;
   let supabaseClientPromise = null;
 
+  function isLikelySheetsWebAppUrl(value) {
+    const normalized = String(value || "").trim();
+    return /^https:\/\/script\.google\.com\/macros\/s\/[^/?#]+\/(?:exec|dev)(?:[?#].*)?$/i.test(normalized);
+  }
+
+  function readBootstrapSheetsUrl() {
+    if (typeof window === "undefined" || !window.location) {
+      return "";
+    }
+
+    const candidates = ["sheetsUrl", "sheets", "googleSheets", "appsScript", "exec"];
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(String(url.hash || "").replace(/^#/, ""));
+
+    for (const key of candidates) {
+      const searchValue = url.searchParams.get(key);
+      if (isLikelySheetsWebAppUrl(searchValue)) {
+        return String(searchValue).trim();
+      }
+      const hashValue = hashParams.get(key);
+      if (isLikelySheetsWebAppUrl(hashValue)) {
+        return String(hashValue).trim();
+      }
+    }
+
+    return "";
+  }
+
+  function cleanBootstrapSheetsUrlFromLocation() {
+    if (typeof window === "undefined" || !window.location || !window.history?.replaceState) {
+      return;
+    }
+
+    const keys = ["sheetsUrl", "sheets", "googleSheets", "appsScript", "exec"];
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(String(url.hash || "").replace(/^#/, ""));
+
+    keys.forEach((key) => {
+      url.searchParams.delete(key);
+      hashParams.delete(key);
+    });
+
+    const nextHash = hashParams.toString();
+    const nextUrl = `${url.pathname}${url.search}${nextHash ? `#${nextHash}` : ""}`;
+    window.history.replaceState({}, document.title, nextUrl);
+  }
+
+  function bootstrapSheetsConnectionFromLocation() {
+    if (typeof localStorage === "undefined") {
+      return;
+    }
+
+    const sheetsUrl = readBootstrapSheetsUrl();
+    if (!sheetsUrl) {
+      return;
+    }
+
+    localStorage.setItem(SHEETS_WEB_APP_URL_KEY, sheetsUrl);
+    localStorage.setItem(SHEETS_ENABLED_KEY, "true");
+    localStorage.removeItem(SHEETS_LAST_ERROR_KEY);
+    cleanBootstrapSheetsUrlFromLocation();
+  }
+
+  bootstrapSheetsConnectionFromLocation();
+
   function createId() {
     return Date.now() + Math.floor(Math.random() * 100000);
   }
