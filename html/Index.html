@@ -19,11 +19,11 @@
             <h1>Programa Abaniko</h1>
           </div>
         </div>
-        <p>Gestion de alumnos, profesores, jornadas y accesos con base de datos local en este equipo.</p>
+        <p>Gestion de alumnos, profesores, jornadas y accesos con guardado local y sincronizacion online mediante Google Sheets.</p>
         <div class="button-row hero-actions">
           <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Ir al programa</button>
           <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
-          <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Base local</button>
+          <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Base de datos</button>
         </div>
       </section>
 
@@ -85,7 +85,11 @@
             </div>
             <div class="summary-row">
               <strong>Base local</strong>
-              <span>Datos guardados en este equipo</span>
+              <span>Datos del navegador y servidor local</span>
+            </div>
+            <div class="summary-row">
+              <strong>Google Sheets</strong>
+              <span>Sincronizacion compartida entre dispositivos</span>
             </div>
           </div>
         </section>
@@ -149,7 +153,7 @@
               <article class="quick-card">
                 <span class="quick-kicker">Backend</span>
                 <h2>Local y Google Sheets</h2>
-                <p>Comprueba el servidor local y la sincronizacion con Google Sheets.</p>
+                <p>Comprueba el guardado local y la sincronizacion online por Google Sheets.</p>
                 <div class="button-row">
                   <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver backend</button>
                 </div>
@@ -161,7 +165,7 @@
             <div class="section-head">
               <div>
                 <h2>Estado del sistema</h2>
-                <p>Resumen de la sesion activa y de los backends de guardado.</p>
+                <p>Resumen de la sesion activa y de los sistemas de guardado.</p>
               </div>
             </div>
             <div class="summary-box" id="systemStatusBox"></div>
@@ -183,7 +187,7 @@
               <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
               <button type="button" class="btn-secondary" onclick="exportBackup()">Exportar copia</button>
               <button type="button" class="btn-secondary" onclick="importBackup()">Importar copia</button>
-              <button type="button" class="btn-secondary" onclick="syncLocal()">Sincronizar backend</button>
+              <button type="button" class="btn-secondary" onclick="syncLocal()">Sincronizar datos</button>
             </div>
             <input id="backupInput" type="file" accept=".json,application/json" class="hidden">
           </section>
@@ -424,8 +428,8 @@
     async function syncLocal() {
       const result = await AbanikoStore.syncBackendNow();
       authMessage.textContent = result.ok
-        ? "Base local guardada correctamente."
-        : (result.message || "No se pudo guardar en la base local del servidor.");
+        ? "Datos sincronizados correctamente."
+        : (result.message || "No se pudieron sincronizar los datos.");
       renderMode();
     }
 

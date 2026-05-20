@@ -10,3 +10,4 @@ npm-debug.log*
 *.tmp
 *.broken-*
 backend/programa-abaniko-backup*.json
+.vercel

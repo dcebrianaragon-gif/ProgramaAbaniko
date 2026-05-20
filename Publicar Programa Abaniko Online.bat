@@ -14,7 +14,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo Preparando Programa Abaniko para Netlify...
+echo Preparando Programa Abaniko para GitHub Pages...
 echo.
 call npm run build
 if errorlevel 1 (
@@ -26,16 +26,16 @@ if errorlevel 1 (
 )
 
 echo.
-echo Publicando en Netlify...
-echo Si Netlify pide iniciar sesion, ejecuta primero: npx netlify-cli login
+echo Generando la carpeta dist para GitHub Pages...
+echo Si ya tienes activado GitHub Pages con Actions, bastara con subir estos cambios al repositorio.
 echo.
-cmd /c npx netlify-cli deploy --prod --dir dist
+cmd /c npm run build
 
 echo.
 if errorlevel 1 (
-  echo No se ha podido publicar en Netlify.
+  echo No se ha podido preparar la publicacion.
 ) else (
-  echo Publicacion terminada.
+  echo Carpeta dist preparada correctamente.
 )
 echo.
 pause

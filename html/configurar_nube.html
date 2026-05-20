@@ -11,7 +11,7 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Bases de datos</h1>
-        <p>La app puede guardar en este equipo y tambien sincronizar con Google Sheets para compartir la informacion entre dispositivos.</p>
+        <p>La app puede guardar en este equipo y tambien sincronizar con Google Sheets para compartir la informacion entre dispositivos y usarla online.</p>
       </section>
 
       <section class="page-grid">
@@ -33,14 +33,14 @@
           <div class="section-head">
             <div>
               <h2>Google Sheets</h2>
-              <p>Pega aqui la URL del Web App de Google Apps Script para usar una hoja como backend.</p>
+              <p>Pega aqui la URL del Web App de Google Apps Script para usar una hoja como backend online.</p>
             </div>
           </div>
           <form id="sheetsForm" class="panel-soft section-shell">
             <div class="field">
               <label for="sheetsUrl">URL del Web App</label>
               <input id="sheetsUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-              <p class="field-hint">Se guarda en este navegador. Tambien puedes dejarla fija en js/supabase-config.js.</p>
+              <p class="field-hint">Se guarda en este navegador. Para dejarla fija en la web publicada, usa la variable ABANIKO_SHEETS_WEB_APP_URL o js/supabase-config.js.</p>
             </div>
             <div class="button-row">
               <button type="submit" class="btn-primary">Guardar conexion</button>

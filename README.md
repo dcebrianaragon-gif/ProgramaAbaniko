@@ -1,6 +1,6 @@
 # Programa Abaniko
 
-Programa Abaniko es una aplicacion para gestionar alumnos, profesores, accesos, jornadas, programas y fichas de entrevista de la asociacion. Puede trabajar en local y tambien sincronizar con Google Sheets mediante Apps Script.
+Programa Abaniko es una aplicacion para gestionar alumnos, profesores, accesos, jornadas, programas y fichas de entrevista de la asociacion. Puede trabajar en local y tambien sincronizar online con Supabase o con Google Sheets mediante Apps Script.
 
 ## Uso Local
 
@@ -46,6 +46,28 @@ Para compartir los datos entre dispositivos se puede usar Google Sheets:
 La app guarda el estado completo en la pestaña `app_state` de la hoja.
 
 Importante: quien tenga la URL del Web App podria usar ese backend. Guarda ese enlace con cuidado si vas a meter datos reales.
+
+## Publicacion Online
+
+La web online se genera como sitio estatico de una sola pagina y queda lista en `dist/`.
+
+La publicacion recomendada es `GitHub Pages`, por ejemplo en:
+
+```text
+https://dcebrianaragon-gif.github.io/ProgramaAbaniko/
+```
+
+Pasos rapidos:
+
+1. Ejecuta `npm run build`.
+2. Sube la carpeta `dist` usando GitHub Pages o activa el workflow de `.github/workflows/deploy-pages.yml`.
+3. Si vas a usar Google Sheets en la web publicada, configura este secreto en GitHub:
+
+```text
+ABANIKO_SHEETS_WEB_APP_URL=https://script.google.com/macros/s/.../exec
+```
+
+La app sigue siendo compatible con Supabase desde `js/supabase-config.js` y con Google Sheets desde la URL `/exec`.
 
 ## Que Incluye
 

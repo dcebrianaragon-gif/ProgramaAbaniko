@@ -7,8 +7,7 @@ set "APP_DIR=%~dp0"
 set "APP_PORT=3000"
 set "APP_URL=http://127.0.0.1:%APP_PORT%/Index.html"
 set "HEALTH_URL=http://127.0.0.1:%APP_PORT%/api/health"
-set "SUPABASE_URL=https://supabase.com/dashboard/project/hmgripzugbzhxkrlfhrx"
-set "VERCEL_URL=https://programa-abaniko-xib9.vercel.app"
+set "GITHUB_PAGES_URL=https://dcebrianaragon-gif.github.io/ProgramaAbaniko/"
 
 :menu
 cls
@@ -17,19 +16,15 @@ echo            PROGRAMA ABANIKO
 echo ==========================================
 echo.
 echo  1. Abrir programa en este ordenador
-echo  2. Abrir panel de Supabase
-echo  3. Abrir web en Vercel
-echo  4. Publicar en Vercel
-echo  5. Publicar en Netlify
-echo  6. Salir
+echo  2. Abrir web en GitHub Pages
+echo  3. Preparar carpeta dist
+echo  4. Salir
 echo.
-choice /c 123456 /n /m "Elige una opcion: "
+choice /c 1234 /n /m "Elige una opcion: "
 
-if errorlevel 6 goto end
-if errorlevel 5 goto deploy_netlify
-if errorlevel 4 goto deploy_vercel
-if errorlevel 3 goto open_vercel
-if errorlevel 2 goto open_supabase
+if errorlevel 4 goto end
+if errorlevel 3 goto build_static
+if errorlevel 2 goto open_github_pages
 if errorlevel 1 goto open_local
 
 goto menu
@@ -79,53 +74,27 @@ echo Programa Abaniko se ha abierto en el navegador.
 timeout /t 2 >nul
 goto menu
 
-:open_supabase
-start "" "%SUPABASE_URL%"
+:open_github_pages
+start "" "%GITHUB_PAGES_URL%"
 echo.
-echo Supabase se ha abierto en el navegador.
+echo La web de GitHub Pages se ha abierto en el navegador.
 timeout /t 2 >nul
 goto menu
 
-:open_vercel
-start "" "%VERCEL_URL%"
-echo.
-echo La web de Vercel se ha abierto en el navegador.
-timeout /t 2 >nul
-goto menu
-
-:deploy_vercel
+:build_static
 call :check_node
 if errorlevel 1 goto menu
 
 echo.
-echo Publicando en Vercel...
+echo Preparando carpeta dist para GitHub Pages...
 echo.
-cmd /c npm run deploy:vercel
+cmd /c npm run build
 
 echo.
 if errorlevel 1 (
-  echo No se ha podido publicar en Vercel.
+  echo No se ha podido preparar la carpeta dist.
 ) else (
-  echo Publicacion en Vercel terminada.
-)
-echo.
-pause
-goto menu
-
-:deploy_netlify
-call :check_node
-if errorlevel 1 goto menu
-
-echo.
-echo Publicando en Netlify...
-echo.
-cmd /c npm run deploy:netlify
-
-echo.
-if errorlevel 1 (
-  echo No se ha podido publicar en Netlify.
-) else (
-  echo Publicacion en Netlify terminada.
+  echo Carpeta dist preparada correctamente.
 )
 echo.
 pause

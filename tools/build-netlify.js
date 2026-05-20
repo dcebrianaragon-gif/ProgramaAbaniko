@@ -93,6 +93,12 @@ function serializeForScript(value) {
     .replace(/\u2029/g, "\\u2029");
 }
 
+function getBuildConfig() {
+  return {
+    sheetsWebAppUrl: String(process.env.ABANIKO_SHEETS_WEB_APP_URL || "").trim()
+  };
+}
+
 async function buildPages(assets) {
   const files = await fs.readdir(htmlDir);
   const pages = {};
@@ -105,7 +111,7 @@ async function buildPages(assets) {
   return pages;
 }
 
-function makeSingleFileHtml({ css, supabaseConfig, appScript, pages, assets }) {
+function makeSingleFileHtml({ css, buildConfig, supabaseConfig, appScript, pages, assets }) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -121,6 +127,9 @@ ${css}
 <body>
   <noscript>Activa JavaScript para abrir Programa Abaniko.</noscript>
   <script>
+window.AbanikoBuildConfig = ${serializeForScript(buildConfig)};
+  </script>
+  <script>
 ${supabaseConfig}
   </script>
   <script>
@@ -130,6 +139,7 @@ ${appScript}
 (() => {
   const PAGES = ${serializeForScript(pages)};
   const DEFAULT_PAGE = ${JSON.stringify(defaultPage)};
+  const PAGE_LOOKUP = Object.fromEntries(Object.keys(PAGES).map((page) => [page.toLowerCase(), page]));
   const nativeOpen = window.open.bind(window);
 
   function splitTarget(rawTarget) {
@@ -158,14 +168,63 @@ ${appScript}
     const cleanPath = parts.path.replace(/\\\\/g, "/").replace(/^\\.\\//, "");
     const fileName = cleanPath.split("/").filter(Boolean).pop() || DEFAULT_PAGE;
     const decodedFileName = decodeURIComponent(fileName);
-    return PAGES[fileName] ? fileName : (PAGES[decodedFileName] ? decodedFileName : "");
+    const lowerFileName = decodedFileName.toLowerCase();
+    if (lowerFileName === "index.html") {
+      return DEFAULT_PAGE;
+    }
+    return PAGES[fileName] ? fileName : (PAGES[decodedFileName] ? decodedFileName : (PAGE_LOOKUP[lowerFileName] || ""));
   }
+
+  function normalizeBasePath(pathname) {
+    let basePath = String(pathname || "/").replace(/\\/+/g, "/");
+    if (basePath.length > 1) {
+      basePath = basePath.replace(/\/+$/, "");
+    }
+    if (/\/html$/i.test(basePath)) {
+      basePath = basePath.slice(0, -5) || "/";
+    }
+    return basePath || "/";
+  }
+
+  function resolveBasePath() {
+    const pathname = String(window.location.pathname || "/").replace(/\\/+/g, "/");
+    if (!pathname || pathname === "/") {
+      return "/";
+    }
+    if (pathname.endsWith("/")) {
+      return pathname;
+    }
+
+    const pageFromPath = normalizePage(pathname);
+    if (pageFromPath) {
+      const marker = pathname.toLowerCase().lastIndexOf(pageFromPath.toLowerCase());
+      if (marker >= 0) {
+        return normalizeBasePath(pathname.slice(0, marker)) + "/";
+      }
+    }
+
+    if (/\/(?:index|404)\.html?$/i.test(pathname)) {
+      return normalizeBasePath(pathname.replace(/\/(?:index|404)\.html?$/i, "")) + "/";
+    }
+
+    const lastSlash = pathname.lastIndexOf("/");
+    if (lastSlash >= 0) {
+      return normalizeBasePath(pathname.slice(0, lastSlash)) + "/";
+    }
+
+    return "/";
+  }
+
+  const APP_BASE_PATH = resolveBasePath();
 
   function makePageUrl(page, hash = "") {
     const url = new URL(window.location.href);
+    url.pathname = APP_BASE_PATH;
     url.search = "";
     url.hash = "";
-    url.searchParams.set("page", page || DEFAULT_PAGE);
+    if (page && page !== DEFAULT_PAGE) {
+      url.searchParams.set("page", page);
+    }
     if (hash) {
       url.hash = hash;
     }
@@ -185,7 +244,10 @@ ${appScript}
 
   function getRequestedPage() {
     const requested = new URLSearchParams(window.location.search).get("page");
-    return normalizePage(requested) || DEFAULT_PAGE;
+    if (requested) {
+      return normalizePage(requested) || DEFAULT_PAGE;
+    }
+    return normalizePage(window.location.pathname) || DEFAULT_PAGE;
   }
 
   function executeScripts(scripts) {
@@ -251,6 +313,7 @@ ${appScript}
 }
 
 async function main() {
+  const buildConfig = getBuildConfig();
   const assets = {
     logoPng: await toDataUri(path.join(rootDir, "assets", "abaniko-logo.png")),
     logoIco: await toDataUri(path.join(rootDir, "assets", "abaniko-logo.ico"))
@@ -259,13 +322,15 @@ async function main() {
   const supabaseConfig = normalizeLineEndings(await fs.readFile(path.join(rootDir, "js", "supabase-config.js"), "utf8"));
   const appScript = normalizeLineEndings(await fs.readFile(path.join(rootDir, "js", "abaniko-app.js"), "utf8"));
   const pages = await buildPages(assets);
-  const output = makeSingleFileHtml({ css, supabaseConfig, appScript, pages, assets });
+  const output = makeSingleFileHtml({ css, buildConfig, supabaseConfig, appScript, pages, assets });
 
   await fs.rm(distDir, { recursive: true, force: true });
   await fs.mkdir(distDir, { recursive: true });
   await fs.writeFile(path.join(distDir, "index.html"), output, "utf8");
+  await fs.writeFile(path.join(distDir, "404.html"), output, "utf8");
+  await fs.writeFile(path.join(distDir, ".nojekyll"), "", "utf8");
 
-  console.log(`Cloudflare Pages listo: ${path.join(distDir, "index.html")}`);
+  console.log(`Sitio estatico listo: ${path.join(distDir, "index.html")}`);
 }
 
 main().catch((error) => {
