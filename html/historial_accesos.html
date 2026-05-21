@@ -11,15 +11,26 @@
     <main class="page-stack">
       <section class="hero">
         <h1>Historial de accesos</h1>
-        <p>Consulta entradas, salidas y sesiones abiertas con filtros por profesor y fecha.</p>
+        <p id="heroDesc">Consulta entradas, salidas y sesiones con filtros por fecha.</p>
       </section>
 
-      <section class="panel section-shell">
+      <section class="session-banner">
+        <div>
+          <strong id="currentTeacherName">Profesor conectado</strong>
+          <span id="currentTeacherMeta">Sin sesión activa</span>
+        </div>
         <div class="button-row">
           <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
           <button type="button" class="btn-secondary" onclick="go('registrar_profesor.html')">Profesores</button>
         </div>
+      </section>
 
+      <section class="panel section-shell">
+        <div class="section-head">
+          <div>
+            <h2>Filtros</h2>
+          </div>
+        </div>
         <div class="filter-grid">
           <div class="field">
             <label for="teacherFilter">Profesor</label>
@@ -47,6 +58,18 @@
         </div>
         <div id="accessList" class="list"></div>
       </section>
+
+      <section id="adminSummarySection" class="panel section-shell hidden">
+        <div class="section-head">
+          <div>
+            <h2>Resumen del equipo</h2>
+            <p>Vista rápida de sesiones activas y tiempo acumulado por profesor.</p>
+          </div>
+        </div>
+        <div id="teamSummaryBox" class="summary-box"></div>
+      </section>
+
+      <p id="message" class="message" aria-live="polite"></p>
     </main>
   </div>
   <script src="../js/supabase-config.js"></script>
@@ -54,24 +77,63 @@
   <script>
     AbanikoStore.requireTeacherSession("Index.html");
 
+    const isAdmin = AbanikoStore.isCurrentTeacherAdmin();
+    const currentTeacher = AbanikoStore.getCurrentTeacher();
+
     function go(page) { window.open(page, "_self"); }
+
     const teacherFilter = document.getElementById("teacherFilter");
     const dateFilter = document.getElementById("dateFilter");
     const stateFilter = document.getElementById("stateFilter");
     const resultInfo = document.getElementById("resultInfo");
     const accessList = document.getElementById("accessList");
+    const message = document.getElementById("message");
+
+    function renderCurrentTeacher() {
+      const name = document.getElementById("currentTeacherName");
+      const meta = document.getElementById("currentTeacherMeta");
+      if (!currentTeacher) return;
+      name.textContent = `${currentTeacher.name} - ${AbanikoStore.formatRole(currentTeacher.role)}`;
+      meta.textContent = isAdmin ? "Vista de administrador: acceso completo" : "Vista de profesor: solo tus accesos";
+    }
 
     function renderTeacherOptions() {
+      if (!isAdmin) {
+        teacherFilter.disabled = true;
+        teacherFilter.innerHTML = `<option value="${currentTeacher.id}">${AbanikoStore.escapeHtml(currentTeacher.name)}</option>`;
+        document.getElementById("heroDesc").textContent = "Consulta tus propias entradas y salidas registradas.";
+        return;
+      }
       const teachers = AbanikoStore.load().teachers;
-      teacherFilter.innerHTML = ['<option value="">Todos</option>', ...teachers.map((teacher) =>
-        `<option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)}</option>`
+      teacherFilter.innerHTML = ['<option value="">Todos</option>', ...teachers.map((t) =>
+        `<option value="${t.id}">${AbanikoStore.escapeHtml(t.name)}</option>`
       )].join("");
     }
 
+    function showMessage(text) {
+      message.textContent = text;
+      clearTimeout(showMessage._timer);
+      showMessage._timer = setTimeout(() => { message.textContent = ""; }, 3000);
+    }
+
+    function forceCloseSession(logId) {
+      if (!isAdmin) return;
+      const data = AbanikoStore.load();
+      const log = data.accessLogs.find((l) => String(l.id) === String(logId));
+      if (!log) return;
+      log.logoutAt = new Date().toISOString();
+      log.updatedAt = new Date().toISOString();
+      AbanikoStore.save(data);
+      showMessage(`Sesión de ${log.teacherName} cerrada manualmente.`);
+      renderLogs();
+      renderTeamSummary();
+    }
+
     function renderLogs() {
-      const teacherId = teacherFilter.value;
+      const teacherId = isAdmin ? teacherFilter.value : String(currentTeacher.id);
       const dateValue = dateFilter.value;
       const stateValue = stateFilter.value;
+
       const logs = AbanikoStore.getAccessLogs().filter((log) => {
         if (teacherId && String(log.teacherId) !== String(teacherId)) return false;
         if (dateValue && String(log.loginAt || "").slice(0, 10) !== dateValue) return false;
@@ -86,34 +148,89 @@
         return;
       }
 
-      accessList.innerHTML = logs.map((log) => `
-        <article class="card">
-          <div>
-            <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
-            <div class="card-lines">
-              <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(log.teacherRole || "profesor"))}</span>
-              <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
-              <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
-              <span>Estado: ${log.logoutAt ? "Cerrada" : "Abierta"}</span>
+      accessList.innerHTML = logs.map((log) => {
+        const isOpen = !log.logoutAt;
+        const closeBtn = isAdmin && isOpen
+          ? `<button type="button" class="btn-danger" onclick="forceCloseSession(${log.id})">Cerrar sesión</button>`
+          : "";
+        return `
+          <article class="card">
+            <div>
+              <strong>${AbanikoStore.escapeHtml(log.teacherName || "Profesor")}</strong>
+              <div class="card-lines">
+                <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(log.teacherRole || "profesor"))}</span>
+                <span>Entrada: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.loginAt))}</span>
+                <span>Salida: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(log.logoutAt))}</span>
+                <span>Estado: ${isOpen ? '<strong style="color:var(--color-success,green)">Abierta</strong>' : "Cerrada"}</span>
+              </div>
             </div>
-          </div>
-        </article>
-      `).join("");
+            ${closeBtn ? `<div class="actions">${closeBtn}</div>` : ""}
+          </article>
+        `;
+      }).join("");
     }
 
-    [teacherFilter, dateFilter, stateFilter].forEach((element) => {
-      element.addEventListener("change", renderLogs);
-      element.addEventListener("input", renderLogs);
+    function renderTeamSummary() {
+      if (!isAdmin) return;
+      const adminSection = document.getElementById("adminSummarySection");
+      adminSection.classList.remove("hidden");
+      const logs = AbanikoStore.getAccessLogs();
+      const teachers = AbanikoStore.load().teachers;
+      const now = Date.now();
+
+      const summaryMap = {};
+      for (const t of teachers) {
+        summaryMap[t.id] = { name: t.name, role: t.role, sessions: 0, openSessions: 0, totalMs: 0 };
+      }
+      for (const log of logs) {
+        const entry = summaryMap[log.teacherId];
+        if (!entry) continue;
+        entry.sessions += 1;
+        if (!log.logoutAt) {
+          entry.openSessions += 1;
+        } else {
+          const ms = new Date(log.logoutAt).getTime() - new Date(log.loginAt).getTime();
+          if (ms > 0) entry.totalMs += ms;
+        }
+      }
+
+      const rows = Object.values(summaryMap).map((entry) => {
+        const hours = Math.floor(entry.totalMs / 3600000);
+        const minutes = Math.floor((entry.totalMs % 3600000) / 60000);
+        const timeText = entry.totalMs > 0 ? `${hours}h ${minutes}m` : "Sin datos";
+        const openBadge = entry.openSessions > 0
+          ? `<strong style="color:var(--color-success,green)">${entry.openSessions} abierta${entry.openSessions > 1 ? "s" : ""}</strong>`
+          : "Ninguna";
+        return `
+          <div class="summary-row">
+            <strong>${AbanikoStore.escapeHtml(entry.name)} <span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatRole(entry.role))}</span></strong>
+            <span>${entry.sessions} sesiones · ${timeText} acumulado · Activas: ${openBadge}</span>
+          </div>
+        `;
+      });
+
+      document.getElementById("teamSummaryBox").innerHTML = rows.length
+        ? rows.join("")
+        : '<p class="empty-state">Sin datos de acceso todavía.</p>';
+    }
+
+    [teacherFilter, dateFilter, stateFilter].forEach((el) => {
+      el.addEventListener("change", renderLogs);
+      el.addEventListener("input", renderLogs);
     });
 
     AbanikoStore.startBackendAutoSync(() => {
       renderTeacherOptions();
       renderLogs();
+      renderTeamSummary();
     });
 
+    window.forceCloseSession = forceCloseSession;
+
+    renderCurrentTeacher();
     renderTeacherOptions();
     renderLogs();
+    renderTeamSummary();
   </script>
 </body>
 </html>
-

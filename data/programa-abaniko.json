@@ -1,82 +1,326 @@
 {
-  "students": [],
+  "students": [
+    {
+      "dni": "9999999999W",
+      "createdAt": "2026-05-20T19:15:13.922Z",
+      "updatedAt": "2026-05-20T19:15:13.922Z",
+      "nombre": "Jesus",
+      "apellidos": "reyes Torres",
+      "fecha_nacimiento": "2026-05-20",
+      "edad": "18",
+      "sexo": "Masculino",
+      "domicilio": "Jejej",
+      "localidad": "Jdjdj",
+      "provincia": "Jdj",
+      "telefono_casa": "65662",
+      "movil_alumno": "6566562",
+      "movil_padre": "626626",
+      "movil_madre": "646565662",
+      "discapacidad": "Jejh",
+      "estudios": "Jhhe",
+      "cursos": "Jjejhe",
+      "trabajo": "Jjsj",
+      "actividad_actual": [
+        "Formación"
+      ],
+      "actividad_deseada": [
+        "Prácticas"
+      ],
+      "foto_alumno": "",
+      "foto_nombre": "",
+      "mueve_solo_ciudad": true,
+      "notas_tecnico": "",
+      "interest": {},
+      "sports": {},
+      "insertion": {},
+      "leisure": {},
+      "interviewRecords": []
+    }
+  ],
   "teachers": [
     {
-      "id": 1778661416260,
+      "id": 1779275951626,
       "name": "David Cebrián Aragón",
       "subject": "Practica",
       "email": "David@gmail.com",
       "phone": "633082500",
       "pin": "7222",
       "role": "admin",
-      "createdAt": "2026-05-13T08:36:40.005Z",
-      "updatedAt": "2026-05-13T08:36:40.005Z"
+      "createdAt": "2026-05-20T11:18:07.371Z",
+      "updatedAt": "2026-05-20T11:18:07.371Z"
     },
     {
-      "id": 1778664318708,
-      "name": "Mª Angeles Aparicio",
-      "subject": "Jefa",
+      "id": 1779276303217,
+      "name": "Mª Angeles aparticio",
+      "subject": "jefa",
       "email": "abaniko@gmail.com",
-      "phone": "600123132",
-      "pin": "1234",
+      "phone": "123456789",
+      "pin": "0000",
       "role": "admin",
-      "createdAt": "2026-05-13T09:24:53.892Z",
-      "updatedAt": "2026-05-13T09:24:53.892Z"
+      "createdAt": "2026-05-20T11:24:34.140Z",
+      "updatedAt": "2026-05-20T11:26:44.949Z"
+    },
+    {
+      "id": 1779276539621,
+      "name": "Emilio",
+      "subject": "Informatica",
+      "email": "Abaniko2@gmail.com",
+      "phone": "987654321",
+      "pin": "0000",
+      "role": "profesor",
+      "createdAt": "2026-05-20T11:28:41.205Z",
+      "updatedAt": "2026-05-21T07:41:27.378Z"
+    },
+    {
+      "id": 1779276814226,
+      "name": "Chari",
+      "subject": "Profe",
+      "email": "Chari@gmail.com",
+      "phone": "951357456",
+      "pin": "0000",
+      "role": "profesor",
+      "createdAt": "2026-05-20T11:32:26.470Z",
+      "updatedAt": "2026-05-21T08:02:07.909Z"
+    },
+    {
+      "id": 1779349644210,
+      "name": "Dani",
+      "subject": "Profesor",
+      "email": "dani@gmail.com",
+      "phone": "159753654",
+      "pin": "0000",
+      "role": "profesor",
+      "createdAt": "2026-05-21T07:45:49.637Z",
+      "updatedAt": "2026-05-21T08:02:30.054Z"
     }
   ],
-  "sessions": [],
+  "sessions": [
+    {
+      "id": 1779304432589,
+      "createdAt": "2026-05-20T19:13:46.330Z",
+      "title": "Albert",
+      "date": "2026-05-20",
+      "place": "Einstein",
+      "teacherId": "",
+      "summary": "Hola buenas tardes. Si",
+      "teacherNameSnapshot": "Profesor eliminado",
+      "updatedAt": "2026-05-21T07:35:19.732Z"
+    }
+  ],
   "accessLogs": [
     {
-      "id": 1778661446932,
-      "loginAt": "2026-05-13T08:36:48.441Z",
-      "logoutAt": "2026-05-13T08:56:02.462Z",
-      "createdAt": "2026-05-13T08:36:48.441Z",
-      "teacherId": 1778661416260,
-      "updatedAt": "2026-05-13T08:56:02.462Z",
-      "teacherName": "David Cebrián Aragón",
-      "teacherRole": "admin"
-    },
-    {
-      "id": 1778662600153,
-      "loginAt": "2026-05-13T08:56:02.462Z",
-      "logoutAt": "2026-05-13T09:23:55.727Z",
-      "createdAt": "2026-05-13T08:56:02.462Z",
-      "teacherId": 1778661416260,
-      "updatedAt": "2026-05-13T09:23:55.727Z",
-      "teacherName": "David Cebrián Aragón",
-      "teacherRole": "admin"
-    },
-    {
-      "id": 1778664237330,
-      "loginAt": "2026-05-13T09:23:55.727Z",
-      "logoutAt": "2026-05-13T09:25:00.198Z",
-      "createdAt": "2026-05-13T09:23:55.727Z",
-      "teacherId": 1778661416260,
-      "updatedAt": "2026-05-13T09:25:00.198Z",
-      "teacherName": "David Cebrián Aragón",
-      "teacherRole": "admin"
-    },
-    {
-      "id": 1778664350986,
-      "loginAt": "2026-05-13T09:25:08.255Z",
-      "logoutAt": "",
-      "createdAt": "2026-05-13T09:25:08.255Z",
-      "teacherId": 1778664318708,
-      "updatedAt": "2026-05-13T09:25:08.255Z",
-      "teacherName": "Mª Angeles Aparicio",
-      "teacherRole": "admin"
-    },
-    {
-      "id": 1778667845999,
-      "teacherId": 1778661416260,
+      "id": 1779275982832,
+      "teacherId": 1779275951626,
       "teacherName": "David Cebrián Aragón",
       "teacherRole": "admin",
-      "loginAt": "2026-05-13T10:22:48.859Z",
+      "loginAt": "2026-05-20T11:18:24.359Z",
+      "logoutAt": "2026-05-20T11:23:33.316Z",
+      "createdAt": "2026-05-20T11:18:24.359Z",
+      "updatedAt": "2026-05-20T11:23:33.316Z"
+    },
+    {
+      "id": 1779276408907,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T11:25:12.016Z",
+      "logoutAt": "2026-05-20T11:25:40.089Z",
+      "createdAt": "2026-05-20T11:25:12.016Z",
+      "updatedAt": "2026-05-20T11:25:40.089Z"
+    },
+    {
+      "id": 1779276345174,
+      "teacherId": 1779276303217,
+      "teacherName": "Mª Angeles aparticio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T11:25:26.694Z",
+      "logoutAt": "2026-05-20T11:28:09.518Z",
+      "createdAt": "2026-05-20T11:25:26.694Z",
+      "updatedAt": "2026-05-20T11:28:09.518Z"
+    },
+    {
+      "id": 1779276425448,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T11:25:54.700Z",
+      "logoutAt": "2026-05-20T11:26:09.180Z",
+      "createdAt": "2026-05-20T11:25:54.700Z",
+      "updatedAt": "2026-05-20T11:26:09.180Z"
+    },
+    {
+      "id": 1779276429385,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T11:26:38.007Z",
+      "logoutAt": "2026-05-20T11:26:54.607Z",
+      "createdAt": "2026-05-20T11:26:38.007Z",
+      "updatedAt": "2026-05-20T11:26:54.607Z"
+    },
+    {
+      "id": 1779276582629,
+      "teacherId": 1779276303217,
+      "teacherName": "Mª Angeles aparticio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T11:28:09.518Z",
+      "logoutAt": "2026-05-20T11:29:28.495Z",
+      "createdAt": "2026-05-20T11:28:09.518Z",
+      "updatedAt": "2026-05-20T11:29:28.495Z"
+    },
+    {
+      "id": 1779276580653,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T11:29:12.410Z",
+      "logoutAt": "2026-05-20T11:31:47.925Z",
+      "createdAt": "2026-05-20T11:29:12.410Z",
+      "updatedAt": "2026-05-20T11:31:47.925Z"
+    },
+    {
+      "id": 1779276727266,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T11:31:47.925Z",
+      "logoutAt": "2026-05-20T11:31:49.659Z",
+      "createdAt": "2026-05-20T11:31:47.925Z",
+      "updatedAt": "2026-05-20T11:31:49.659Z"
+    },
+    {
+      "id": 1779277075818,
+      "teacherId": 1779276814226,
+      "teacherName": "Chari",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T11:37:03.534Z",
+      "logoutAt": "2026-05-20T11:37:08.311Z",
+      "createdAt": "2026-05-20T11:37:03.534Z",
+      "updatedAt": "2026-05-20T11:37:08.311Z"
+    },
+    {
+      "id": 1779297418968,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T17:15:54.633Z",
+      "logoutAt": "2026-05-20T19:10:11.706Z",
+      "createdAt": "2026-05-20T17:15:54.633Z",
+      "updatedAt": "2026-05-20T19:10:11.706Z"
+    },
+    {
+      "id": 1779304015497,
+      "teacherId": 1779303927158,
+      "teacherName": "Jesús Reyes Torres",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T19:05:31.328Z",
+      "logoutAt": "2026-05-20T19:10:04.502Z",
+      "createdAt": "2026-05-20T19:05:31.328Z",
+      "updatedAt": "2026-05-20T19:10:18.940Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1779304291087,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-20T19:10:11.706Z",
+      "logoutAt": "2026-05-20T19:56:08.696Z",
+      "createdAt": "2026-05-20T19:10:11.706Z",
+      "updatedAt": "2026-05-20T19:56:08.696Z"
+    },
+    {
+      "id": 1779304445233,
+      "teacherId": 1779304465873,
+      "teacherName": "Jesus reyes",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-20T19:13:19.794Z",
       "logoutAt": "",
-      "createdAt": "2026-05-13T10:22:48.859Z",
-      "updatedAt": "2026-05-13T10:22:48.859Z"
+      "createdAt": "2026-05-20T19:13:19.794Z",
+      "updatedAt": "2026-05-21T07:35:19.732Z",
+      "teacherDeleted": true
+    },
+    {
+      "id": 1779346693999,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-21T06:56:37.679Z",
+      "logoutAt": "2026-05-21T06:57:10.989Z",
+      "createdAt": "2026-05-21T06:56:37.679Z",
+      "updatedAt": "2026-05-21T06:57:10.989Z"
+    },
+    {
+      "id": 1779346732951,
+      "teacherId": 1779276303217,
+      "teacherName": "Mª Angeles aparticio",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-21T06:57:19.128Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-21T06:57:19.129Z",
+      "updatedAt": "2026-05-21T06:57:19.129Z"
+    },
+    {
+      "id": 1779347466297,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-21T07:09:34.008Z",
+      "logoutAt": "2026-05-21T07:10:09.387Z",
+      "createdAt": "2026-05-21T07:09:34.008Z",
+      "updatedAt": "2026-05-21T07:10:09.387Z"
+    },
+    {
+      "id": 1779348359799,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-21T07:25:07.875Z",
+      "logoutAt": "2026-05-21T07:41:31.128Z",
+      "createdAt": "2026-05-21T07:25:07.875Z",
+      "updatedAt": "2026-05-21T07:41:31.128Z"
+    },
+    {
+      "id": 1779349350048,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-21T07:41:41.819Z",
+      "logoutAt": "2026-05-21T07:41:47.703Z",
+      "createdAt": "2026-05-21T07:41:41.819Z",
+      "updatedAt": "2026-05-21T07:41:47.703Z"
+    },
+    {
+      "id": 1779349511537,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-21T07:43:42.590Z",
+      "logoutAt": "2026-05-21T07:44:47.590Z",
+      "createdAt": "2026-05-21T07:43:42.590Z",
+      "updatedAt": "2026-05-21T07:44:47.590Z"
+    },
+    {
+      "id": 1779349527519,
+      "teacherId": 1779276539621,
+      "teacherName": "Emilio",
+      "teacherRole": "profesor",
+      "loginAt": "2026-05-21T07:44:47.590Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-21T07:44:47.590Z",
+      "updatedAt": "2026-05-21T07:44:47.590Z"
+    },
+    {
+      "id": 1779349984000,
+      "teacherId": 1779275951626,
+      "teacherName": "David Cebrián Aragón",
+      "teacherRole": "admin",
+      "loginAt": "2026-05-21T07:51:51.355Z",
+      "logoutAt": "",
+      "createdAt": "2026-05-21T07:51:51.355Z",
+      "updatedAt": "2026-05-21T07:51:51.355Z"
     }
   ],
   "absences": [],
-  "updatedAt": "2026-05-13T10:22:48.862Z"
+  "updatedAt": "2026-05-21T10:40:10.032Z"
 }

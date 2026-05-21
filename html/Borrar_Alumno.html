@@ -18,12 +18,16 @@
   <script src="../js/supabase-config.js"></script>
   <script src="../js/abaniko-app.js"></script>
   <script>
-    AbanikoStore.requireTeacherSession("Index.html");
+    AbanikoStore.requireAdminSession("Index.html");
 
     function go(page) { window.open(page, "_self"); }
     const studentList = document.getElementById("studentList");
     const message = document.getElementById("message");
     function deleteStudent(dni) {
+      if (!AbanikoStore.isCurrentTeacherAdmin()) {
+        message.textContent = "Solo un administrador puede eliminar alumnos.";
+        return;
+      }
       AbanikoStore.removeStudent(dni);
       message.textContent = "Alumno eliminado correctamente.";
       renderStudents();
@@ -39,11 +43,12 @@
           <div>
             <strong>${AbanikoStore.escapeHtml(student.nombre || "")} ${AbanikoStore.escapeHtml(student.apellidos || "")}</strong>
             <div class="card-lines">
+              <span>DNI: ${AbanikoStore.escapeHtml(student.dni || "No indicado")}</span>
               <span>Localidad: ${AbanikoStore.escapeHtml(student.localidad || "No indicada")}</span>
               <span>Actividad deseada: ${AbanikoStore.escapeHtml(Array.isArray(student.actividad_deseada) ? student.actividad_deseada.join(" · ") : (student.actividad_deseada || "No indicada"))}</span>
             </div>
           </div>
-          <div class="actions"><button type="button" class="btn-danger" onclick="deleteStudent('${student.dni}')">Eliminar</button></div>
+          <div class="actions"><button type="button" class="btn-danger" onclick="deleteStudent('${AbanikoStore.escapeHtml(student.dni)}')">Eliminar</button></div>
         </article>
       `).join("");
     }

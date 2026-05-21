@@ -102,8 +102,8 @@
             <span id="currentTeacherMeta">Sin sesión activa</span>
           </div>
           <div class="button-row">
-            <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Profesores</button>
-            <button type="button" class="btn-secondary" onclick="openPage('historial_accesos.html')">Historial</button>
+            <button type="button" class="btn-secondary" onclick="openPage('historial_accesos.html')">Mi historial</button>
+            <button id="btnAdminNav" type="button" class="btn-secondary hidden" onclick="openPage('registrar_profesor.html')">Administración</button>
             <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
           </div>
         </section>
@@ -135,14 +135,8 @@
               <article class="quick-card">
                 <span class="quick-kicker">Alumnos</span>
                 <h2>Gestión completa</h2>
-                <p>Alta, consulta, edición, borrado y programas asociados del alumno.</p>
+                <p>Alta, consulta, edición y programas asociados del alumno.</p>
                 <button type="button" class="btn-primary" onclick="openPage('menu_anadir_alumno.html')">Gestionar alumnos</button>
-              </article>
-              <article class="quick-card">
-                <span class="quick-kicker">Profesores</span>
-                <h2>Equipo y permisos</h2>
-                <p>Profesores con PIN, rol y control de accesos guardado.</p>
-                <button type="button" class="btn-secondary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
               </article>
               <article class="quick-card">
                 <span class="quick-kicker">Jornadas</span>
@@ -151,12 +145,10 @@
                 <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Registrar jornada</button>
               </article>
               <article class="quick-card">
-                <span class="quick-kicker">Backend</span>
-                <h2>Local y Google Sheets</h2>
-                <p>Comprueba el guardado local y la sincronizacion online por Google Sheets.</p>
-                <div class="button-row">
-                  <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Ver backend</button>
-                </div>
+                <span class="quick-kicker">Historial</span>
+                <h2>Mis accesos</h2>
+                <p>Consulta tus propias entradas y salidas registradas en el sistema.</p>
+                <button type="button" class="btn-secondary" onclick="openPage('historial_accesos.html')">Ver historial</button>
               </article>
             </div>
           </section>
@@ -185,9 +177,6 @@
               <button type="button" class="btn-secondary" onclick="openPage('Consultar_Alumno.html')">Buscar alumno</button>
               <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Resúmenes</button>
               <button type="button" class="btn-success" onclick="exportPdf()">Exportar PDF</button>
-              <button type="button" class="btn-secondary" onclick="exportBackup()">Exportar copia</button>
-              <button type="button" class="btn-secondary" onclick="importBackup()">Importar copia</button>
-              <button type="button" class="btn-secondary" onclick="syncLocal()">Sincronizar datos</button>
             </div>
             <input id="backupInput" type="file" accept=".json,application/json" class="hidden">
           </section>
@@ -200,6 +189,86 @@
               </div>
             </div>
             <div id="recentAccessList" class="compact-list"></div>
+          </section>
+        </section>
+
+        <section id="adminPanel" class="page-stack hidden">
+          <section class="section-shell">
+            <div class="section-head">
+              <div>
+                <h2>Panel de administración</h2>
+                <p>Herramientas exclusivas del administrador para gestionar el equipo, los datos y el sistema.</p>
+              </div>
+              <span class="inline-badge">Solo administradores</span>
+            </div>
+          </section>
+
+          <section class="page-grid">
+            <section class="panel section-shell">
+              <div class="section-head">
+                <div>
+                  <h2>Gestión del equipo</h2>
+                  <p>Administra profesores, roles, accesos y faltas del profesorado.</p>
+                </div>
+              </div>
+              <div class="quick-grid">
+                <article class="quick-card">
+                  <span class="quick-kicker">Profesores</span>
+                  <h2>Equipo y permisos</h2>
+                  <p>Registra profesores, asigna roles y cambia PINes de acceso.</p>
+                  <button type="button" class="btn-primary" onclick="openPage('registrar_profesor.html')">Gestionar profesores</button>
+                </article>
+                <article class="quick-card">
+                  <span class="quick-kicker">Accesos</span>
+                  <h2>Historial completo</h2>
+                  <p>Consulta todos los accesos del equipo y cierra sesiones abiertas.</p>
+                  <button type="button" class="btn-secondary" onclick="openPage('historial_accesos.html')">Ver historial completo</button>
+                </article>
+                <article class="quick-card">
+                  <span class="quick-kicker">Alumnos</span>
+                  <h2>Eliminar alumnos</h2>
+                  <p>Borra definitivamente registros de alumnos del sistema.</p>
+                  <button type="button" class="btn-danger" onclick="openPage('Borrar_Alumno.html')">Eliminar alumno</button>
+                </article>
+              </div>
+            </section>
+
+            <section class="panel section-shell">
+              <div class="section-head">
+                <div>
+                  <h2>Copias y sincronización</h2>
+                  <p>Exporta, importa y sincroniza los datos del sistema.</p>
+                </div>
+              </div>
+              <div class="action-grid">
+                <button type="button" class="btn-secondary" onclick="exportBackup()">Exportar copia</button>
+                <button type="button" class="btn-secondary" onclick="importBackup()">Importar copia</button>
+                <button type="button" class="btn-secondary" onclick="syncLocal()">Sincronizar datos</button>
+                <button type="button" class="btn-secondary" onclick="openPage('configurar_nube.html')">Configurar bases de datos</button>
+              </div>
+            </section>
+          </section>
+
+          <section class="page-grid">
+            <section class="panel section-shell">
+              <div class="section-head">
+                <div>
+                  <h2>Resumen del equipo</h2>
+                  <p>Sesiones activas ahora mismo y últimas faltas registradas.</p>
+                </div>
+              </div>
+              <div id="adminTeamBox" class="summary-box"></div>
+            </section>
+
+            <section class="panel section-shell">
+              <div class="section-head">
+                <div>
+                  <h2>Últimas faltas</h2>
+                  <p>Faltas registradas recientemente por el equipo.</p>
+                </div>
+              </div>
+              <div id="adminAbsenceBox" class="compact-list"></div>
+            </section>
           </section>
         </section>
 
@@ -274,15 +343,25 @@
 
     function renderCurrentTeacher() {
       const teacher = AbanikoStore.getCurrentTeacher();
+      const btnAdmin = document.getElementById("btnAdminNav");
       if (!teacher) {
         currentTeacherName.textContent = "Profesor desconectado";
         currentTeacherMeta.textContent = "Sin sesión activa";
+        if (btnAdmin) btnAdmin.classList.add("hidden");
         return;
       }
 
       const log = AbanikoStore.getAccessLogs().find((item) => String(item.id) === String(sessionStorage.getItem("programaAbanikoCurrentAccessLogId")));
       currentTeacherName.textContent = `${teacher.name} - ${AbanikoStore.formatRole(teacher.role)}`;
       currentTeacherMeta.textContent = `Entrada: ${AbanikoStore.formatDateTime(log?.loginAt || "")}`;
+
+      if (btnAdmin) {
+        if (AbanikoStore.isCurrentTeacherAdmin()) {
+          btnAdmin.classList.remove("hidden");
+        } else {
+          btnAdmin.classList.add("hidden");
+        }
+      }
     }
 
     function renderAccessLogs() {
@@ -361,6 +440,47 @@
       `;
     }
 
+    function renderAdminPanel() {
+      const panel = document.getElementById("adminPanel");
+      if (!AbanikoStore.isCurrentTeacherAdmin()) {
+        panel.classList.add("hidden");
+        return;
+      }
+      panel.classList.remove("hidden");
+
+      const logs = AbanikoStore.getAccessLogs();
+      const teachers = AbanikoStore.load().teachers;
+      const teamBox = document.getElementById("adminTeamBox");
+
+      const openSessions = logs.filter((l) => !l.logoutAt);
+      if (openSessions.length === 0) {
+        teamBox.innerHTML = '<div class="summary-row"><strong>Sesiones activas</strong><span>Ninguna en este momento</span></div>';
+      } else {
+        teamBox.innerHTML = openSessions.map((l) => `
+          <div class="summary-row">
+            <strong>${AbanikoStore.escapeHtml(l.teacherName || "Profesor")}</strong>
+            <span>Activo desde ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(l.loginAt))}</span>
+          </div>
+        `).join("") + `<div class="summary-row"><strong>Total activos</strong><span>${openSessions.length}</span></div>`;
+      }
+
+      const absences = AbanikoStore.getAbsences().slice(0, 5);
+      const absenceBox = document.getElementById("adminAbsenceBox");
+      if (absences.length === 0) {
+        absenceBox.innerHTML = '<p class="empty-state">No hay faltas registradas.</p>';
+      } else {
+        absenceBox.innerHTML = absences.map((a) => `
+          <div class="compact-item">
+            <div>
+              <strong>${AbanikoStore.escapeHtml(a.teacherName || "Profesor")}</strong>
+              <span>Tipo: ${AbanikoStore.escapeHtml(a.type || "")} · Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(a.date))}</span>
+              <span>Anotado por: ${AbanikoStore.escapeHtml(a.recordedByName || "")}</span>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
     function renderAuthenticatedArea() {
       renderDashboard();
       renderCurrentTeacher();
@@ -368,6 +488,7 @@
       renderRecentStudents();
       renderNextSessions();
       renderSystemStatus();
+      renderAdminPanel();
     }
 
     function renderMode() {

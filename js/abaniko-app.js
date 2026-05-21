@@ -1253,6 +1253,20 @@ const AbanikoStore = (() => {
     return false;
   }
 
+  function requireAdminSession(redirectPage = "Index.html") {
+    if (!requireTeacherSession(redirectPage)) {
+      return false;
+    }
+    if (isCurrentTeacherAdmin()) {
+      return true;
+    }
+    const currentFile = window.location.pathname.split("/").pop();
+    if (currentFile !== redirectPage) {
+      window.open(redirectPage, "_self");
+    }
+    return false;
+  }
+
   function formatDateTime(value) {
     if (!value) {
       return "Sin registro";
@@ -1777,6 +1791,7 @@ const AbanikoStore = (() => {
     registerTeacherAbsence,
     getAbsences,
     requireTeacherSession,
+    requireAdminSession,
     getTeacherName,
     formatDate,
     formatDateTime,

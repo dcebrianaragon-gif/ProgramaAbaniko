@@ -82,6 +82,7 @@
   <script src="../js/supabase-config.js"></script>
   <script src="../js/abaniko-app.js"></script>
   <script>
+    AbanikoStore.requireAdminSession("Index.html");
     function go(page) { window.open(page, "_self"); }
 
     const localStatusBox = document.getElementById("localStatusBox");
