@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs/promises");
 const path = require("path");
 const { URL } = require("url");
+const db = require("./db");
 
 const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 3000);
@@ -100,7 +101,7 @@ function sendJson(response, statusCode, payload) {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   });
   response.end(JSON.stringify(payload));
@@ -110,7 +111,7 @@ function sendText(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "Content-Type": "text/plain; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   });
   response.end(payload);
@@ -150,6 +151,32 @@ async function handleApi(request, response, pathname) {
     return sendJson(response, 200, saved);
   }
 
+  if (pathname === "/api/registros" && request.method === "GET") {
+    const registros = await db.getRegistros();
+    return sendJson(response, 200, { ok: true, data: registros });
+  }
+
+  if (pathname.match(/^\/api\/registros\/\d+$/) && request.method === "GET") {
+    const id = pathname.split('/').pop();
+    const registro = await db.getRegistroById(parseInt(id));
+    if (!registro) {
+      return sendJson(response, 404, { ok: false, message: "Registro no encontrado" });
+    }
+    return sendJson(response, 200, { ok: true, data: registro });
+  }
+
+  if (pathname === "/api/registros" && request.method === "POST") {
+    const payload = await readBody(request);
+    const { nombre, email, telefono, contenido } = payload;
+
+    if (!nombre) {
+      return sendJson(response, 400, { ok: false, message: "El nombre es requerido" });
+    }
+
+    const registro = await db.addRegistro(nombre, email || null, telefono || null, contenido || null);
+    return sendJson(response, 201, { ok: true, data: registro });
+  }
+
   return sendJson(response, 404, { ok: false, message: "Ruta API no encontrada." });
 }
 
@@ -180,9 +207,9 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === "OPTIONS") {
       response.writeHead(204, {
-        Allow: "GET,PUT,OPTIONS",
+        Allow: "GET,PUT,POST,OPTIONS",
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       });
       response.end();
@@ -214,6 +241,7 @@ server.on("error", (error) => {
 
 server.listen(PORT, HOST, async () => {
   await ensureDataFile();
+  await db.initializeDatabase();
   console.log(`Programa Abaniko disponible en http://${DISPLAY_HOST}:${PORT}`);
   console.log(`Almacenamiento activo: ${DATA_FILE}`);
 });
