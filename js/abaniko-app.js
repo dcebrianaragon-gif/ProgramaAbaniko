@@ -29,6 +29,8 @@ const AbanikoStore = (() => {
   let supabaseClientPromise = null;
   let sheetsConfirmTimer = null;
   let sheetsSyncingPush = false;
+  let suppressExitReminderOnce = false;
+  let sessionExitReminderInstalled = false;
 
   function isLikelySheetsWebAppUrl(value) {
     const normalized = String(value || "").trim();
@@ -1196,6 +1198,73 @@ const AbanikoStore = (() => {
     localStorage.removeItem(EDIT_STUDENT_KEY);
   }
 
+  function markInternalNavigation() {
+    suppressExitReminderOnce = true;
+    window.setTimeout(() => {
+      suppressExitReminderOnce = false;
+    }, 1000);
+  }
+
+  function isInternalAppNavigationTarget(rawTarget) {
+    if (!rawTarget || typeof window === "undefined" || !window.location) {
+      return false;
+    }
+
+    try {
+      const resolved = new URL(String(rawTarget), window.location.href);
+      if (!/^https?:$/i.test(resolved.protocol) && !/^file:$/i.test(resolved.protocol)) {
+        return false;
+      }
+      const sameOrigin = resolved.origin === window.location.origin || resolved.protocol === "file:";
+      if (!sameOrigin) {
+        return false;
+      }
+      return /\.html?$/i.test(resolved.pathname) || /\/$/.test(resolved.pathname);
+    } catch {
+      return false;
+    }
+  }
+
+  function installSessionExitReminder() {
+    if (sessionExitReminderInstalled || typeof window === "undefined") {
+      return;
+    }
+
+    const nativeOpen = typeof window.open === "function" ? window.open.bind(window) : null;
+    if (nativeOpen) {
+      window.open = function patchedOpen(url, target, features) {
+        const targetName = String(target || "_self").toLowerCase();
+        if ((targetName === "_self" || targetName === "") && isInternalAppNavigationTarget(url)) {
+          markInternalNavigation();
+        }
+        return nativeOpen(url, target, features);
+      };
+    }
+
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest ? event.target.closest("a[href]") : null;
+      if (!link) {
+        return;
+      }
+      const targetName = String(link.getAttribute("target") || "_self").toLowerCase();
+      if ((targetName === "_self" || targetName === "") && isInternalAppNavigationTarget(link.getAttribute("href"))) {
+        markInternalNavigation();
+      }
+    }, true);
+
+    window.addEventListener("beforeunload", (event) => {
+      if (suppressExitReminderOnce || !getCurrentTeacher()) {
+        return;
+      }
+      const message = "Tienes una sesion abierta. Cierrala antes de salir.";
+      event.preventDefault();
+      event.returnValue = message;
+      return message;
+    });
+
+    sessionExitReminderInstalled = true;
+  }
+
   function getCurrentAccessLogId() {
     return sessionStorage.getItem(CURRENT_ACCESS_LOG_KEY);
   }
@@ -1240,6 +1309,7 @@ const AbanikoStore = (() => {
   }
 
   function logoutCurrentTeacher() {
+    markInternalNavigation();
     const teacher = getCurrentTeacher();
     const logId = getCurrentAccessLogId();
     if (!teacher || !logId) {
@@ -1825,6 +1895,10 @@ const AbanikoStore = (() => {
         onUpdate(getCloudStatus());
       }
     }, Math.max(15000, config.pollIntervalMs));
+  }
+
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+    installSessionExitReminder();
   }
 
   return {

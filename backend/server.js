@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs/promises");
 const path = require("path");
 const { URL } = require("url");
+const { Pool } = require("pg");
 
 const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 3000);
@@ -9,6 +10,17 @@ const DISPLAY_HOST = HOST === "0.0.0.0" ? "127.0.0.1" : HOST;
 const ROOT_DIR = __dirname;
 const PROJECT_DIR = path.resolve(ROOT_DIR, "..");
 const DATA_FILE = path.join(PROJECT_DIR, "data", "programa-abaniko.json");
+const DATABASE_URL = String(process.env.DATABASE_URL || "").trim();
+const APP_STATE_KEY = "programa-abaniko";
+
+const pool = DATABASE_URL
+  ? new Pool({
+    connectionString: DATABASE_URL,
+    ssl: DATABASE_URL.includes("localhost") || DATABASE_URL.includes("127.0.0.1")
+      ? false
+      : { rejectUnauthorized: false }
+  })
+  : null;
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -48,7 +60,25 @@ function normalize(data) {
   };
 }
 
+async function ensureDatabaseTable() {
+  if (!pool) {
+    return;
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_state (
+      app_id TEXT PRIMARY KEY,
+      payload JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
 async function ensureDataFile() {
+  if (pool) {
+    await ensureDatabaseTable();
+    return;
+  }
   try {
     await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
     await fs.access(DATA_FILE);
@@ -58,6 +88,18 @@ async function ensureDataFile() {
 }
 
 async function readData() {
+  if (pool) {
+    await ensureDatabaseTable();
+    const result = await pool.query(
+      "SELECT payload FROM app_state WHERE app_id = $1 LIMIT 1",
+      [APP_STATE_KEY]
+    );
+    if (result.rows[0]?.payload) {
+      return normalize(result.rows[0].payload);
+    }
+    return writeData(createEmptyState());
+  }
+
   await ensureDataFile();
   try {
     const raw = await fs.readFile(DATA_FILE, "utf8");
@@ -76,6 +118,21 @@ async function readData() {
 async function writeData(data) {
   const normalized = normalize(data);
   normalized.updatedAt = new Date().toISOString();
+
+  if (pool) {
+    await ensureDatabaseTable();
+    await pool.query(
+      `
+        INSERT INTO app_state (app_id, payload, updated_at)
+        VALUES ($1, $2::jsonb, NOW())
+        ON CONFLICT (app_id)
+        DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()
+      `,
+      [APP_STATE_KEY, JSON.stringify(normalized)]
+    );
+    return normalized;
+  }
+
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
   const temporaryFile = `${DATA_FILE}.tmp`;
   await fs.writeFile(temporaryFile, `${JSON.stringify(normalized, null, 2)}\n`, "utf8");
@@ -133,8 +190,8 @@ async function handleApi(request, response, pathname) {
     return sendJson(response, 200, {
       ok: true,
       backend: "node",
-      storage: "json",
-      dataFile: DATA_FILE,
+      storage: pool ? "postgres" : "json",
+      dataFile: pool ? "" : DATA_FILE,
       updatedAt: data.updatedAt
     });
   }
@@ -215,5 +272,5 @@ server.on("error", (error) => {
 server.listen(PORT, HOST, async () => {
   await ensureDataFile();
   console.log(`Programa Abaniko disponible en http://${DISPLAY_HOST}:${PORT}`);
-  console.log(`Almacenamiento activo: ${DATA_FILE}`);
+  console.log(`Almacenamiento activo: ${pool ? "PostgreSQL (DATABASE_URL)" : DATA_FILE}`);
 });

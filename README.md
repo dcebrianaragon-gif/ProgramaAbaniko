@@ -34,12 +34,20 @@ El navegador mantiene tambien una copia inmediata para evitar perdidas mientras 
 
 ## Backend En Railway
 
-Si quieres un JSON compartido sin depender de Google Sheets, puedes desplegar el backend Node en Railway:
+Si quieres un backend compartido en Railway, tienes dos formas:
+
+- Solo backend HTTP: publica el servidor Node y la app guardara mediante `/api/data`.
+- Backend con PostgreSQL: ademas de publicar el servidor Node, conecta un servicio PostgreSQL y define `DATABASE_URL` en Railway.
+
+Con PostgreSQL, el servidor guarda el estado completo en una tabla `app_state` y la crea automaticamente si no existe.
+
+Pasos recomendados:
 
 1. Crea un proyecto nuevo en Railway conectado a este repositorio.
 2. Deja el comando de arranque como `npm start`.
-3. Publica el servicio y copia la URL publica, por ejemplo `https://tu-app.railway.app`.
-4. En la app, abre `Bases de datos` y pega esa URL en el apartado `Backend JSON`.
+3. Añade la variable de entorno `DATABASE_URL` en Railway si quieres usar PostgreSQL.
+4. Publica el servicio y copia la URL publica, por ejemplo `https://tu-app.railway.app`.
+5. En la app, abre `Bases de datos` y pega esa URL en el apartado `Backend JSON`.
 
 El backend expone estas rutas:
 
@@ -54,6 +62,8 @@ Si quieres que la web publicada en GitHub Pages salga ya conectada a Railway, co
 ```text
 ABANIKO_BACKEND_URL=https://tu-app.railway.app
 ```
+
+Importante: la cadena `postgresql://...` no se pega en la app web. Esa cadena va en la variable `DATABASE_URL` del servicio de Railway.
 
 ## Backend En Google Sheets
 
