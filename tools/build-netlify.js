@@ -104,6 +104,7 @@ function getBuildConfig() {
     .replace(/\.git$/i, "");
   const githubPagesUrl = String(packageJson.homepage || "").trim().replace(/\/+$/, "/");
   return {
+    backendBaseUrl: String(process.env.ABANIKO_BACKEND_URL || "").trim().replace(/\/+$/, ""),
     sheetsWebAppUrl: String(process.env.ABANIKO_SHEETS_WEB_APP_URL || "").trim(),
     githubRepoUrl,
     githubPagesUrl,

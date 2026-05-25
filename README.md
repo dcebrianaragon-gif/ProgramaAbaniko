@@ -1,6 +1,6 @@
 # Programa Abaniko
 
-Programa Abaniko es una aplicacion para gestionar alumnos, profesores, accesos, jornadas, programas y fichas de entrevista de la asociacion. Puede trabajar en local y tambien sincronizar online con Supabase o con Google Sheets mediante Apps Script.
+Programa Abaniko es una aplicacion para gestionar alumnos, profesores, accesos, jornadas, programas y fichas de entrevista de la asociacion. Puede trabajar en local y tambien sincronizar online con un backend JSON, con Supabase o con Google Sheets mediante Apps Script.
 
 ## Uso Local
 
@@ -31,6 +31,29 @@ data/programa-abaniko.json
 ```
 
 El navegador mantiene tambien una copia inmediata para evitar perdidas mientras se trabaja.
+
+## Backend En Railway
+
+Si quieres un JSON compartido sin depender de Google Sheets, puedes desplegar el backend Node en Railway:
+
+1. Crea un proyecto nuevo en Railway conectado a este repositorio.
+2. Deja el comando de arranque como `npm start`.
+3. Publica el servicio y copia la URL publica, por ejemplo `https://tu-app.railway.app`.
+4. En la app, abre `Bases de datos` y pega esa URL en el apartado `Backend JSON`.
+
+El backend expone estas rutas:
+
+```text
+GET  /api/health
+GET  /api/data
+PUT  /api/data
+```
+
+Si quieres que la web publicada en GitHub Pages salga ya conectada a Railway, configura este secreto en GitHub Actions:
+
+```text
+ABANIKO_BACKEND_URL=https://tu-app.railway.app
+```
 
 ## Backend En Google Sheets
 
@@ -74,13 +97,14 @@ Pasos rapidos:
 
 1. Ejecuta `npm run build`.
 2. Sube la carpeta `dist` usando GitHub Pages o activa el workflow de `.github/workflows/deploy-pages.yml`.
-3. Si vas a usar Google Sheets en la web publicada, configura este secreto en GitHub:
+3. Si vas a usar Railway o Google Sheets en la web publicada, configura estos secretos en GitHub:
 
 ```text
+ABANIKO_BACKEND_URL=https://tu-app.railway.app
 ABANIKO_SHEETS_WEB_APP_URL=https://script.google.com/macros/s/.../exec
 ```
 
-La app sigue siendo compatible con Supabase desde `js/supabase-config.js` y con Google Sheets desde la URL `/exec`.
+La app sigue siendo compatible con Supabase desde `js/supabase-config.js`, con Railway mediante `/api/data` y con Google Sheets desde la URL `/exec`.
 
 ## Que Incluye
 
@@ -91,7 +115,7 @@ La app sigue siendo compatible con Supabase desde `js/supabase-config.js` y con 
 - Programas por alumno: datos de interes, deportes, insercion y ocio.
 - Busqueda de alumnos en programas por nombre, fecha, discapacidad o DNI.
 - Fichas de entrevista con historial de versiones.
-- Backend opcional en Google Sheets.
+- Backend opcional en Railway o Google Sheets.
 - Exportacion e importacion de copias JSON.
 
 ## Carpetas
@@ -100,7 +124,7 @@ La app sigue siendo compatible con Supabase desde `js/supabase-config.js` y con 
 - `js/`: logica principal.
 - `css/`: estilos visuales.
 - `assets/`: imagenes e iconos.
-- `backend/`: servidor local de Node.js.
+- `backend/`: servidor Node.js compatible con local y Railway.
 - `data/`: base de datos local en JSON.
 - `tools/`: scripts auxiliares, incluyendo el backend de Google Sheets.
 

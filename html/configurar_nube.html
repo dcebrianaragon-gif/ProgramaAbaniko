@@ -18,14 +18,26 @@
         <section class="panel section-shell">
           <div class="section-head">
             <div>
-              <h2>Base local</h2>
-              <p>Guarda en el navegador y, si abres el servidor local, tambien en data/programa-abaniko.json.</p>
+              <h2>Backend JSON</h2>
+              <p>Puede usar el servidor local o un backend remoto en Railway para guardar en un JSON compartido.</p>
             </div>
           </div>
+          <form id="backendForm" class="panel-soft section-shell">
+            <div class="field">
+              <label for="backendUrl">URL del backend</label>
+              <input id="backendUrl" type="url" placeholder="https://tu-app.railway.app">
+              <p class="field-hint">Si lo dejas vacio, la app usara el servidor local cuando abras http://127.0.0.1:3000 o el archivo local si no hay backend.</p>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-primary">Guardar backend</button>
+              <button type="button" class="btn-secondary" onclick="testBackend()">Probar</button>
+              <button type="button" class="btn-success" onclick="syncLocal()">Sincronizar backend</button>
+              <button type="button" class="btn-danger" onclick="disableBackend()">Quitar Railway</button>
+            </div>
+          </form>
           <div id="localStatusBox" class="summary-box"></div>
           <div class="button-row">
             <button type="button" class="btn-secondary" onclick="go('Index.html')">Volver al inicio</button>
-            <button type="button" class="btn-success" onclick="syncLocal()">Guardar local</button>
           </div>
         </section>
 
@@ -72,7 +84,7 @@
         <div class="section-head">
           <div>
             <h2>GitHub Pages</h2>
-            <p>Tu web publicada puede quedar enlazada a Apps Script sin tener que pegar la URL en cada navegador.</p>
+            <p>Tu web publicada puede quedar enlazada a Railway y Apps Script sin tener que pegar las URLs en cada navegador.</p>
           </div>
         </div>
         <div id="githubStatusBox" class="summary-box"></div>
@@ -88,6 +100,8 @@
     const localStatusBox = document.getElementById("localStatusBox");
     const sheetsStatusBox = document.getElementById("sheetsStatusBox");
     const githubStatusBox = document.getElementById("githubStatusBox");
+    const backendForm = document.getElementById("backendForm");
+    const backendUrl = document.getElementById("backendUrl");
     const sheetsForm = document.getElementById("sheetsForm");
     const sheetsUrl = document.getElementById("sheetsUrl");
 
@@ -95,15 +109,21 @@
       const data = AbanikoStore.load();
       const status = AbanikoStore.getBackendStatus();
       const config = AbanikoStore.getBackendConfig();
+      const usingRailway = status.source === "remote";
       const state = status.configured
-        ? (result === null ? "Comprobando servidor local..." : (result.ok ? "Servidor local activo" : "Servidor local pendiente"))
+        ? (result === null ? `Comprobando ${usingRailway ? "Railway" : "servidor local"}...` : (result.ok ? `${usingRailway ? "Railway" : "Servidor local"} activo` : `${usingRailway ? "Railway" : "Servidor local"} pendiente`))
         : "Copia del navegador";
       const message = result?.message || (status.configured
-        ? "El servidor local puede guardar en el archivo JSON."
-        : "Abre la app con el servidor local para guardar tambien en data/programa-abaniko.json.");
+        ? (usingRailway
+          ? "La app sincroniza contra el backend remoto configurado."
+          : "El servidor local puede guardar en el archivo JSON.")
+        : "Abre la app con el servidor local o pega la URL de Railway para guardar en un JSON compartido.");
 
+      backendUrl.value = status.source === "remote" ? (status.baseUrl || "") : "";
       localStatusBox.innerHTML = `
         <div class="summary-row"><strong>Modo</strong><span>${AbanikoStore.escapeHtml(state)}</span></div>
+        <div class="summary-row"><strong>Origen</strong><span>${AbanikoStore.escapeHtml(usingRailway ? "Railway remoto" : (status.configured ? "Servidor local" : "Solo navegador"))}</span></div>
+        <div class="summary-row"><strong>Base URL</strong><span>${AbanikoStore.escapeHtml(config.baseUrl || "No configurada")}</span></div>
         <div class="summary-row"><strong>Ruta API</strong><span>${AbanikoStore.escapeHtml(config.dataUrl || "No disponible desde esta URL")}</span></div>
         <div class="summary-row"><strong>Ultima actualizacion</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(data.updatedAt))}</span></div>
         <div class="summary-row"><strong>Ultimo guardado local</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(status.lastSyncAt || ""))}</span></div>
@@ -114,18 +134,29 @@
 
     function renderSheetsStatus(result = null) {
       const status = AbanikoStore.getSheetsStatus();
-      const state = status.configured
-        ? (result === null ? "Configurado" : (result.ok ? "Conectado" : "Pendiente"))
-        : "No configurado";
+      const syncing = AbanikoStore.isSheetsSyncing();
+      let state;
+      if (!status.configured) {
+        state = "No configurado";
+      } else if (syncing) {
+        state = "Sincronizando...";
+      } else if (result === null) {
+        state = status.lastError ? "Error de sincronizacion" : "Sincronizando en tiempo real";
+      } else {
+        state = result.ok ? "Conectado y sincronizando en tiempo real" : "Pendiente";
+      }
       const message = result?.message || (status.configured
-        ? "Google Sheets esta listo para sincronizar."
-        : "Pega la URL del Web App para activar Google Sheets.");
+        ? (status.lastError || "Cada guardado se envia a Google Sheets de forma automatica.")
+        : "Pega la URL del Web App para activar la sincronizacion en tiempo real.");
 
       sheetsUrl.value = status.webAppUrl || "";
+      const syncIndicator = syncing
+        ? `<span class="inline-badge">Enviando datos...</span>`
+        : (status.configured && !status.lastError ? `<span class="inline-badge">Tiempo real</span>` : "");
       sheetsStatusBox.innerHTML = `
-        <div class="summary-row"><strong>Estado</strong><span>${AbanikoStore.escapeHtml(state)}</span></div>
+        <div class="summary-row"><strong>Estado</strong><span>${AbanikoStore.escapeHtml(state)} ${syncIndicator}</span></div>
         <div class="summary-row"><strong>App ID</strong><span>${AbanikoStore.escapeHtml(status.appId)}</span></div>
-        <div class="summary-row"><strong>URL</strong><span>${AbanikoStore.escapeHtml(status.webAppUrl || "No configurada")}</span></div>
+        <div class="summary-row"><strong>URL del Web App</strong><span>${AbanikoStore.escapeHtml(status.webAppUrl || "No configurada")}</span></div>
         <div class="summary-row"><strong>Ultima sincronizacion</strong><span>${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(status.lastSyncAt || ""))}</span></div>
         <div class="summary-row"><strong>Mensaje</strong><span>${AbanikoStore.escapeHtml(message)}</span></div>
         <div class="summary-row"><strong>Ultima incidencia</strong><span>${AbanikoStore.escapeHtml(status.lastError || "Sin incidencias")}</span></div>
@@ -147,11 +178,13 @@
         githubPagesSettingsUrl: "https://github.com/dcebrianaragon-gif/ProgramaAbaniko/settings/pages",
         githubActionsSecretsUrl: "https://github.com/dcebrianaragon-gif/ProgramaAbaniko/settings/secrets/actions"
       }, window.AbanikoBuildConfig || {});
+      const backend = AbanikoStore.getBackendStatus();
       const sheets = AbanikoStore.getSheetsStatus();
       const githubPagesUrl = String(build.githubPagesUrl || "").trim();
       const githubRepoUrl = String(build.githubRepoUrl || "").trim();
       const githubPagesSettingsUrl = String(build.githubPagesSettingsUrl || "").trim();
       const githubActionsSecretsUrl = String(build.githubActionsSecretsUrl || "").trim();
+      const backendBaseUrl = String(build.backendBaseUrl || backend.baseUrl || "").trim();
       const quickConnectUrl = githubPagesUrl && sheets.webAppUrl
         ? `${githubPagesUrl}${githubPagesUrl.includes("?") ? "&" : "?"}sheetsUrl=${encodeURIComponent(sheets.webAppUrl)}`
         : "";
@@ -160,7 +193,8 @@
         <div class="summary-row"><strong>Repositorio</strong><span>${buildActionLink(githubRepoUrl, githubRepoUrl)}</span></div>
         <div class="summary-row"><strong>Web publicada</strong><span>${buildActionLink(githubPagesUrl, githubPagesUrl)}</span></div>
         <div class="summary-row"><strong>Pages</strong><span>${buildActionLink(githubPagesSettingsUrl, "Abrir configuracion de GitHub Pages")}</span></div>
-        <div class="summary-row"><strong>Secreto recomendado</strong><span>${buildActionLink(githubActionsSecretsUrl, "ABANIKO_SHEETS_WEB_APP_URL en GitHub Actions")}</span></div>
+        <div class="summary-row"><strong>Backend Railway</strong><span>${AbanikoStore.escapeHtml(backendBaseUrl || "Aun no configurado")}</span></div>
+        <div class="summary-row"><strong>Secreto recomendado</strong><span>${buildActionLink(githubActionsSecretsUrl, "ABANIKO_BACKEND_URL y ABANIKO_SHEETS_WEB_APP_URL en GitHub Actions")}</span></div>
         <div class="summary-row"><strong>URL actual de Apps Script</strong><span>${AbanikoStore.escapeHtml(sheets.webAppUrl || "Aun no configurada")}</span></div>
         <div class="summary-row"><strong>Enlace rapido</strong><span>${quickConnectUrl ? buildActionLink(quickConnectUrl, "Abrir GitHub Pages ya conectado a Google Sheets") : "Primero guarda la URL /exec para generar este enlace."}</span></div>
       `;
@@ -169,7 +203,7 @@
     async function refreshLocalStatus() {
       renderLocalStatus(null);
       if (!AbanikoStore.isBackendConfigured()) {
-        renderLocalStatus({ ok: false, message: "Servidor local no disponible desde esta URL." });
+        renderLocalStatus({ ok: false, message: "No hay backend activo. Puedes usar local o pegar una URL de Railway." });
         return;
       }
       const result = await AbanikoStore.pullFromBackend();
@@ -193,6 +227,23 @@
       alert(result.ok ? "Backend sincronizado correctamente." : (result.message || "No se pudo sincronizar."));
       await refreshLocalStatus();
       await refreshSheetsStatus();
+    }
+
+    async function testBackend() {
+      if (!AbanikoStore.isBackendConfigured()) {
+        renderLocalStatus({ ok: false, message: "No hay backend configurado." });
+        return;
+      }
+      const result = await AbanikoStore.pullFromBackend();
+      alert(result.ok ? "Backend disponible." : (result.message || "No se pudo conectar con el backend."));
+      renderLocalStatus(result);
+      renderGitHubStatus();
+    }
+
+    function disableBackend() {
+      AbanikoStore.clearBackendConnection();
+      renderLocalStatus({ ok: false, message: "URL remota eliminada. Si abres la app en local seguira usando el servidor local." });
+      renderGitHubStatus();
     }
 
     async function syncSheets() {
@@ -222,16 +273,31 @@
       renderGitHubStatus();
     });
 
+    backendForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      AbanikoStore.setBackendConnection(backendUrl.value);
+      await refreshLocalStatus();
+    });
+
     AbanikoStore.startBackendAutoSync(() => {
       renderLocalStatus();
       renderSheetsStatus();
       renderGitHubStatus();
     });
+
+    // Reaccionar a eventos de sync en tiempo real (push + pull de confirmacion)
+    window.addEventListener("abaniko:sheets-sync", () => {
+      renderSheetsStatus();
+      renderGitHubStatus();
+    });
+
     refreshLocalStatus();
     refreshSheetsStatus();
     renderGitHubStatus();
 
     window.syncLocal = syncLocal;
+    window.testBackend = testBackend;
+    window.disableBackend = disableBackend;
     window.syncSheets = syncSheets;
     window.testSheets = testSheets;
     window.disableSheets = disableSheets;

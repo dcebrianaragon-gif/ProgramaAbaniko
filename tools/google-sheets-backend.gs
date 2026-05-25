@@ -1,3 +1,7 @@
+// Programa Abaniko — Google Apps Script backend
+// Desplegar como: Aplicación web > Ejecutar como "Yo" > Acceso "Cualquier persona"
+// Esto añade CORS automaticamente a todas las respuestas.
+
 const SPREADSHEET_ID = "";
 const SHEET_NAME = "app_state";
 const DEFAULT_APP_ID = "programa-abaniko";
@@ -14,12 +18,23 @@ function doGet(event) {
         ok: true,
         backend: "google-sheets",
         appId,
-        message: "Google Sheets listo."
+        message: "Google Sheets listo y sincronizando en tiempo real."
       }, params.callback);
     }
 
     if (action === "read") {
       return output_(readState_(appId), params.callback);
+    }
+
+    // Soporte de escritura via GET (fallback cuando el POST falla por CORS)
+    // El payload viene URL-encoded en el parametro 'payload'
+    if (action === "write") {
+      const rawPayload = params.payload || "";
+      if (!rawPayload) {
+        return output_({ ok: false, message: "Falta el parametro payload." }, params.callback);
+      }
+      const payload = JSON.parse(rawPayload);
+      return output_(writeState_(appId, payload), params.callback);
     }
 
     return output_({ ok: false, message: "Accion no soportada." }, params.callback);
@@ -33,6 +48,10 @@ function doPost(event) {
     const body = parseBody_(event);
     const action = String(body.action || "write").toLowerCase();
     const appId = String(body.appId || DEFAULT_APP_ID);
+
+    if (action === "health") {
+      return output_({ ok: true, backend: "google-sheets", appId, message: "Google Sheets listo." });
+    }
 
     if (action !== "write") {
       return output_({ ok: false, message: "Accion no soportada." });
@@ -49,7 +68,11 @@ function parseBody_(event) {
   if (!contents) {
     return {};
   }
-  return JSON.parse(contents);
+  try {
+    return JSON.parse(contents);
+  } catch {
+    return {};
+  }
 }
 
 function getSpreadsheet_() {

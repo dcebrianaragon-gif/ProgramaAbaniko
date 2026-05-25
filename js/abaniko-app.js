@@ -12,6 +12,7 @@ const AbanikoStore = (() => {
   const BACKEND_LAST_SYNC_KEY = "programaAbanikoBackendLastSync";
   const BACKEND_LAST_ERROR_KEY = "programaAbanikoBackendLastError";
   const BACKEND_MODE_KEY = "programaAbanikoBackendMode";
+  const BACKEND_BASE_URL_KEY = "programaAbanikoBackendBaseUrl";
   const SHEETS_LAST_SYNC_KEY = "programaAbanikoSheetsLastSync";
   const SHEETS_LAST_ERROR_KEY = "programaAbanikoSheetsLastError";
   const SHEETS_WEB_APP_URL_KEY = "programaAbanikoSheetsWebAppUrl";
@@ -26,6 +27,8 @@ const AbanikoStore = (() => {
   let sheetsPushPromise = null;
   let supabaseSdkPromise = null;
   let supabaseClientPromise = null;
+  let sheetsConfirmTimer = null;
+  let sheetsSyncingPush = false;
 
   function isLikelySheetsWebAppUrl(value) {
     const normalized = String(value || "").trim();
@@ -211,29 +214,61 @@ const AbanikoStore = (() => {
     return normalized;
   }
 
+  function normalizeBackendBaseUrl(value) {
+    const normalized = String(value || "").trim().replace(/\/+$/, "");
+    if (!normalized) {
+      return "";
+    }
+    return /^https?:\/\/[^/]+(?:\/.*)?$/i.test(normalized) ? normalized : "";
+  }
+
+  function getConfiguredBackendBaseUrl() {
+    if (typeof localStorage === "undefined") {
+      const runtimeConfig = window.AbanikoBuildConfig || {};
+      return normalizeBackendBaseUrl(runtimeConfig.backendBaseUrl || "");
+    }
+
+    const runtimeConfig = window.AbanikoBuildConfig || {};
+    const storedUrl = localStorage.getItem(BACKEND_BASE_URL_KEY) || "";
+    return normalizeBackendBaseUrl(storedUrl || runtimeConfig.backendBaseUrl || "");
+  }
+
+  function getBackendModeFromConfig(config) {
+    return config.source === "remote" ? "railway" : "node";
+  }
+
   function getBackendConfig() {
     if (typeof window === "undefined") {
       return {
         enabled: false,
+        baseUrl: "",
         dataUrl: "",
-        healthUrl: ""
+        healthUrl: "",
+        source: "none"
       };
     }
 
     const protocol = window.location.protocol || "";
     const origin = window.location.origin || "";
     const hostname = window.location.hostname || "";
+    const configuredBaseUrl = getConfiguredBackendBaseUrl();
     const useFileServer = /^file:$/i.test(protocol);
     const useLocalHttpServer = /^https?:$/i.test(protocol)
       && ["localhost", "127.0.0.1", "::1"].includes(hostname);
-    const baseUrl = useFileServer
-      ? "http://127.0.0.1:3000"
-      : (useLocalHttpServer ? origin : "");
+    const baseUrl = configuredBaseUrl
+      || (useFileServer
+        ? "http://127.0.0.1:3000"
+        : (useLocalHttpServer ? origin : ""));
+    const source = configuredBaseUrl
+      ? "remote"
+      : (useFileServer || useLocalHttpServer ? "local" : "none");
 
     return {
       enabled: Boolean(baseUrl),
+      baseUrl,
       dataUrl: baseUrl ? `${baseUrl}/api/data` : "",
-      healthUrl: baseUrl ? `${baseUrl}/api/health` : ""
+      healthUrl: baseUrl ? `${baseUrl}/api/health` : "",
+      source
     };
   }
 
@@ -259,14 +294,33 @@ const AbanikoStore = (() => {
     localStorage.setItem(BACKEND_MODE_KEY, mode);
   }
 
+  function setBackendConnection(baseUrl) {
+    const cleanUrl = normalizeBackendBaseUrl(baseUrl);
+    if (cleanUrl) {
+      localStorage.setItem(BACKEND_BASE_URL_KEY, cleanUrl);
+    } else {
+      localStorage.removeItem(BACKEND_BASE_URL_KEY);
+    }
+    rememberBackendError("");
+    return getBackendConfig();
+  }
+
+  function clearBackendConnection() {
+    localStorage.removeItem(BACKEND_BASE_URL_KEY);
+    rememberBackendError("");
+    return getBackendConfig();
+  }
+
   function getBackendStatus() {
     const config = getBackendConfig();
     return {
       enabled: config.enabled,
       configured: isBackendConfigured(),
+      baseUrl: config.baseUrl,
+      source: config.source,
       lastSyncAt: localStorage.getItem(BACKEND_LAST_SYNC_KEY) || "",
       lastError: localStorage.getItem(BACKEND_LAST_ERROR_KEY) || "",
-      mode: localStorage.getItem(BACKEND_MODE_KEY) || "desconectado"
+      mode: localStorage.getItem(BACKEND_MODE_KEY) || (config.enabled ? getBackendModeFromConfig(config) : "desconectado")
     };
   }
 
@@ -346,7 +400,7 @@ const AbanikoStore = (() => {
       if (request.status >= 200 && request.status < 300 && request.responseText) {
         const remote = normalize(JSON.parse(request.responseText));
         persistLocal(remote, { preserveUpdatedAt: true });
-        notifyBackendMode("node");
+        notifyBackendMode(getBackendModeFromConfig(getBackendConfig()));
         rememberBackendSync();
         return remote;
       }
@@ -640,16 +694,51 @@ const AbanikoStore = (() => {
 
   async function sheetsWriteRequest(data) {
     const config = getSheetsConfig();
-    await fetch(config.webAppUrl, {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify({
-        action: "write",
-        appId: config.appId,
-        payload: normalize(data)
-      })
+    const normalizedData = normalize(data);
+    const body = JSON.stringify({
+      action: "write",
+      appId: config.appId,
+      payload: normalizedData
     });
-    return normalize(data);
+
+    // 1st attempt: POST with text/plain (simple CORS request — no preflight)
+    // Apps Script adds Access-Control-Allow-Origin:* automatically on POST responses
+    try {
+      const response = await fetch(config.webAppUrl, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain" },
+        body
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.ok === false) {
+          throw new Error(result.message || "Sheets no confirmo el guardado.");
+        }
+        return result;
+      }
+    } catch {
+      // CORS failed or response unreadable — try JSONP GET fallback
+    }
+
+    // 2nd attempt: JSONP GET with payload URL-encoded (works around all CORS issues)
+    // Only feasible for payloads small enough for a URL (~2 KB safe limit)
+    const payloadStr = JSON.stringify(normalizedData);
+    if (payloadStr.length <= 2000) {
+      try {
+        const result = await sheetsJsonp("write", { payload: payloadStr });
+        if (result.ok === false) {
+          throw new Error(result.message || "Sheets no confirmo el guardado via GET.");
+        }
+        return result;
+      } catch {
+        // GET fallback also failed — use fire-and-forget POST
+      }
+    }
+
+    // Last resort: fire-and-forget (data is sent, response is opaque)
+    await fetch(config.webAppUrl, { method: "POST", mode: "no-cors", body });
+    return normalizedData;
   }
 
   function save(data, options = {}) {
@@ -1398,7 +1487,7 @@ const AbanikoStore = (() => {
             queueSheetsPush();
           }
         }
-        notifyBackendMode("node");
+        notifyBackendMode(getBackendModeFromConfig(getBackendConfig()));
         rememberBackendSync();
         return { ok: true, data: remote };
       } catch (error) {
@@ -1499,10 +1588,30 @@ const AbanikoStore = (() => {
     return sheetsPushPromise;
   }
 
+  function dispatchSheetsSyncEvent() {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("abaniko:sheets-sync", { detail: getSheetsStatus() }));
+    }
+  }
+
   function queueSheetsPush() {
-    pushToSheets().catch((error) => {
-      rememberSheetsError(error.message || "No se pudo sincronizar Google Sheets.");
-    });
+    sheetsSyncingPush = true;
+    dispatchSheetsSyncEvent();
+    pushToSheets()
+      .then(() => {
+        sheetsSyncingPush = false;
+        // Schedule a confirmation pull ~3 s after the write to verify the data landed
+        if (sheetsConfirmTimer) clearTimeout(sheetsConfirmTimer);
+        sheetsConfirmTimer = window.setTimeout(() => {
+          sheetsConfirmTimer = null;
+          pullFromSheets().finally(dispatchSheetsSyncEvent);
+        }, 3000);
+      })
+      .catch((error) => {
+        sheetsSyncingPush = false;
+        rememberSheetsError(error.message || "No se pudo sincronizar Google Sheets.");
+        dispatchSheetsSyncEvent();
+      });
   }
 
   async function syncSheetsNow() {
@@ -1530,7 +1639,7 @@ const AbanikoStore = (() => {
         const data = load();
         const saved = await backendRequest("PUT", data);
         persistLocal(saved, { preserveUpdatedAt: true });
-        notifyBackendMode("node");
+        notifyBackendMode(getBackendModeFromConfig(getBackendConfig()));
         rememberBackendSync();
         return { ok: true, data: saved };
       } catch (error) {
@@ -1597,13 +1706,15 @@ const AbanikoStore = (() => {
         if (typeof onUpdate === "function") {
           onUpdate(getSheetsStatus());
         }
+        dispatchSheetsSyncEvent();
       });
       intervals.push(window.setInterval(async () => {
         await pullFromSheets();
         if (typeof onUpdate === "function") {
           onUpdate(getSheetsStatus());
         }
-      }, Math.max(15000, getSheetsConfig().pollIntervalMs)));
+        dispatchSheetsSyncEvent();
+      }, Math.max(10000, getSheetsConfig().pollIntervalMs || 10000)));
     }
     return intervals.length ? intervals : null;
   }
@@ -1724,6 +1835,8 @@ const AbanikoStore = (() => {
     importBackupFromFile,
     getBackendConfig,
     getBackendStatus,
+    setBackendConnection,
+    clearBackendConnection,
     isBackendConfigured,
     pullFromBackend,
     pushToBackend,
@@ -1790,6 +1903,7 @@ const AbanikoStore = (() => {
     canCurrentTeacherRegisterAbsenceFor,
     registerTeacherAbsence,
     getAbsences,
+    isSheetsSyncing: () => sheetsSyncingPush,
     requireTeacherSession,
     requireAdminSession,
     getTeacherName,

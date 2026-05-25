@@ -3,8 +3,9 @@ const fs = require("fs/promises");
 const path = require("path");
 const { URL } = require("url");
 
-const HOST = "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 3000);
+const DISPLAY_HOST = HOST === "0.0.0.0" ? "127.0.0.1" : HOST;
 const ROOT_DIR = __dirname;
 const PROJECT_DIR = path.resolve(ROOT_DIR, "..");
 const DATA_FILE = path.join(PROJECT_DIR, "data", "programa-abaniko.json");
@@ -205,7 +206,7 @@ const server = http.createServer(async (request, response) => {
 
 server.on("error", (error) => {
   if (error.code === "EADDRINUSE") {
-    console.log(`Programa Abaniko ya parece estar abierto en http://${HOST}:${PORT}`);
+    console.log(`Programa Abaniko ya parece estar abierto en http://${DISPLAY_HOST}:${PORT}`);
     return;
   }
   throw error;
@@ -213,6 +214,6 @@ server.on("error", (error) => {
 
 server.listen(PORT, HOST, async () => {
   await ensureDataFile();
-  console.log(`Programa Abaniko disponible en http://${HOST}:${PORT}`);
+  console.log(`Programa Abaniko disponible en http://${DISPLAY_HOST}:${PORT}`);
   console.log(`Almacenamiento activo: ${DATA_FILE}`);
 });
