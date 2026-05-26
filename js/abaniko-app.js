@@ -31,6 +31,7 @@ const AbanikoStore = (() => {
   let sheetsSyncingPush = false;
   let suppressExitReminderOnce = false;
   let sessionExitReminderInstalled = false;
+  let startupSyncPromise = null;
 
   function isLikelySheetsWebAppUrl(value) {
     const normalized = String(value || "").trim();
@@ -214,6 +215,16 @@ const AbanikoStore = (() => {
       : new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
     return normalized;
+  }
+
+  function readLocalData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? normalize(JSON.parse(raw)) : normalize({});
+    } catch (error) {
+      console.error("No se pudo cargar la informacion local:", error);
+      return normalize({});
+    }
   }
 
   function normalizeBackendBaseUrl(value) {
@@ -447,6 +458,17 @@ const AbanikoStore = (() => {
       return remote || persistLocal({});
     }
   }
+
+  load = function loadRemoteFirst() {
+    const local = readLocalData();
+    if (isBackendConfigured()) {
+      const remote = loadFromBackendSync();
+      if (remote) {
+        return remote;
+      }
+    }
+    return local;
+  };
 
   function rememberCloudError(message) {
     if (message) {
@@ -1490,7 +1512,7 @@ const AbanikoStore = (() => {
         }
 
         const remote = normalize(remoteDocument);
-        const local = load();
+        const local = readLocalData();
         const shouldUseRemote = String(remote.updatedAt || "") > String(local.updatedAt || "")
           || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
         if (shouldUseRemote) {
@@ -1545,7 +1567,7 @@ const AbanikoStore = (() => {
     backendPullPromise = (async () => {
       try {
         const remote = normalize(await backendRequest("GET"));
-        const local = load();
+        const local = readLocalData();
         const shouldUseRemote = String(remote.updatedAt || "") >= String(local.updatedAt || "")
           || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
         if (shouldUseRemote) {
@@ -1608,7 +1630,7 @@ const AbanikoStore = (() => {
         }
 
         const remote = normalize(remoteDocument);
-        const local = load();
+        const local = readLocalData();
         const shouldUseRemote = String(remote.updatedAt || "") > String(local.updatedAt || "")
           || (!hasMeaningfulData(local) && hasMeaningfulData(remote));
         if (shouldUseRemote) {
@@ -1789,6 +1811,43 @@ const AbanikoStore = (() => {
     return intervals.length ? intervals : null;
   }
 
+  async function initializeAppSession() {
+    if (startupSyncPromise) {
+      return startupSyncPromise;
+    }
+
+    startupSyncPromise = (async () => {
+      if (!isBackendConfigured()) {
+        return {
+          ok: true,
+          mode: "local",
+          message: "No hay backend remoto configurado. La app seguira en modo local."
+        };
+      }
+
+      const result = await pullFromBackend();
+      if (!result.ok) {
+        return {
+          ok: false,
+          mode: "railway",
+          message: result.message || "No se pudo conectar con Railway."
+        };
+      }
+
+      return {
+        ok: true,
+        mode: "railway",
+        message: "Conectado con Railway y datos compartidos cargados."
+      };
+    })();
+
+    try {
+      return await startupSyncPromise;
+    } finally {
+      startupSyncPromise = null;
+    }
+  }
+
   async function pushToCloud() {
     if (!isCloudConfigured()) {
       return { ok: false, message: "La nube no está configurada." };
@@ -1916,6 +1975,7 @@ const AbanikoStore = (() => {
     pushToBackend,
     syncBackendNow,
     startBackendAutoSync,
+    initializeAppSession,
     getSheetsConfig,
     getSheetsStatus,
     setSheetsConnection,
