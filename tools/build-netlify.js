@@ -6,7 +6,7 @@ const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 const htmlDir = path.join(rootDir, "html");
 const defaultPage = "Index.html";
-const DEFAULT_RAILWAY_BACKEND_URL = "https://railway.com/project/7a88e325-1520-4f29-b6cd-ba8aca362a58?environmentId=c0bba0bc-d095-476e-9e7d-c66ecafd995c";
+const DEFAULT_RAILWAY_BACKEND_URL = "https://programaabaniko-production.up.railway.app";
 
 const MIME_TYPES = {
   ".ico": "image/x-icon",
