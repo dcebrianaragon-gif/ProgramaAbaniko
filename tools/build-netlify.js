@@ -6,6 +6,7 @@ const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 const htmlDir = path.join(rootDir, "html");
 const defaultPage = "Index.html";
+const DEFAULT_RAILWAY_BACKEND_URL = "https://railway.com/project/7a88e325-1520-4f29-b6cd-ba8aca362a58?environmentId=c0bba0bc-d095-476e-9e7d-c66ecafd995c";
 
 const MIME_TYPES = {
   ".ico": "image/x-icon",
@@ -104,7 +105,7 @@ function getBuildConfig() {
     .replace(/\.git$/i, "");
   const githubPagesUrl = String(packageJson.homepage || "").trim().replace(/\/+$/, "/");
   return {
-    backendBaseUrl: String(process.env.ABANIKO_BACKEND_URL || "").trim().replace(/\/+$/, ""),
+    backendBaseUrl: String(process.env.ABANIKO_BACKEND_URL || DEFAULT_RAILWAY_BACKEND_URL).trim().replace(/\/+$/, ""),
     sheetsWebAppUrl: String(process.env.ABANIKO_SHEETS_WEB_APP_URL || "").trim(),
     githubRepoUrl,
     githubPagesUrl,
