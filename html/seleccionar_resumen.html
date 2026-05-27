@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seleccionar resumen de jornada</title>
+  <title>Seleccionar resumen de salida</title>
   <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
-    <section class="hero"><h1>Seleccionar resumen de jornada</h1><p>Busca una jornada guardada para ver su resumen o editarla.</p></section>
+    <section class="hero"><h1>Seleccionar resumen de salida</h1><p>Busca una salida guardada para ver su resumen o editarla.</p></section>
     <section class="panel section-shell">
       <div class="button-row">
         <button type="button" class="btn-secondary" onclick="go('Index.html')">Inicio</button>
-        <button type="button" class="btn-secondary" onclick="go('registrar_jornada.html')">Jornadas</button>
+        <button type="button" class="btn-secondary" onclick="go('registrar_jornada.html')">Salidas</button>
       </div>
       <div class="field"><label for="searchInput">Buscar</label><input id="searchInput" type="search" autocomplete="off" placeholder="Nombre, fecha, lugar o profesor"></div>
-      <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 jornadas</p></div>
+      <div class="list-header"><h2>Resultados</h2><p id="resultInfo">0 salidas</p></div>
       <div id="sessionList" class="list"></div>
     </section>
   </div>
@@ -51,9 +51,9 @@
         return bag.includes(term);
       })
       .sort((a, b) => String(b.date || b.updatedAt || "").localeCompare(String(a.date || a.updatedAt || "")));
-      resultInfo.textContent = `${sessions.length} jornadas`;
+      resultInfo.textContent = `${sessions.length} salidas`;
       if (sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">No hay jornadas que coincidan con la búsqueda. Prueba con el nombre, la fecha, el lugar o el profesor responsable.</p>';
+        sessionList.innerHTML = '<p class="empty-state">No hay salidas que coincidan con la búsqueda. Prueba con el nombre, la fecha, el lugar o el profesor responsable.</p>';
         return;
       }
       sessionList.innerHTML = sessions.map((session) => `

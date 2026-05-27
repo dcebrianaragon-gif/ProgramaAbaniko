@@ -21,7 +21,7 @@
         </div>
         <div class="button-row" id="topActions">
           <button type="button" class="btn-secondary" onclick="openPage('Index.html')">Inicio</button>
-          <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Jornadas</button>
+          <button type="button" class="btn-secondary" onclick="openPage('registrar_jornada.html')">Salidas</button>
           <button type="button" class="btn-danger" onclick="logoutTeacher()">Cerrar sesión</button>
         </div>
       </section>
@@ -274,6 +274,7 @@
         <article class="card">
           <div>
             <strong>${AbanikoStore.escapeHtml(teacher.name)}</strong>
+            ${teacher.createdAt ? `<span class="inline-badge">Registrado: ${AbanikoStore.escapeHtml(AbanikoStore.formatDateTime(teacher.createdAt))}</span>` : ""}
             <div class="card-lines">
               <span>Rol: ${AbanikoStore.escapeHtml(AbanikoStore.formatRole(teacher.role))}</span>
               <span>Área: ${AbanikoStore.escapeHtml(teacher.subject || "Sin área")}</span>
