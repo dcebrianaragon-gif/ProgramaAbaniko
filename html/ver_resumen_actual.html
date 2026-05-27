@@ -29,10 +29,10 @@
     const content = document.getElementById("content");
     const session = AbanikoStore.getSelectedSession();
     if (!session) {
-      content.innerHTML = '<p class="empty-state">No hay ninguna jornada seleccionada.</p>';
+      content.innerHTML = '<p class="empty-state">No hay ninguna salida seleccionada.</p>';
     } else {
       content.innerHTML = [
-        row("Jornada", session.title),
+        row("Salida", session.title),
         row("Fecha", AbanikoStore.formatDate(session.date)),
         row("Profesor responsable", session.teacherNameSnapshot || "Sin profesor asignado"),
         row("Lugar", session.place || "No indicado"),

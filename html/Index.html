@@ -299,8 +299,8 @@
           <section class="panel section-shell">
             <div class="section-head">
               <div>
-                <h2>Próximas jornadas</h2>
-                <p>Jornadas ordenadas por fecha para tener la agenda más a mano.</p>
+                <h2>Próximas salidas</h2>
+                <p>Salidas ordenadas por fecha para tener la agenda más a mano.</p>
               </div>
             </div>
             <div id="nextSessionsList" class="compact-list"></div>
@@ -450,14 +450,14 @@
         .slice(0, 5);
 
       if (sessions.length === 0) {
-        nextSessionsList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
+        nextSessionsList.innerHTML = '<p class="empty-state">Todavía no hay salidas registradas.</p>';
         return;
       }
 
       nextSessionsList.innerHTML = sessions.map((session) => `
         <div class="compact-item">
           <div>
-            <strong>${AbanikoStore.escapeHtml(session.title || "Jornada")}</strong>
+            <strong>${AbanikoStore.escapeHtml(session.title || "Salida")}</strong>
             <span>Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
             <span>Profesor: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
           </div>
@@ -718,7 +718,7 @@
     }
 
     function buildSessionLines(lines, session, index) {
-      lines.push(...splitLine(`${index + 1}. ${session.title || "Jornada"}`, 90));
+      lines.push(...splitLine(`${index + 1}. ${session.title || "Salida"}`, 90));
       pushField(lines, "Fecha", AbanikoStore.formatDate(session.date));
       pushField(lines, "Lugar", session.place || "No indicado");
       pushField(lines, "Profesor", session.teacherNameSnapshot || "Sin profesor asignado");
@@ -741,7 +741,7 @@
       lines.push("");
       lines.push(`Alumnos registrados: ${data.students.length}`);
       lines.push(`Profesores registrados: ${data.teachers.length}`);
-      lines.push(`Jornadas registradas: ${data.sessions.length}`);
+      lines.push(`Salidas registradas: ${data.sessions.length}`);
       lines.push(`Accesos registrados: ${data.accessLogs.length}`);
       lines.push("");
       lines.push("ALUMNOS");
@@ -758,10 +758,10 @@
       } else {
         data.teachers.forEach((teacher, index) => buildTeacherLines(lines, teacher, index));
       }
-      lines.push("JORNADAS");
+      lines.push("SALIDAS");
       lines.push("----------------------------------------");
       if (data.sessions.length === 0) {
-        lines.push("Sin jornadas registradas.");
+        lines.push("Sin salidas registradas.");
       } else {
         data.sessions.forEach((session, index) => buildSessionLines(lines, session, index));
       }

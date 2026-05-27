@@ -46,7 +46,7 @@ body {
     linear-gradient(140deg, var(--bg-top), var(--bg-bottom));
   background-size: 34px 34px, auto, auto, auto, 100% 100%;
   background-attachment: fixed;
-  padding: 24px 14px 40px;
+  padding: 14px 14px 22px;
   overflow-x: hidden;
 }
 
@@ -73,7 +73,7 @@ textarea {
 
 .page-stack {
   display: grid;
-  gap: 22px;
+  gap: 12px;
 }
 
 .hidden {
@@ -95,7 +95,7 @@ textarea {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 32px;
+  padding: 20px 26px;
   border-radius: var(--radius-xl);
   background:
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.22), transparent 24%),
@@ -196,13 +196,13 @@ textarea {
 .program-grid,
 .program-card-grid {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .nav-grid,
 .stats-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  margin: 18px 0;
+  margin: 6px 0;
 }
 
 .quick-grid {
@@ -216,7 +216,7 @@ textarea {
 .action-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .filter-grid {
@@ -471,7 +471,7 @@ textarea {
 .panel,
 .preview-card,
 .auth-card {
-  padding: 24px;
+  padding: 16px;
 }
 
 .preview-card {
@@ -481,7 +481,7 @@ textarea {
 
 .section-shell {
   display: grid;
-  gap: 16px;
+  gap: 10px;
 }
 
 .section-head {
@@ -503,13 +503,13 @@ textarea {
 }
 
 .section-head p {
-  margin-top: 6px;
+  margin-top: 3px;
   color: var(--muted);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .panel-soft {
-  padding: 18px;
+  padding: 12px;
   border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(239, 247, 252, 0.66));
   border: 1px solid rgba(124, 92, 255, 0.14);
@@ -612,8 +612,8 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 10px 16px;
   border-radius: var(--radius-lg);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(237, 246, 251, 0.62));
@@ -639,8 +639,8 @@ textarea {
 
 .form-grid {
   display: grid;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .insight-grid {
@@ -1097,9 +1097,9 @@ button:active,
 .card {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 14px;
+  gap: 10px;
   align-items: start;
-  padding: 18px;
+  padding: 12px 14px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 249, 253, 0.92));
   border: 1px solid rgba(74, 53, 168, 0.1);
   border-radius: var(--radius-md);
@@ -1108,7 +1108,7 @@ button:active,
 
 .card strong {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-size: 1.04rem;
   color: var(--text-strong);
 }
@@ -1142,13 +1142,13 @@ button:active,
 
 .summary-box {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .summary-row {
   display: grid;
-  gap: 5px;
-  padding: 15px 16px;
+  gap: 3px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   background: var(--surface-strong);
   border: 1px solid rgba(74, 53, 168, 0.08);
@@ -1244,8 +1244,8 @@ button:active,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 15px;
+  gap: 10px;
+  padding: 9px 12px;
   border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 250, 253, 0.92));
   border: 1px solid rgba(74, 53, 168, 0.08);
@@ -1444,7 +1444,7 @@ code {
   .feature-grid,
   .program-grid,
   .program-card-grid {
-    gap: 12px;
+    gap: 8px;
   }
 
   .hero,

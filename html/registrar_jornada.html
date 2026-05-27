@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar jornadas</title>
+  <title>Salidas — Programa Abaniko</title>
   <link rel="stylesheet" href="../css/abaniko-styles.css">
 </head>
 <body>
   <div class="container">
     <main class="page-stack">
+
       <section class="hero">
-        <h1>Registrar jornadas</h1>
-        <p>Crea jornadas, asigna un profesor responsable y deja listo el resumen para consultarlo después.</p>
+        <span class="hero-badge">Gestión de salidas</span>
+        <h1>Salidas</h1>
+        <p>Registra cada salida, asigna el profesor responsable y consulta el resumen completo cuando lo necesites.</p>
       </section>
 
       <section class="session-banner">
@@ -26,20 +28,37 @@
         </div>
       </section>
 
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Total salidas</span>
+          <strong id="statTotal">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Última salida</span>
+          <strong id="statLatest">—</strong>
+        </article>
+        <article class="stat-card">
+          <span>Próxima salida</span>
+          <strong id="statNext">—</strong>
+        </article>
+      </div>
+
       <section class="page-grid">
+
         <section class="panel section-shell">
           <div class="section-head">
             <div>
-              <h2 id="formTitle">Nueva jornada</h2>
-              <p>Rellena los datos principales. Si editas una jornada, el formulario cargará la información guardada.</p>
+              <h2 id="formTitle">Nueva salida</h2>
+              <p>Rellena los datos principales. Si editas una salida el formulario cargará la información guardada.</p>
             </div>
+            <span id="formBadge" class="inline-badge">Nueva</span>
           </div>
 
           <form id="sessionForm" class="panel-soft section-shell">
-            <div class="form-grid">
+            <div class="form-grid two-columns">
               <div class="field">
-                <label for="sessionTitle">Nombre de la jornada</label>
-                <input id="sessionTitle" name="sessionTitle" type="text" required>
+                <label for="sessionTitle">Nombre de la salida</label>
+                <input id="sessionTitle" name="sessionTitle" type="text" placeholder="p. ej. Visita al museo" required>
               </div>
               <div class="field">
                 <label for="sessionDate">Fecha</label>
@@ -47,19 +66,19 @@
               </div>
               <div class="field">
                 <label for="sessionPlace">Lugar</label>
-                <input id="sessionPlace" name="sessionPlace" type="text" placeholder="Salón principal">
+                <input id="sessionPlace" name="sessionPlace" type="text" placeholder="Salón principal, parque, etc.">
               </div>
               <div class="field">
                 <label for="sessionTeacher">Profesor responsable</label>
                 <select id="sessionTeacher" name="sessionTeacher"></select>
               </div>
-              <div class="field">
-                <label for="sessionSummary">Resumen de la jornada</label>
+              <div class="field field-span-full">
+                <label for="sessionSummary">Resumen de la salida</label>
                 <textarea id="sessionSummary" name="sessionSummary" placeholder="Describe lo realizado, incidencias y acuerdos principales" required></textarea>
               </div>
             </div>
             <div class="button-row">
-              <button type="submit" class="btn-primary">Guardar jornada</button>
+              <button type="submit" class="btn-primary">Guardar salida</button>
               <button type="reset" class="btn-secondary">Limpiar</button>
             </div>
           </form>
@@ -68,12 +87,14 @@
         <section class="panel section-shell">
           <div class="section-head">
             <div>
-              <h2>Jornadas registradas</h2>
+              <h2>Salidas registradas</h2>
               <p id="sessionCount">0 registradas</p>
             </div>
+            <button type="button" class="btn-secondary" onclick="openPage('seleccionar_resumen.html')">Ver todas</button>
           </div>
           <div id="sessionList" class="list"></div>
         </section>
+
       </section>
 
       <p id="message" class="message" aria-live="polite"></p>
@@ -90,9 +111,13 @@
     const sessionList = document.getElementById("sessionList");
     const sessionCount = document.getElementById("sessionCount");
     const formTitle = document.getElementById("formTitle");
+    const formBadge = document.getElementById("formBadge");
     const message = document.getElementById("message");
     const currentTeacherName = document.getElementById("currentTeacherName");
     const currentTeacherMeta = document.getElementById("currentTeacherMeta");
+    const statTotal = document.getElementById("statTotal");
+    const statLatest = document.getElementById("statLatest");
+    const statNext = document.getElementById("statNext");
     let editingId = null;
 
     function openPage(page) {
@@ -119,22 +144,35 @@
       const teachers = AbanikoStore.load().teachers;
       teacherSelect.innerHTML = [
         '<option value="">Sin profesor asignado</option>',
-        ...teachers.map((teacher) => `<option value="${teacher.id}">${AbanikoStore.escapeHtml(teacher.name)} - ${AbanikoStore.escapeHtml(teacher.subject || "")}</option>`)
+        ...teachers.map((t) => `<option value="${t.id}">${AbanikoStore.escapeHtml(t.name)} — ${AbanikoStore.escapeHtml(t.subject || "")}</option>`)
       ].join("");
     }
 
     function resetFormMode() {
       editingId = null;
-      formTitle.textContent = "Nueva jornada";
+      formTitle.textContent = "Nueva salida";
+      formBadge.textContent = "Nueva";
       form.reset();
       populateTeachers();
+    }
+
+    function renderStats(sessions) {
+      statTotal.textContent = sessions.length || "0";
+      const sorted = [...sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      statLatest.textContent = sorted[0] ? AbanikoStore.formatDate(sorted[0].date) : "—";
+      const today = new Date().toISOString().slice(0, 10);
+      const next = [...sessions]
+        .filter((s) => String(s.date) >= today)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
+      statNext.textContent = next ? AbanikoStore.formatDate(next.date) : "—";
     }
 
     function renderSessions() {
       const data = AbanikoStore.load();
       sessionCount.textContent = `${data.sessions.length} registradas`;
+      renderStats(data.sessions);
       if (data.sessions.length === 0) {
-        sessionList.innerHTML = '<p class="empty-state">Todavía no hay jornadas registradas.</p>';
+        sessionList.innerHTML = '<p class="empty-state">Todavía no hay salidas registradas.</p>';
         return;
       }
       const ordered = [...data.sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -143,10 +181,10 @@
           <div>
             <strong>${AbanikoStore.escapeHtml(session.title)}</strong>
             <div class="card-lines">
-              <span>Fecha: ${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+              <span><span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span></span>
               <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
-              <span>Profesor: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
-              <span>Resumen: ${AbanikoStore.escapeHtml(session.summary || "")}</span>
+              <span>Responsable: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
+              ${session.summary ? `<span>Resumen: ${AbanikoStore.escapeHtml(session.summary.slice(0, 120))}${session.summary.length > 120 ? "…" : ""}</span>` : ""}
             </div>
           </div>
           <div class="actions">
@@ -174,7 +212,7 @@
       AbanikoStore.upsertSession(payload, editingId);
       renderSessions();
       resetFormMode();
-      showMessage("Jornada guardada correctamente.");
+      showMessage("Salida guardada correctamente.");
     });
 
     form.addEventListener("reset", () => {
@@ -185,7 +223,8 @@
       const session = AbanikoStore.load().sessions.find((item) => String(item.id) === String(id));
       if (!session) return;
       editingId = id;
-      formTitle.textContent = "Editar jornada";
+      formTitle.textContent = "Editar salida";
+      formBadge.textContent = "Editando";
       populateTeachers();
       form.sessionTitle.value = session.title || "";
       form.sessionDate.value = session.date || "";
@@ -199,7 +238,7 @@
       AbanikoStore.removeSession(id);
       renderSessions();
       if (editingId === id) resetFormMode();
-      showMessage("Jornada eliminada correctamente.");
+      showMessage("Salida eliminada correctamente.");
     }
 
     function openSummary(id) {
@@ -231,4 +270,3 @@
   </script>
 </body>
 </html>
-
