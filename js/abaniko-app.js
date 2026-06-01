@@ -1275,13 +1275,18 @@ const AbanikoStore = (() => {
     }, true);
 
     window.addEventListener("beforeunload", (event) => {
-      if (suppressExitReminderOnce || !getCurrentTeacher()) {
+      const backendStatus = getBackendStatus();
+      const onlineSessionEnabled = backendStatus.enabled
+        && backendStatus.configured
+        && backendStatus.source === "remote";
+      if (suppressExitReminderOnce || !onlineSessionEnabled || !getCurrentTeacher()) {
         return;
       }
-      const message = "Tienes una sesion abierta. Cierrala antes de salir.";
+      // Los navegadores modernos muestran un texto generico, pero siguen
+      // requiriendo que se cancele el evento para lanzar el aviso.
       event.preventDefault();
-      event.returnValue = message;
-      return message;
+      event.returnValue = "";
+      return "";
     });
 
     sessionExitReminderInstalled = true;
