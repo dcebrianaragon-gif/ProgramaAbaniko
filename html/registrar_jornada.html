@@ -13,7 +13,7 @@
       <section class="hero">
         <span class="hero-badge">Gestión de salidas</span>
         <h1>Salidas</h1>
-        <p>Registra cada salida, asigna el profesor responsable y consulta el resumen completo cuando lo necesites.</p>
+        <p>Registra cada salida, asigna el profesor responsable y marca las salidas como realizadas cuando se completen.</p>
       </section>
 
       <section class="session-banner">
@@ -34,8 +34,12 @@
           <strong id="statTotal">0</strong>
         </article>
         <article class="stat-card">
-          <span>Última salida</span>
-          <strong id="statLatest">—</strong>
+          <span>Planificadas</span>
+          <strong id="statPending">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Realizadas</span>
+          <strong id="statDone">0</strong>
         </article>
         <article class="stat-card">
           <span>Próxima salida</span>
@@ -71,6 +75,13 @@
               <div class="field">
                 <label for="sessionTeacher">Profesor responsable</label>
                 <select id="sessionTeacher" name="sessionTeacher"></select>
+              </div>
+              <div class="field">
+                <label for="sessionStatus">Estado</label>
+                <select id="sessionStatus" name="sessionStatus">
+                  <option value="planificada">Planificada</option>
+                  <option value="realizada">Realizada</option>
+                </select>
               </div>
               <div class="field field-span-full">
                 <label for="sessionSummary">Resumen de la salida</label>
@@ -116,9 +127,11 @@
     const currentTeacherName = document.getElementById("currentTeacherName");
     const currentTeacherMeta = document.getElementById("currentTeacherMeta");
     const statTotal = document.getElementById("statTotal");
-    const statLatest = document.getElementById("statLatest");
+    const statPending = document.getElementById("statPending");
+    const statDone = document.getElementById("statDone");
     const statNext = document.getElementById("statNext");
     let editingId = null;
+    let isResettingForm = false;
 
     function openPage(page) {
       window.open(page, "_self");
@@ -152,19 +165,33 @@
       editingId = null;
       formTitle.textContent = "Nueva salida";
       formBadge.textContent = "Nueva";
+      isResettingForm = true;
       form.reset();
+      isResettingForm = false;
       populateTeachers();
     }
 
+    function getSessionStatus(session) {
+      return session.status || "planificada";
+    }
+
     function renderStats(sessions) {
-      statTotal.textContent = sessions.length || "0";
-      const sorted = [...sessions].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      statLatest.textContent = sorted[0] ? AbanikoStore.formatDate(sorted[0].date) : "—";
       const today = new Date().toISOString().slice(0, 10);
+      statTotal.textContent = sessions.length || "0";
+      statPending.textContent = sessions.filter((s) => getSessionStatus(s) === "planificada").length || "0";
+      statDone.textContent = sessions.filter((s) => getSessionStatus(s) === "realizada").length || "0";
       const next = [...sessions]
-        .filter((s) => String(s.date) >= today)
+        .filter((s) => String(s.date) >= today && getSessionStatus(s) === "planificada")
         .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
       statNext.textContent = next ? AbanikoStore.formatDate(next.date) : "—";
+    }
+
+    function statusBadge(session) {
+      const status = getSessionStatus(session);
+      if (status === "realizada") {
+        return '<span class="inline-badge badge-realizada">Realizada</span>';
+      }
+      return '<span class="inline-badge badge-planificada">Planificada</span>';
     }
 
     function renderSessions() {
@@ -181,7 +208,10 @@
           <div>
             <strong>${AbanikoStore.escapeHtml(session.title)}</strong>
             <div class="card-lines">
-              <span><span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span></span>
+              <span>
+                <span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+                ${statusBadge(session)}
+              </span>
               <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
               <span>Responsable: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
               ${session.summary ? `<span>Resumen: ${AbanikoStore.escapeHtml(session.summary.slice(0, 120))}${session.summary.length > 120 ? "…" : ""}</span>` : ""}
@@ -189,6 +219,9 @@
           </div>
           <div class="actions">
             <button type="button" class="btn-success" onclick="openSummary(${session.id})">Abrir</button>
+            ${getSessionStatus(session) === "planificada"
+              ? `<button type="button" class="btn-primary" onclick="markSessionDone(${session.id})">Marcar realizada</button>`
+              : ""}
             <button type="button" class="btn-secondary" onclick="editSession(${session.id})">Editar</button>
             <button type="button" class="btn-danger" onclick="deleteSession(${session.id})">Eliminar</button>
           </div>
@@ -203,6 +236,7 @@
         date: form.sessionDate.value,
         place: form.sessionPlace.value.trim(),
         teacherId: form.sessionTeacher.value,
+        status: form.sessionStatus.value || "planificada",
         summary: form.sessionSummary.value.trim()
       };
       if (!payload.title || !payload.date || !payload.summary) {
@@ -216,8 +250,18 @@
     });
 
     form.addEventListener("reset", () => {
-      setTimeout(resetFormMode, 0);
+      if (!isResettingForm) {
+        setTimeout(resetFormMode, 0);
+      }
     });
+
+    function markSessionDone(id) {
+      const session = AbanikoStore.load().sessions.find((s) => String(s.id) === String(id));
+      if (!session) return;
+      AbanikoStore.upsertSession({ ...session, status: "realizada" }, id);
+      renderSessions();
+      showMessage("Salida marcada como realizada.");
+    }
 
     function editSession(id) {
       const session = AbanikoStore.load().sessions.find((item) => String(item.id) === String(id));
@@ -230,6 +274,7 @@
       form.sessionDate.value = session.date || "";
       form.sessionPlace.value = session.place || "";
       form.sessionTeacher.value = session.teacherId || "";
+      form.sessionStatus.value = session.status || "planificada";
       form.sessionSummary.value = session.summary || "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -258,6 +303,7 @@
       openPage("Index.html");
     }
 
+    window.markSessionDone = markSessionDone;
     window.editSession = editSession;
     window.deleteSession = deleteSession;
     window.openSummary = openSummary;
