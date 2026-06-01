@@ -89,7 +89,7 @@
               </div>
               <div class="field field-span-full">
                 <label for="sessionSummary">Resumen de la salida</label>
-                <textarea id="sessionSummary" name="sessionSummary" placeholder="Describe lo realizado, incidencias y acuerdos principales" required></textarea>
+                <textarea id="sessionSummary" name="sessionSummary" placeholder="Describe lo realizado, incidencias y acuerdos principales"></textarea>
               </div>
             </div>
             <div class="button-row">
@@ -215,6 +215,9 @@
               <span>
                 <span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}${session.time ? " · " + AbanikoStore.escapeHtml(session.time) : ""}</span>
                 ${statusBadge(session)}
+                ${getSessionStatus(session) === "planificada"
+                  ? `<button type="button" class="btn-secondary" style="padding:4px 10px;font-size:0.82rem;border-radius:999px;" onclick="markSessionDone(${session.id})">Marcar realizada</button>`
+                  : ""}
               </span>
               <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
               <span>Responsable: ${AbanikoStore.escapeHtml(session.teacherNameSnapshot || "Sin profesor asignado")}</span>
@@ -223,9 +226,6 @@
           </div>
           <div class="actions">
             <button type="button" class="btn-success" onclick="openSummary(${session.id})">Abrir</button>
-            ${getSessionStatus(session) === "planificada"
-              ? `<button type="button" class="btn-primary" onclick="markSessionDone(${session.id})">Marcar realizada</button>`
-              : ""}
             <button type="button" class="btn-secondary" onclick="editSession(${session.id})">Editar</button>
             <button type="button" class="btn-danger" onclick="deleteSession(${session.id})">Eliminar</button>
           </div>
@@ -244,8 +244,8 @@
         status: form.sessionStatus.value || "planificada",
         summary: form.sessionSummary.value.trim()
       };
-      if (!payload.title || !payload.date || !payload.summary) {
-        showMessage("Completa al menos el nombre, la fecha y el resumen.");
+      if (!payload.title || !payload.date) {
+        showMessage("Completa al menos el nombre y la fecha.");
         return;
       }
       AbanikoStore.upsertSession(payload, editingId);
