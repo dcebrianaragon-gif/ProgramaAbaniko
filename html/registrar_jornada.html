@@ -65,8 +65,19 @@
                 <input id="sessionTitle" name="sessionTitle" type="text" placeholder="p. ej. Visita al museo" required>
               </div>
               <div class="field">
+                <label for="sessionStatus">Estado</label>
+                <select id="sessionStatus" name="sessionStatus">
+                  <option value="planificada">Planificada</option>
+                  <option value="realizada">Realizada</option>
+                </select>
+              </div>
+              <div class="field">
                 <label for="sessionDate">Fecha</label>
                 <input id="sessionDate" name="sessionDate" type="date" required>
+              </div>
+              <div class="field">
+                <label for="sessionTime">Hora de salida</label>
+                <input id="sessionTime" name="sessionTime" type="time">
               </div>
               <div class="field">
                 <label for="sessionPlace">Lugar</label>
@@ -75,13 +86,6 @@
               <div class="field">
                 <label for="sessionTeacher">Profesor responsable</label>
                 <select id="sessionTeacher" name="sessionTeacher"></select>
-              </div>
-              <div class="field">
-                <label for="sessionStatus">Estado</label>
-                <select id="sessionStatus" name="sessionStatus">
-                  <option value="planificada">Planificada</option>
-                  <option value="realizada">Realizada</option>
-                </select>
               </div>
               <div class="field field-span-full">
                 <label for="sessionSummary">Resumen de la salida</label>
@@ -209,7 +213,7 @@
             <strong>${AbanikoStore.escapeHtml(session.title)}</strong>
             <div class="card-lines">
               <span>
-                <span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}</span>
+                <span class="inline-badge">${AbanikoStore.escapeHtml(AbanikoStore.formatDate(session.date))}${session.time ? " · " + AbanikoStore.escapeHtml(session.time) : ""}</span>
                 ${statusBadge(session)}
               </span>
               <span>Lugar: ${AbanikoStore.escapeHtml(session.place || "No indicado")}</span>
@@ -234,6 +238,7 @@
       const payload = {
         title: form.sessionTitle.value.trim(),
         date: form.sessionDate.value,
+        time: form.sessionTime.value || "",
         place: form.sessionPlace.value.trim(),
         teacherId: form.sessionTeacher.value,
         status: form.sessionStatus.value || "planificada",
@@ -272,6 +277,7 @@
       populateTeachers();
       form.sessionTitle.value = session.title || "";
       form.sessionDate.value = session.date || "";
+      form.sessionTime.value = session.time || "";
       form.sessionPlace.value = session.place || "";
       form.sessionTeacher.value = session.teacherId || "";
       form.sessionStatus.value = session.status || "planificada";
